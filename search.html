@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search — Cat Food Center</title>
+  <link rel="icon" href="./favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#FAF7F2', surface: '#FFFFFF',
+            ink: '#1C1A17', 'ink-soft': '#56504A',
+            accent: '#C2410C', hairline: '#E7E1D8',
+            'band-excellent': '#1B7A4B', 'band-good': '#5FA855',
+            'band-poor': '#E08A1E', 'band-bad': '#C0392B',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { background: #FAF7F2; font-family: 'Public Sans', system-ui, sans-serif; }
+    .font-display { font-family: 'Fraunces', Georgia, serif; }
+    .text-h1      { font-size: 1.75rem; line-height: 1.2; }
+    .text-h2      { font-size: 1.25rem; line-height: 1.3; }
+    .text-small   { font-size: .875rem; line-height: 1.5; }
+    .text-micro   { font-size: .75rem;  line-height: 1.4; }
+    .rounded-card { border-radius: 12px; }
+    .rounded-pill { border-radius: 999px; }
+    .max-w-content { max-width: 720px; }
+    .card-link { display: flex; text-decoration: none; transition: border-color 150ms; }
+    .card-link:hover { border-color: #C2410C !important; }
+    .wordmark:hover { color: #C2410C; }
+    .btn-link { text-decoration: none; transition: opacity 150ms; }
+    .btn-link:hover { opacity: .9; }
+    .footer-link { text-decoration: none; }
+    .footer-link:hover { text-decoration: underline; }
+    input[type=search]:focus { outline: 2px solid #C2410C; outline-offset: 0; box-shadow: none; }
+  </style>
+</head>
+<body class="bg-bg text-ink min-h-screen flex flex-col">
+
+  <!-- ── Header ── -->
+  <header class="sticky top-0 z-50 bg-surface border-b border-hairline">
+    <div class="max-w-content mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="./index.html" class="wordmark font-display text-h2 text-ink font-semibold tracking-tight" style="text-decoration:none;transition:color 150ms;">
+        Cat Food Center
+      </a>
+      <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer"
+        class="btn-link rounded-pill bg-accent text-white text-small font-medium px-4 py-2">
+        Support
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Main ── -->
+  <main class="flex-1 w-full max-w-content mx-auto px-4 py-8">
+    <div class="flex flex-col gap-8">
+
+      <!-- Search bar (pre-filled by JS below) -->
+      <form action="./search.html" method="get" class="flex gap-2" role="search">
+        <input type="search" name="q" id="search-input" placeholder="Brand or product name…"
+          aria-label="Search cat food products"
+          class="flex-1 min-w-0 border border-hairline rounded-card px-4 py-3 text-small text-ink bg-surface" />
+        <button type="submit"
+          class="btn-link rounded-card bg-accent text-white font-medium text-small px-5 py-3 shrink-0 border-0 cursor-pointer">
+          Search
+        </button>
+      </form>
+
+      <!-- Results -->
+      <section aria-label="Search results">
+        <p id="results-label" class="text-small text-ink-soft mb-4" hidden></p>
+
+        <!-- TODO: replace with real Open Pet Food Facts text-search API results -->
+        <ul class="flex flex-col gap-3" style="list-style:none;padding:0">
+
+          <li>
+            <a href="./product.html?barcode=0000000000000"
+              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
+              <div class="bg-band-good w-14 h-14 rounded-card flex items-center justify-center shrink-0"
+                aria-label="Score 61, Good">
+                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">61</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-ink font-medium text-small truncate">Instinct Original Grain-Free Recipe with Real Chicken</p>
+                <p class="text-ink-soft text-micro">Nature's Variety</p>
+                <span class="inline-block bg-band-good text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Good</span>
+              </div>
+              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </li>
+
+          <li>
+            <a href="./product.html?barcode=0000000000000"
+              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
+              <div class="bg-band-good w-14 h-14 rounded-card flex items-center justify-center shrink-0"
+                aria-label="Score 58, Good">
+                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">58</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-ink font-medium text-small truncate">Instinct Original Grain-Free Recipe with Real Salmon</p>
+                <p class="text-ink-soft text-micro">Nature's Variety</p>
+                <span class="inline-block bg-band-good text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Good</span>
+              </div>
+              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </li>
+
+          <li>
+            <a href="./product.html?barcode=0000000000000"
+              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
+              <div class="bg-band-good w-14 h-14 rounded-card flex items-center justify-center shrink-0"
+                aria-label="Score 63, Good">
+                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">63</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-ink font-medium text-small truncate">Instinct Original Grain-Free Recipe with Real Duck</p>
+                <p class="text-ink-soft text-micro">Nature's Variety</p>
+                <span class="inline-block bg-band-good text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Good</span>
+              </div>
+              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </li>
+
+        </ul>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="border-t border-hairline mt-12 py-6 text-center">
+    <p class="text-micro text-ink-soft">
+      Built by <a href="https://azqato.github.io/index.html" target="_blank" rel="noopener noreferrer"
+        class="text-accent footer-link">Azqato</a>
+    </p>
+  </footer>
+
+  <script>
+    // Pre-fill search input and show result label from ?q= URL param
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get('q') || ''
+    const input = document.getElementById('search-input')
+    const label = document.getElementById('results-label')
+    if (input) input.value = q
+    if (q && label) {
+      label.textContent = 'Showing results for “' + q + '”'
+      label.hidden = false
+    }
+  </script>
+
+</body>
+</html>

@@ -41,61 +41,53 @@ Full scoring logic lives in `PRD.md` and `TRD.md`.
 * `DESIGN.md`: visual system, mobile-first layout, and UX flows
 * `PATCHNOTES.md`: running changelog, updated after every change
 
-## Getting started
+## Running locally
 
-Node.js (LTS) is required. Download it from [nodejs.org](https://nodejs.org) if not already installed.
+No build step, no Node.js needed. Just open `index.html` in any browser:
 
-```bash
-# install dependencies
-npm install
+```
+# Windows
+start index.html
 
-# run the dev server (local preview at http://localhost:3000)
-npm run dev
-
-# build for production — outputs static files to out/
-npm run build
+# Mac
+open index.html
 ```
 
-Open `http://localhost:3000` in a browser, or use device emulation to test the mobile layout.
+Or serve with any static server for a more realistic experience:
+```bash
+# Python (if installed)
+python -m http.server 8080
+# then open http://localhost:8080
+```
 
-> **Note:** `npm run dev` serves the site without the `/Cat-Food-Center` base path, so all links work normally in local development. The base path only applies to the production `out/` build.
+The three pages — `index.html`, `search.html`, `product.html` — link to each other with relative URLs and work identically from `file://` or any static server.
 
 ## Deploying to GitHub Pages
 
-1. Run `npm run build` — this produces an `out/` directory.
-2. Push the contents of `out/` to the `gh-pages` branch of the repository, or use a GitHub Actions workflow (recommended).
-3. In **Settings → Pages**, set the source to the `gh-pages` branch, root (`/`).
-4. The site will be live at `https://azqato.github.io/Cat-Food-Center/`.
+The repo already includes `.github/workflows/deploy.yml`. On every push to `main`, GitHub Actions uploads the repo root and deploys it to Pages. **No build step required.**
 
-A minimal GitHub Actions workflow example:
+One-time setup:
+1. Push to `main` (already done).
+2. In the repo: **Settings → Pages → Source → GitHub Actions**.
+3. The site goes live at `https://azqato.github.io/Cat-Food-Center/`.
 
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy to GitHub Pages
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - run: npm ci
-      - run: npm run build
-      - uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./out
-```
+## Project structure
+
+| Path | Purpose |
+| --- | --- |
+| `index.html` | Home page (MVP, served directly) |
+| `search.html` | Search results (MVP, served directly) |
+| `product.html` | Product detail (MVP, served directly) |
+| `app/` | Future Next.js App Router source |
+| `components/` | Future Next.js components |
+| `package.json` etc. | Future Next.js build config |
+| `PRD.md` / `TRD.md` / `DESIGN.md` | Living specs |
+
+The `app/` and `components/` directories are the planned Next.js migration path. They don't affect GitHub Pages. When ready to transition to a full server-rendered product, add the build steps back to the workflow and retire the HTML pages.
 
 ## Status
 
-MVP complete (Prompts 1–4). All code is in place and ready for deployment. Node.js was not available on the dev machine during scaffolding so `npm run build` has not been verified locally — run it after installing Node.js. All product data is hardcoded mock; real Open Pet Food Facts API wiring, the scoring engine, and the barcode scanner are the next phase.
-
-Real API calls, barcode scanning, and the scoring engine are deferred to a later phase. `PRD.md` is the living spec; update `PATCHNOTES.md` on every meaningful change.
+MVP live on GitHub Pages. All three pages (home, search, product) are plain HTML running entirely client-side with no server. All product data is hardcoded mock. Real Open Pet Food Facts API wiring, the CFC scoring engine, and the barcode scanner are the next phase. `PRD.md` is the living spec; update `PATCHNOTES.md` on every meaningful change.
 
 ## A note on scope
 

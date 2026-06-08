@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product — Cat Food Center</title>
+  <link rel="icon" href="./favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#FAF7F2', surface: '#FFFFFF',
+            ink: '#1C1A17', 'ink-soft': '#56504A',
+            accent: '#C2410C', hairline: '#E7E1D8',
+            'band-excellent': '#1B7A4B', 'band-good': '#5FA855',
+            'band-poor': '#E08A1E', 'band-bad': '#C0392B',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { background: #FAF7F2; font-family: 'Public Sans', system-ui, sans-serif; }
+    .font-display { font-family: 'Fraunces', Georgia, serif; }
+    .text-display { font-size: 3rem;    line-height: 1.1; }
+    .text-h1      { font-size: 1.75rem; line-height: 1.2; }
+    .text-h2      { font-size: 1.25rem; line-height: 1.3; }
+    .text-small   { font-size: .875rem; line-height: 1.5; }
+    .text-micro   { font-size: .75rem;  line-height: 1.4; }
+    .rounded-card { border-radius: 12px; }
+    .rounded-pill { border-radius: 999px; }
+    .max-w-content { max-width: 720px; }
+    .wordmark:hover { color: #C2410C; }
+    .btn-link { text-decoration: none; transition: opacity 150ms; }
+    .btn-link:hover { opacity: .9; }
+    .footer-link { text-decoration: none; }
+    .footer-link:hover { text-decoration: underline; }
+    .source-link { color: #C2410C; text-decoration: none; }
+    .source-link:hover { text-decoration: underline; }
+    /* Ingredient list */
+    .ingredient-list { border: 1px solid #E7E1D8; border-radius: 12px; overflow: hidden; list-style: none; padding: 0; margin: 0; }
+    .ingredient-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #fff; border-bottom: 1px solid #E7E1D8; }
+    .ingredient-row:last-child { border-bottom: none; }
+    .ingredient-num { font-variant-numeric: tabular-nums; color: #56504A; width: 1.5rem; text-align: right; flex-shrink: 0; font-size: .875rem; }
+    .ingredient-name { font-size: .875rem; color: #1C1A17; flex: 1; }
+    /* Nutrition grid */
+    .nutrition-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .nutrition-card { background: #fff; border: 1px solid #E7E1D8; border-radius: 12px; padding: 16px; }
+    .nutrition-label { font-size: .75rem; color: #56504A; margin-bottom: 4px; }
+    .nutrition-value { font-family: 'Fraunces', Georgia, serif; font-size: 1.75rem; line-height: 1.2; color: #1C1A17; font-variant-numeric: tabular-nums; }
+    .nutrition-unit { font-size: 1.25rem; }
+    /* Additive card */
+    .additive-card { background: #fff; border: 1px solid #E7E1D8; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .additive-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+    .additive-name { font-weight: 600; font-size: 1rem; color: #1C1A17; }
+    .additive-fn { font-size: .75rem; color: #56504A; background: #E7E1D8; border-radius: 999px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; }
+    .additive-impact { font-size: .875rem; color: #56504A; margin-bottom: 10px; }
+  </style>
+</head>
+<body class="bg-bg text-ink min-h-screen flex flex-col">
+
+  <!-- ── Header ── -->
+  <header class="sticky top-0 z-50 bg-surface border-b border-hairline">
+    <div class="max-w-content mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="./index.html" class="wordmark font-display text-h2 text-ink font-semibold tracking-tight" style="text-decoration:none;transition:color 150ms;">
+        Cat Food Center
+      </a>
+      <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer"
+        class="btn-link rounded-pill bg-accent text-white text-small font-medium px-4 py-2">
+        Support
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Main ── -->
+  <!-- TODO: replace all hardcoded mock data with real Open Pet Food Facts API fetch + scoring engine -->
+  <main class="flex-1 w-full max-w-content mx-auto px-4 py-8">
+    <article class="flex flex-col gap-10">
+
+      <!-- ── Score header ── -->
+      <div class="bg-surface rounded-card shadow-sm overflow-hidden">
+        <div class="h-1.5 bg-band-good" aria-hidden="true"></div>
+        <div class="p-5">
+
+          <div class="flex items-start justify-between gap-4 mb-4">
+            <!-- Score + band -->
+            <div class="flex items-end gap-3">
+              <span class="font-display text-display text-ink leading-none" style="font-variant-numeric:tabular-nums">61</span>
+              <div class="flex items-center gap-1.5 pb-1">
+                <!-- Good glyph: check -->
+                <svg aria-hidden="true" class="w-6 h-6 text-band-good" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span class="font-medium text-small text-band-good">Good</span>
+              </div>
+            </div>
+            <!-- Image placeholder -->
+            <div class="w-20 h-20 rounded-card bg-hairline flex items-center justify-center shrink-0" aria-label="Product image not available">
+              <span class="text-ink-soft text-micro text-center leading-tight px-1">No<br>image</span>
+            </div>
+          </div>
+
+          <h1 class="font-display text-h1 text-ink mb-2">Instinct Original Grain-Free Recipe with Real Chicken</h1>
+          <div class="flex flex-wrap gap-x-3 gap-y-1 items-center text-small text-ink-soft">
+            <span>Nature's Variety</span>
+            <span aria-hidden="true">·</span>
+            <span>Wet</span>
+            <span aria-hidden="true">·</span>
+            <span>Adult Maintenance</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Verdict ── -->
+      <section aria-labelledby="verdict-heading">
+        <h2 id="verdict-heading" class="font-display text-h2 text-ink mb-3">Verdict</h2>
+        <p class="text-small text-ink mb-4">
+          A protein-forward wet food with real chicken as the first ingredient, held back by two moderate-risk gelling agents.
+        </p>
+        <ul class="flex flex-wrap gap-2" aria-label="Top reasons" style="list-style:none;padding:0">
+          <li class="text-micro text-ink border border-hairline rounded-pill px-3 py-1">Named animal protein leads ingredient list</li>
+          <li class="text-micro text-ink border border-hairline rounded-pill px-3 py-1">High moisture supports urinary tract health</li>
+          <li class="text-micro text-ink border border-hairline rounded-pill px-3 py-1">Contains carrageenan (Tier 2 additive)</li>
+        </ul>
+      </section>
+
+      <!-- ── Ingredients ── -->
+      <section aria-labelledby="ingredients-heading">
+        <h2 id="ingredients-heading" class="font-display text-h2 text-ink mb-4">Ingredients</h2>
+        <ol class="ingredient-list">
+          <li class="ingredient-row"><span class="ingredient-num">1.</span><span class="ingredient-name">Chicken</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">2.</span><span class="ingredient-name">Chicken Broth</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">3.</span><span class="ingredient-name">Chicken Liver</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">4.</span><span class="ingredient-name">Pea Protein</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">5.</span><span class="ingredient-name">Natural Flavor</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">6.</span><span class="ingredient-name">Carrageenan</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">7.</span><span class="ingredient-name">Guar Gum</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">8.</span><span class="ingredient-name">Zinc Sulfate</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">9.</span><span class="ingredient-name">Iron Amino Acid Chelate</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">10.</span><span class="ingredient-name">Copper Amino Acid Chelate</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">11.</span><span class="ingredient-name">Manganese Amino Acid Chelate</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">12.</span><span class="ingredient-name">Potassium Iodide</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">13.</span><span class="ingredient-name">Sodium Selenite</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">14.</span><span class="ingredient-name">Vitamin E Supplement</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">15.</span><span class="ingredient-name">Thiamine Mononitrate</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">16.</span><span class="ingredient-name">Niacin</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">17.</span><span class="ingredient-name">Calcium Pantothenate</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">18.</span><span class="ingredient-name">Riboflavin Supplement</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">19.</span><span class="ingredient-name">Biotin</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">20.</span><span class="ingredient-name">Vitamin B12 Supplement</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">21.</span><span class="ingredient-name">Folic Acid</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">22.</span><span class="ingredient-name">Vitamin D3 Supplement</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">23.</span><span class="ingredient-name">Mixed Tocopherols</span></li>
+          <li class="ingredient-row"><span class="ingredient-num">24.</span><span class="ingredient-name">Taurine</span></li>
+        </ol>
+        <!-- TODO: add expand-to-explain per ingredient -->
+        <p class="text-micro text-ink-soft mt-2">Ingredient explanations coming soon.</p>
+      </section>
+
+      <!-- ── Additive flags ── -->
+      <section aria-labelledby="additives-heading">
+        <h2 id="additives-heading" class="font-display text-h2 text-ink mb-4">Additive flags</h2>
+
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-2 h-2 rounded-full bg-band-poor shrink-0" aria-hidden="true" style="display:inline-block"></span>
+          <span class="text-small font-medium text-band-poor">Tier 2 — Moderate Risk</span>
+        </div>
+
+        <div class="additive-card">
+          <div class="additive-header">
+            <span class="additive-name">Carrageenan</span>
+            <span class="additive-fn">Gelling agent / thickener</span>
+          </div>
+          <p class="additive-impact">Associated with intestinal inflammation and disruption of the gut lining in animal studies. Some research suggests links to inflammatory bowel conditions.</p>
+          <a href="https://pubmed.ncbi.nlm.nih.gov/11895129/" target="_blank" rel="noopener noreferrer" class="source-link text-small">
+            Source: Tobacman — Gastrointestinal Effects of Carrageenan (PubMed) ↗
+          </a>
+        </div>
+
+        <div class="additive-card" style="margin-bottom:0">
+          <div class="additive-header">
+            <span class="additive-name">Guar Gum</span>
+            <span class="additive-fn">Gelling agent / thickener</span>
+          </div>
+          <p class="additive-impact">High amounts may contribute to digestive discomfort and loose stools in sensitive cats when consumed regularly.</p>
+          <a href="https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2017.4669" target="_blank" rel="noopener noreferrer" class="source-link text-small">
+            Source: EFSA Panel — Scientific Opinion on guar gum safety ↗
+          </a>
+        </div>
+
+      </section>
+
+      <!-- ── Nutrition snapshot ── -->
+      <section aria-labelledby="nutrition-heading">
+        <h2 id="nutrition-heading" class="font-display text-h2 text-ink mb-4">Nutrition snapshot</h2>
+        <div class="nutrition-grid">
+          <div class="nutrition-card">
+            <p class="nutrition-label">Crude Protein (DM)</p>
+            <p class="nutrition-value">52<span class="nutrition-unit">%</span></p>
+          </div>
+          <div class="nutrition-card">
+            <p class="nutrition-label">Crude Fat (DM)</p>
+            <p class="nutrition-value">28<span class="nutrition-unit">%</span></p>
+          </div>
+          <div class="nutrition-card">
+            <p class="nutrition-label">Moisture (as-fed)</p>
+            <p class="nutrition-value">78<span class="nutrition-unit">%</span></p>
+          </div>
+          <div class="nutrition-card">
+            <p class="nutrition-label">Taurine</p>
+            <div class="flex items-center gap-2" style="margin-top:8px">
+              <svg aria-hidden="true" class="w-5 h-5 text-band-excellent" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span class="text-small font-medium text-band-excellent">Present</span>
+            </div>
+          </div>
+        </div>
+        <p class="text-micro text-ink-soft mt-2">DM = dry-matter basis.</p>
+      </section>
+
+      <!-- ── AAFCO adequacy ── -->
+      <section aria-labelledby="aafco-heading">
+        <h2 id="aafco-heading" class="font-display text-h2 text-ink mb-3">AAFCO adequacy</h2>
+        <div class="bg-surface border border-hairline rounded-card p-4">
+          <p class="text-small text-ink mb-3" style="font-style:italic">
+            &ldquo;Instinct Original Grain-Free Recipe with Real Chicken is formulated to meet the nutritional levels established by the AAFCO Cat Food Nutrient Profiles for maintenance of adult cats.&rdquo;
+          </p>
+          <p class="text-micro text-ink-soft">Substantiated by: formulation</p>
+        </div>
+      </section>
+
+      <!-- ── Footer metadata ── -->
+      <div class="border-t border-hairline pt-4 flex flex-wrap gap-4 justify-between items-center">
+        <div class="flex items-center gap-1.5">
+          <svg aria-hidden="true" class="w-4 h-4 text-band-excellent" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-micro text-ink-soft">Full data</span>
+        </div>
+        <span class="text-micro text-ink-soft">Last reviewed: June 7, 2026</span>
+        <span class="text-micro text-ink-soft">Barcode: <span id="barcode-val">0000000000000</span></span>
+      </div>
+
+    </article>
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="border-t border-hairline mt-12 py-6 text-center">
+    <p class="text-micro text-ink-soft">
+      Built by <a href="https://azqato.github.io/index.html" target="_blank" rel="noopener noreferrer"
+        class="text-accent footer-link">Azqato</a>
+    </p>
+  </footer>
+
+  <script>
+    // Show barcode from URL param
+    const barcode = new URLSearchParams(window.location.search).get('barcode') || '0000000000000'
+    const el = document.getElementById('barcode-val')
+    if (el) el.textContent = barcode
+    // TODO: when real API is wired, use barcode to fetch product and populate all sections
+  </script>
+
+</body>
+</html>

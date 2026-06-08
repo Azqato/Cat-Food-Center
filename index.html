@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cat Food Center — Trustworthy reviews for your purrfect companion!</title>
+  <link rel="icon" href="./favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#FAF7F2', surface: '#FFFFFF',
+            ink: '#1C1A17', 'ink-soft': '#56504A',
+            accent: '#C2410C', hairline: '#E7E1D8',
+            'band-excellent': '#1B7A4B', 'band-good': '#5FA855',
+            'band-poor': '#E08A1E', 'band-bad': '#C0392B',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { background: #FAF7F2; font-family: 'Public Sans', system-ui, sans-serif; }
+    .font-display { font-family: 'Fraunces', Georgia, serif; }
+    .text-display { font-size: 3rem;    line-height: 1.1; }
+    .text-h1      { font-size: 1.75rem; line-height: 1.2; }
+    .text-h2      { font-size: 1.25rem; line-height: 1.3; }
+    .text-small   { font-size: .875rem; line-height: 1.5; }
+    .text-micro   { font-size: .75rem;  line-height: 1.4; }
+    .rounded-card { border-radius: 12px; }
+    .rounded-pill { border-radius: 999px; }
+    .max-w-content { max-width: 720px; }
+    .card-link { display: flex; text-decoration: none; transition: border-color 150ms; }
+    .card-link:hover { border-color: #C2410C !important; }
+    .wordmark:hover { color: #C2410C; }
+    .btn-link { text-decoration: none; transition: opacity 150ms; }
+    .btn-link:hover { opacity: .9; }
+    .footer-link { text-decoration: none; }
+    .footer-link:hover { text-decoration: underline; }
+    input[type=search]:focus { outline: 2px solid #C2410C; outline-offset: 0; box-shadow: none; }
+    /* Scan tooltip */
+    .scan-wrap { display: inline-flex; flex-direction: column; align-items: center; }
+    .scan-tooltip { opacity: 0; transition: opacity 150ms; pointer-events: none; }
+    .scan-wrap:hover .scan-tooltip { opacity: 1; }
+  </style>
+</head>
+<body class="bg-bg text-ink min-h-screen flex flex-col">
+
+  <!-- ── Header ── -->
+  <header class="sticky top-0 z-50 bg-surface border-b border-hairline">
+    <div class="max-w-content mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="./index.html" class="wordmark font-display text-h2 text-ink font-semibold tracking-tight" style="text-decoration:none; transition:color 150ms;">
+        Cat Food Center
+      </a>
+      <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer"
+        class="btn-link rounded-pill bg-accent text-white text-small font-medium px-4 py-2">
+        Support
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Main ── -->
+  <main class="flex-1 w-full max-w-content mx-auto px-4 py-8">
+    <div class="flex flex-col items-center gap-12 pt-8">
+
+      <!-- Wordmark + tagline -->
+      <div class="text-center">
+        <h1 class="font-display text-h1 text-ink">Cat Food Center</h1>
+        <p class="text-ink-soft text-small mt-2">Trustworthy reviews for your purrfect companion!</p>
+      </div>
+
+      <!-- Scan button -->
+      <div class="flex flex-col items-center gap-3">
+        <div class="scan-wrap">
+          <button disabled aria-disabled="true" aria-describedby="scan-tooltip"
+            class="w-32 h-32 rounded-pill bg-accent text-white font-display text-h2 flex items-center justify-center shadow-md cursor-not-allowed select-none opacity-60">
+            Scan
+          </button>
+          <span id="scan-tooltip" role="tooltip"
+            class="scan-tooltip bg-ink text-white text-micro px-3 py-1 rounded-pill whitespace-nowrap mt-3">
+            Coming soon
+          </span>
+        </div>
+        <p class="text-ink-soft text-small">Point at a barcode</p>
+      </div>
+
+      <!-- Search form -->
+      <form action="./search.html" method="get" class="w-full flex gap-2" style="max-width:24rem" role="search">
+        <input type="search" name="q" placeholder="Brand or product name…"
+          aria-label="Search cat food products"
+          class="flex-1 min-w-0 border border-hairline rounded-card px-4 py-3 text-small text-ink bg-surface" />
+        <button type="submit"
+          class="btn-link rounded-card bg-accent text-white font-medium text-small px-5 py-3 shrink-0 border-0 cursor-pointer">
+          Search
+        </button>
+      </form>
+
+      <!-- Recently viewed -->
+      <section class="w-full" aria-label="Recently viewed products">
+        <h2 class="font-display text-h2 text-ink mb-4">Recently viewed</h2>
+        <ul class="flex flex-col gap-3" style="list-style:none;padding:0">
+
+          <li>
+            <a href="./product.html?barcode=0000000000001"
+              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
+              <div class="bg-band-excellent w-14 h-14 rounded-card flex items-center justify-center shrink-0"
+                aria-label="Score 81, Excellent">
+                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">81</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-ink font-medium text-small truncate">Weruva Paw Lickin' Chicken</p>
+                <p class="text-ink-soft text-micro">Weruva</p>
+                <span class="inline-block bg-band-excellent text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Excellent</span>
+              </div>
+              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </li>
+
+          <li>
+            <a href="./product.html?barcode=0000000000002"
+              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
+              <div class="bg-band-poor w-14 h-14 rounded-card flex items-center justify-center shrink-0"
+                aria-label="Score 28, Poor">
+                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">28</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-ink font-medium text-small truncate">Friskies Surfin' &amp; Turfin' Favorites</p>
+                <p class="text-ink-soft text-micro">Purina Friskies</p>
+                <span class="inline-block bg-band-poor text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Poor</span>
+              </div>
+              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </li>
+
+        </ul>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="border-t border-hairline mt-12 py-6 text-center">
+    <p class="text-micro text-ink-soft">
+      Built by <a href="https://azqato.github.io/index.html" target="_blank" rel="noopener noreferrer"
+        class="text-accent footer-link">Azqato</a>
+    </p>
+  </footer>
+
+</body>
+</html>

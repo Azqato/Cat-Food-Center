@@ -6,6 +6,26 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.4.0] - 2026-06-07
+
+**Rebuilt as plain HTML/CSS/JS — no build step, runs directly in any browser.**
+
+Changed
+* Replaced the Next.js build-required deliverable with three self-contained HTML pages that work by opening a file in a browser or being served on GitHub Pages with no compilation step.
+* `.github/workflows/deploy.yml`: removed all build steps (`npm ci`, `npm run build`). The workflow now uploads the repo root directly as the Pages artifact. No Node.js required.
+
+Added
+* `index.html`: home page — wordmark, disabled Scan button with tooltip, search form (GET to `search.html`), two hardcoded recently-viewed product cards. Tailwind CDN + custom CSS + Google Fonts (Fraunces, Public Sans). Zero JavaScript dependencies beyond the Tailwind CDN.
+* `search.html`: search results — search bar pre-filled from `?q=` URL param (vanilla JS `URLSearchParams`), three hardcoded mock result cards linking to `product.html`. No server needed.
+* `product.html`: full product page — score header (61, Good band, green bar), verdict + reason chips, 24-item ingredient list, two Tier 2 additive cards (Carrageenan, Guar Gum) with cited sources, 2×2 nutrition grid, AAFCO statement, footer metadata. Barcode shown from `?barcode=` param.
+* `favicon.svg`: 😻 emoji SVG at repo root (GitHub Pages serves this correctly).
+* `.nojekyll`: at repo root — prevents GitHub Pages from running Jekyll on the repo.
+
+Architecture note
+* The `app/`, `components/`, `next.config.ts`, `package.json`, etc. remain in the repo as the future Next.js migration path. They do not affect GitHub Pages serving. When transitioning to the full product, scaffold the Next.js build, add build steps back to the workflow, and retire the HTML pages.
+
+---
+
 ## [0.3.0] - 2026-06-07
 
 **MVP complete: GitHub Pages deployment config.**
