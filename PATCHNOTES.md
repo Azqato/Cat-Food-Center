@@ -6,6 +6,16 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.5.1] - 2026-06-07
+
+**Added Home and Methodology links to the header navigation.**
+
+Changed
+* All pages (`index.html`, `search.html`, `product.html`, `methodology.html`): header now contains a `<nav>` element with two links — **Home** (links to `./index.html`) and **Methodology** (links to `./methodology.html`) — between the wordmark and the Support button.
+* The link for the currently visited page is highlighted in accent color and bold via `aria-current="page"` — Home is active on `index.html`; Methodology is active on `methodology.html`; neither is active on `search.html` or `product.html`.
+
+---
+
 ## [0.5.0] - 2026-06-07
 
 **MVP completion: all documented sections built out.**
