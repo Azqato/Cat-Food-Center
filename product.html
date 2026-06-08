@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product — Cat Food Center</title>
+  <title id="page-title">Product — Cat Food Center</title>
   <link rel="icon" href="./favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,27 +38,30 @@
     .wordmark:hover { color: #C2410C; }
     .btn-link { text-decoration: none; transition: opacity 150ms; }
     .btn-link:hover { opacity: .9; }
-    .footer-link { text-decoration: none; }
+    .footer-link { color: #C2410C; text-decoration: none; }
     .footer-link:hover { text-decoration: underline; }
     .source-link { color: #C2410C; text-decoration: none; }
     .source-link:hover { text-decoration: underline; }
+    .card-link { display: flex; text-decoration: none; transition: border-color 150ms; }
+    .card-link:hover { border-color: #C2410C !important; }
     /* Ingredient list */
     .ingredient-list { border: 1px solid #E7E1D8; border-radius: 12px; overflow: hidden; list-style: none; padding: 0; margin: 0; }
-    .ingredient-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #fff; border-bottom: 1px solid #E7E1D8; }
+    .ingredient-row  { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: #fff; border-bottom: 1px solid #E7E1D8; }
     .ingredient-row:last-child { border-bottom: none; }
-    .ingredient-num { font-variant-numeric: tabular-nums; color: #56504A; width: 1.5rem; text-align: right; flex-shrink: 0; font-size: .875rem; }
+    .ingredient-num  { font-variant-numeric: tabular-nums; color: #56504A; width: 1.5rem; text-align: right; flex-shrink: 0; font-size: .875rem; }
     .ingredient-name { font-size: .875rem; color: #1C1A17; flex: 1; }
     /* Nutrition grid */
-    .nutrition-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .nutrition-card { background: #fff; border: 1px solid #E7E1D8; border-radius: 12px; padding: 16px; }
+    .nutrition-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .nutrition-card  { background: #fff; border: 1px solid #E7E1D8; border-radius: 12px; padding: 16px; }
     .nutrition-label { font-size: .75rem; color: #56504A; margin-bottom: 4px; }
     .nutrition-value { font-family: 'Fraunces', Georgia, serif; font-size: 1.75rem; line-height: 1.2; color: #1C1A17; font-variant-numeric: tabular-nums; }
-    .nutrition-unit { font-size: 1.25rem; }
-    /* Additive card */
-    .additive-card { background: #fff; border: 1px solid #E7E1D8; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .nutrition-unit  { font-size: 1.25rem; }
+    /* Additive cards */
+    .additive-card   { background: #fff; border: 1px solid #E7E1D8; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .additive-card:last-of-type { margin-bottom: 0; }
     .additive-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
-    .additive-name { font-weight: 600; font-size: 1rem; color: #1C1A17; }
-    .additive-fn { font-size: .75rem; color: #56504A; background: #E7E1D8; border-radius: 999px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; }
+    .additive-name   { font-weight: 600; font-size: 1rem; color: #1C1A17; }
+    .additive-fn     { font-size: .75rem; color: #56504A; background: #E7E1D8; border-radius: 999px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; }
     .additive-impact { font-size: .875rem; color: #56504A; margin-bottom: 10px; }
   </style>
 </head>
@@ -78,176 +81,9 @@
   </header>
 
   <!-- ── Main ── -->
-  <!-- TODO: replace all hardcoded mock data with real Open Pet Food Facts API fetch + scoring engine -->
   <main class="flex-1 w-full max-w-content mx-auto px-4 py-8">
-    <article class="flex flex-col gap-10">
-
-      <!-- ── Score header ── -->
-      <div class="bg-surface rounded-card shadow-sm overflow-hidden">
-        <div class="h-1.5 bg-band-good" aria-hidden="true"></div>
-        <div class="p-5">
-
-          <div class="flex items-start justify-between gap-4 mb-4">
-            <!-- Score + band -->
-            <div class="flex items-end gap-3">
-              <span class="font-display text-display text-ink leading-none" style="font-variant-numeric:tabular-nums">61</span>
-              <div class="flex items-center gap-1.5 pb-1">
-                <!-- Good glyph: check -->
-                <svg aria-hidden="true" class="w-6 h-6 text-band-good" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
-                <span class="font-medium text-small text-band-good">Good</span>
-              </div>
-            </div>
-            <!-- Image placeholder -->
-            <div class="w-20 h-20 rounded-card bg-hairline flex items-center justify-center shrink-0" aria-label="Product image not available">
-              <span class="text-ink-soft text-micro text-center leading-tight px-1">No<br>image</span>
-            </div>
-          </div>
-
-          <h1 class="font-display text-h1 text-ink mb-2">Instinct Original Grain-Free Recipe with Real Chicken</h1>
-          <div class="flex flex-wrap gap-x-3 gap-y-1 items-center text-small text-ink-soft">
-            <span>Nature's Variety</span>
-            <span aria-hidden="true">·</span>
-            <span>Wet</span>
-            <span aria-hidden="true">·</span>
-            <span>Adult Maintenance</span>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ── Verdict ── -->
-      <section aria-labelledby="verdict-heading">
-        <h2 id="verdict-heading" class="font-display text-h2 text-ink mb-3">Verdict</h2>
-        <p class="text-small text-ink mb-4">
-          A protein-forward wet food with real chicken as the first ingredient, held back by two moderate-risk gelling agents.
-        </p>
-        <ul class="flex flex-wrap gap-2" aria-label="Top reasons" style="list-style:none;padding:0">
-          <li class="text-micro text-ink border border-hairline rounded-pill px-3 py-1">Named animal protein leads ingredient list</li>
-          <li class="text-micro text-ink border border-hairline rounded-pill px-3 py-1">High moisture supports urinary tract health</li>
-          <li class="text-micro text-ink border border-hairline rounded-pill px-3 py-1">Contains carrageenan (Tier 2 additive)</li>
-        </ul>
-      </section>
-
-      <!-- ── Ingredients ── -->
-      <section aria-labelledby="ingredients-heading">
-        <h2 id="ingredients-heading" class="font-display text-h2 text-ink mb-4">Ingredients</h2>
-        <ol class="ingredient-list">
-          <li class="ingredient-row"><span class="ingredient-num">1.</span><span class="ingredient-name">Chicken</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">2.</span><span class="ingredient-name">Chicken Broth</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">3.</span><span class="ingredient-name">Chicken Liver</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">4.</span><span class="ingredient-name">Pea Protein</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">5.</span><span class="ingredient-name">Natural Flavor</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">6.</span><span class="ingredient-name">Carrageenan</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">7.</span><span class="ingredient-name">Guar Gum</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">8.</span><span class="ingredient-name">Zinc Sulfate</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">9.</span><span class="ingredient-name">Iron Amino Acid Chelate</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">10.</span><span class="ingredient-name">Copper Amino Acid Chelate</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">11.</span><span class="ingredient-name">Manganese Amino Acid Chelate</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">12.</span><span class="ingredient-name">Potassium Iodide</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">13.</span><span class="ingredient-name">Sodium Selenite</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">14.</span><span class="ingredient-name">Vitamin E Supplement</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">15.</span><span class="ingredient-name">Thiamine Mononitrate</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">16.</span><span class="ingredient-name">Niacin</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">17.</span><span class="ingredient-name">Calcium Pantothenate</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">18.</span><span class="ingredient-name">Riboflavin Supplement</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">19.</span><span class="ingredient-name">Biotin</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">20.</span><span class="ingredient-name">Vitamin B12 Supplement</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">21.</span><span class="ingredient-name">Folic Acid</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">22.</span><span class="ingredient-name">Vitamin D3 Supplement</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">23.</span><span class="ingredient-name">Mixed Tocopherols</span></li>
-          <li class="ingredient-row"><span class="ingredient-num">24.</span><span class="ingredient-name">Taurine</span></li>
-        </ol>
-        <!-- TODO: add expand-to-explain per ingredient -->
-        <p class="text-micro text-ink-soft mt-2">Ingredient explanations coming soon.</p>
-      </section>
-
-      <!-- ── Additive flags ── -->
-      <section aria-labelledby="additives-heading">
-        <h2 id="additives-heading" class="font-display text-h2 text-ink mb-4">Additive flags</h2>
-
-        <div class="flex items-center gap-2 mb-3">
-          <span class="w-2 h-2 rounded-full bg-band-poor shrink-0" aria-hidden="true" style="display:inline-block"></span>
-          <span class="text-small font-medium text-band-poor">Tier 2 — Moderate Risk</span>
-        </div>
-
-        <div class="additive-card">
-          <div class="additive-header">
-            <span class="additive-name">Carrageenan</span>
-            <span class="additive-fn">Gelling agent / thickener</span>
-          </div>
-          <p class="additive-impact">Associated with intestinal inflammation and disruption of the gut lining in animal studies. Some research suggests links to inflammatory bowel conditions.</p>
-          <a href="https://pubmed.ncbi.nlm.nih.gov/11895129/" target="_blank" rel="noopener noreferrer" class="source-link text-small">
-            Source: Tobacman — Gastrointestinal Effects of Carrageenan (PubMed) ↗
-          </a>
-        </div>
-
-        <div class="additive-card" style="margin-bottom:0">
-          <div class="additive-header">
-            <span class="additive-name">Guar Gum</span>
-            <span class="additive-fn">Gelling agent / thickener</span>
-          </div>
-          <p class="additive-impact">High amounts may contribute to digestive discomfort and loose stools in sensitive cats when consumed regularly.</p>
-          <a href="https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2017.4669" target="_blank" rel="noopener noreferrer" class="source-link text-small">
-            Source: EFSA Panel — Scientific Opinion on guar gum safety ↗
-          </a>
-        </div>
-
-      </section>
-
-      <!-- ── Nutrition snapshot ── -->
-      <section aria-labelledby="nutrition-heading">
-        <h2 id="nutrition-heading" class="font-display text-h2 text-ink mb-4">Nutrition snapshot</h2>
-        <div class="nutrition-grid">
-          <div class="nutrition-card">
-            <p class="nutrition-label">Crude Protein (DM)</p>
-            <p class="nutrition-value">52<span class="nutrition-unit">%</span></p>
-          </div>
-          <div class="nutrition-card">
-            <p class="nutrition-label">Crude Fat (DM)</p>
-            <p class="nutrition-value">28<span class="nutrition-unit">%</span></p>
-          </div>
-          <div class="nutrition-card">
-            <p class="nutrition-label">Moisture (as-fed)</p>
-            <p class="nutrition-value">78<span class="nutrition-unit">%</span></p>
-          </div>
-          <div class="nutrition-card">
-            <p class="nutrition-label">Taurine</p>
-            <div class="flex items-center gap-2" style="margin-top:8px">
-              <svg aria-hidden="true" class="w-5 h-5 text-band-excellent" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span class="text-small font-medium text-band-excellent">Present</span>
-            </div>
-          </div>
-        </div>
-        <p class="text-micro text-ink-soft mt-2">DM = dry-matter basis.</p>
-      </section>
-
-      <!-- ── AAFCO adequacy ── -->
-      <section aria-labelledby="aafco-heading">
-        <h2 id="aafco-heading" class="font-display text-h2 text-ink mb-3">AAFCO adequacy</h2>
-        <div class="bg-surface border border-hairline rounded-card p-4">
-          <p class="text-small text-ink mb-3" style="font-style:italic">
-            &ldquo;Instinct Original Grain-Free Recipe with Real Chicken is formulated to meet the nutritional levels established by the AAFCO Cat Food Nutrient Profiles for maintenance of adult cats.&rdquo;
-          </p>
-          <p class="text-micro text-ink-soft">Substantiated by: formulation</p>
-        </div>
-      </section>
-
-      <!-- ── Footer metadata ── -->
-      <div class="border-t border-hairline pt-4 flex flex-wrap gap-4 justify-between items-center">
-        <div class="flex items-center gap-1.5">
-          <svg aria-hidden="true" class="w-4 h-4 text-band-excellent" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          <span class="text-micro text-ink-soft">Full data</span>
-        </div>
-        <span class="text-micro text-ink-soft">Last reviewed: June 7, 2026</span>
-        <span class="text-micro text-ink-soft">Barcode: <span id="barcode-val">0000000000000</span></span>
-      </div>
-
+    <article id="product-article" class="flex flex-col gap-10">
+      <div class="text-center py-16 text-ink-soft text-small">Loading&hellip;</div>
     </article>
   </main>
 
@@ -255,16 +91,386 @@
   <footer class="border-t border-hairline mt-12 py-6 text-center">
     <p class="text-micro text-ink-soft">
       Built by <a href="https://azqato.github.io/index.html" target="_blank" rel="noopener noreferrer"
-        class="text-accent footer-link">Azqato</a>
+        class="footer-link">Azqato</a>
+      <span aria-hidden="true"> · </span>
+      <a href="./methodology.html" class="footer-link">Methodology</a>
     </p>
   </footer>
 
   <script>
-    // Show barcode from URL param
-    const barcode = new URLSearchParams(window.location.search).get('barcode') || '0000000000000'
-    const el = document.getElementById('barcode-val')
-    if (el) el.textContent = barcode
-    // TODO: when real API is wired, use barcode to fetch product and populate all sections
+  // ── Product data ──────────────────────────────────────────────────────────
+  const PRODUCTS = {
+
+    '0000000000000': {
+      name: 'Instinct Original Grain-Free Recipe with Real Chicken',
+      brand: "Nature's Variety",
+      format: 'Wet',
+      lifeStage: 'Adult Maintenance',
+      score: 61,
+      band: 'good',
+      verdict: 'A protein-forward wet food with real chicken as the first ingredient, held back by two moderate-risk gelling agents.',
+      reasons: [
+        'Named animal protein leads ingredient list',
+        'High moisture supports urinary tract health',
+        'Contains carrageenan (Tier 2 additive)',
+      ],
+      ingredients: [
+        'Chicken', 'Chicken Broth', 'Chicken Liver', 'Pea Protein',
+        'Natural Flavor', 'Carrageenan', 'Guar Gum', 'Zinc Sulfate',
+        'Iron Amino Acid Chelate', 'Copper Amino Acid Chelate',
+        'Manganese Amino Acid Chelate', 'Potassium Iodide', 'Sodium Selenite',
+        'Vitamin E Supplement', 'Thiamine Mononitrate', 'Niacin',
+        'Calcium Pantothenate', 'Riboflavin Supplement', 'Biotin',
+        'Vitamin B12 Supplement', 'Folic Acid', 'Vitamin D3 Supplement',
+        'Mixed Tocopherols', 'Taurine',
+      ],
+      additives: [
+        {
+          tier: 2, name: 'Carrageenan', fn: 'Gelling agent / thickener',
+          impact: 'Associated with intestinal inflammation and disruption of the gut lining in animal studies. Some research suggests links to inflammatory bowel conditions.',
+          source: { label: 'Tobacman — Gastrointestinal Effects of Carrageenan (PubMed)', url: 'https://pubmed.ncbi.nlm.nih.gov/11895129/' },
+        },
+        {
+          tier: 2, name: 'Guar Gum', fn: 'Gelling agent / thickener',
+          impact: 'High amounts may contribute to digestive discomfort and loose stools in sensitive cats when consumed regularly.',
+          source: { label: 'EFSA Panel — Scientific Opinion on guar gum safety', url: 'https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2017.4669' },
+        },
+      ],
+      nutrition: { protein: '52', fat: '28', moisture: '78', taurine: true },
+      aafco: {
+        statement: 'Instinct Original Grain-Free Recipe with Real Chicken is formulated to meet the nutritional levels established by the AAFCO Cat Food Nutrient Profiles for maintenance of adult cats.',
+        substantiation: 'formulation',
+      },
+      warnings: [],
+      alternatives: [],
+      dataCompleteness: 'full',
+      lastReviewed: 'June 7, 2026',
+    },
+
+    '0000000000001': {
+      name: "Weruva Paw Lickin' Chicken",
+      brand: 'Weruva',
+      format: 'Wet',
+      lifeStage: 'All Life Stages',
+      score: 81,
+      band: 'excellent',
+      verdict: 'A high-quality wet food with named chicken as the primary protein, exceptional moisture content, and no flagged additives — one of the cleanest options in its category.',
+      reasons: [
+        'Named animal protein leads ingredient list',
+        'Substantiated by AAFCO feeding trials (highest standard)',
+        'No Tier 2 or Tier 3 additives detected',
+      ],
+      ingredients: [
+        'Chicken Broth', 'Chicken', 'Sunflower Seed Oil',
+        'Mixed Tocopherols', 'Taurine', 'Vitamin E Supplement',
+        'Zinc Amino Acid Complex', 'Niacin Supplement',
+        'Thiamine Mononitrate', 'Calcium Pantothenate',
+      ],
+      additives: [],
+      nutrition: { protein: '55', fat: '22', moisture: '82', taurine: true },
+      aafco: {
+        statement: "Weruva Paw Lickin' Chicken is formulated to meet the nutritional levels established by the AAFCO Cat Food Nutrient Profiles for all life stages, including growth and reproduction.",
+        substantiation: 'feeding trial',
+      },
+      warnings: [],
+      alternatives: [],
+      dataCompleteness: 'full',
+      lastReviewed: 'June 7, 2026',
+    },
+
+    '0000000000002': {
+      name: "Friskies Surfin' & Turfin' Favorites",
+      brand: 'Purina Friskies',
+      format: 'Wet',
+      lifeStage: 'Adult Maintenance',
+      score: 28,
+      band: 'poor',
+      verdict: "A highly processed wet food with unnamed protein sources, artificial dyes, and multiple gelling agents. Tier 3 additives cap the maximum possible CFC Score at 49.",
+      reasons: [
+        "Unnamed protein sources (‘Meat By-Products’, ‘Fish’)",
+        'Contains artificial dyes — Tier 3 additives with no nutritional value for cats',
+        'Multiple gelling agents add to overall additive load',
+      ],
+      ingredients: [
+        'Meat By-Products', 'Chicken', 'Water Sufficient for Processing',
+        'Liver', 'Fish', 'Artificial Color (Blue 2, Red 40)', 'Salt',
+        'Guar Gum', 'Carrageenan', 'Potassium Chloride', 'Zinc Sulfate',
+        'Ferrous Sulfate', 'Vitamin E Supplement', 'Niacin Supplement',
+        'Calcium Pantothenate', 'Vitamin B12 Supplement',
+        'Thiamine Mononitrate', 'Riboflavin Supplement',
+        'Pyridoxine Hydrochloride', 'Folic Acid', 'Biotin',
+        'Menadione Sodium Bisulfite Complex',
+      ],
+      additives: [
+        {
+          tier: 3, name: 'Artificial Color (Blue 2, Red 40)', fn: 'Synthetic dye',
+          impact: 'Serve no nutritional purpose for cats. Associated with hypersensitivity reactions; some synthetic dyes have shown carcinogenicity concerns in animal studies.',
+          source: { label: 'FDA CVM — Color Additives in Animal Food', url: 'https://www.fda.gov/animal-veterinary/animal-food-feeds/information-regarding-food-and-drug-administration-oversight-color-additives-used-animal-food' },
+        },
+        {
+          tier: 3, name: 'Menadione Sodium Bisulfite Complex', fn: 'Synthetic Vitamin K3',
+          impact: 'A synthetic form of Vitamin K linked to hemolytic anemia and liver toxicity in cats at elevated doses. Many premium manufacturers have replaced it with natural vitamin K sources.',
+          source: { label: 'FDA CVM — Animal Food Safety', url: 'https://www.fda.gov/animal-veterinary' },
+        },
+        {
+          tier: 2, name: 'Carrageenan', fn: 'Gelling agent / thickener',
+          impact: 'Associated with intestinal inflammation and disruption of the gut lining in animal studies.',
+          source: { label: 'Tobacman — Gastrointestinal Effects of Carrageenan (PubMed)', url: 'https://pubmed.ncbi.nlm.nih.gov/11895129/' },
+        },
+        {
+          tier: 2, name: 'Guar Gum', fn: 'Gelling agent / thickener',
+          impact: 'High amounts may contribute to digestive discomfort and loose stools in sensitive cats when consumed regularly.',
+          source: { label: 'EFSA Panel — Scientific Opinion on guar gum safety', url: 'https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2017.4669' },
+        },
+        {
+          tier: 2, name: 'Meat By-Products (unnamed)', fn: 'Protein source',
+          impact: 'Unnamed protein sources make it impossible to verify the quality, species, or consistency of the protein ingredient across production batches.',
+          source: { label: 'AAFCO — Ingredient Definitions', url: 'https://www.aafco.org' },
+        },
+      ],
+      nutrition: { protein: '38', fat: '21', moisture: '78', taurine: false },
+      aafco: {
+        statement: "Friskies Surfin' & Turfin' Favorites is formulated to meet the nutritional levels established by the AAFCO Cat Food Nutrient Profiles for maintenance of adult cats.",
+        substantiation: 'formulation',
+      },
+      warnings: [
+        'Contains Tier 3 additives (artificial dyes, synthetic Vitamin K3). The maximum possible CFC Score is capped at 49 regardless of nutritional quality.',
+      ],
+      alternatives: [
+        { barcode: '0000000000001', name: "Weruva Paw Lickin' Chicken", brand: 'Weruva', score: 81, band: 'excellent' },
+        { barcode: '0000000000000', name: 'Instinct Original Grain-Free Recipe with Real Chicken', brand: "Nature's Variety", score: 61, band: 'good' },
+      ],
+      dataCompleteness: 'full',
+      lastReviewed: 'June 7, 2026',
+    },
+
+  }
+
+  // ── Band config ───────────────────────────────────────────────────────────
+  const BAND = {
+    excellent: {
+      color: '#1B7A4B', label: 'Excellent',
+      // Filled check-circle
+      glyph: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+    },
+    good: {
+      color: '#5FA855', label: 'Good',
+      // Check mark
+      glyph: 'M5 13l4 4L19 7',
+    },
+    poor: {
+      color: '#E08A1E', label: 'Poor',
+      // Exclamation triangle
+      glyph: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.539-1.333-3.11 0L3.268 16c-.77 1.333.192 3 1.732 3z',
+    },
+    bad: {
+      color: '#C0392B', label: 'Bad',
+      // X circle
+      glyph: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
+    },
+  }
+
+  const TIER_CONFIG = {
+    3: { label: 'Tier 3 — High Risk',     color: '#C0392B' },
+    2: { label: 'Tier 2 — Moderate Risk', color: '#E08A1E' },
+    1: { label: 'Tier 1 — Low Concern',   color: '#1B7A4B' },
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+  }
+
+  function icon(pathD, color, size) {
+    var sz = size || 6
+    return '<svg aria-hidden="true" style="width:' + (sz * 4) + 'px;height:' + (sz * 4) + 'px;flex-shrink:0" fill="none" stroke="' + color + '" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="' + pathD + '"/></svg>'
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  function render(p, barcode) {
+    var b = BAND[p.band]
+
+    // — Warning banner —
+    var warningsHtml = ''
+    if (p.warnings.length) {
+      var warnIcon = icon('M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.539-1.333-3.11 0L3.268 16c-.77 1.333.192 3 1.732 3z', '#92400E', 5)
+      var warnItems = p.warnings.map(function(w) {
+        return '<p class="text-small" style="color:#92400E;margin:0">' + esc(w) + '</p>'
+      }).join('')
+      warningsHtml = '<div role="alert" style="background:#FEF3C7;border-left:4px solid #E08A1E;border-radius:8px;padding:12px 16px;display:flex;gap:10px;align-items:flex-start">' + warnIcon + '<div>' + warnItems + '</div></div>'
+    }
+
+    // — Score header —
+    var bandGlyphHtml = icon(b.glyph, b.color, 6)
+    var scoreHeader = '<div class="bg-surface rounded-card shadow-sm overflow-hidden">'
+      + '<div style="height:6px;background:' + b.color + '" aria-hidden="true"></div>'
+      + '<div class="p-5">'
+      + '<div class="flex items-start justify-between gap-4 mb-4">'
+      + '<div class="flex items-end gap-3">'
+      + '<span class="font-display text-display text-ink leading-none" style="font-variant-numeric:tabular-nums">' + p.score + '</span>'
+      + '<div class="flex items-center gap-1.5 pb-1">'
+      + bandGlyphHtml
+      + '<span class="font-medium text-small" style="color:' + b.color + '">' + b.label + '</span>'
+      + '</div></div>'
+      + '<div class="w-20 h-20 rounded-card bg-hairline flex items-center justify-center shrink-0" aria-label="Product image not available">'
+      + '<span class="text-ink-soft text-micro text-center leading-tight px-1">No<br>image</span>'
+      + '</div></div>'
+      + '<h1 class="font-display text-h1 text-ink mb-2">' + esc(p.name) + '</h1>'
+      + '<div class="flex flex-wrap gap-x-3 gap-y-1 items-center text-small text-ink-soft">'
+      + '<span>' + esc(p.brand) + '</span>'
+      + '<span aria-hidden="true">&middot;</span>'
+      + '<span>' + esc(p.format) + '</span>'
+      + '<span aria-hidden="true">&middot;</span>'
+      + '<span>' + esc(p.lifeStage) + '</span>'
+      + '</div></div></div>'
+
+    // — Verdict —
+    var reasonChips = p.reasons.map(function(r) {
+      return '<li class="text-micro text-ink border border-hairline rounded-pill px-3 py-1">' + esc(r) + '</li>'
+    }).join('')
+    var verdict = '<section aria-labelledby="verdict-heading">'
+      + '<h2 id="verdict-heading" class="font-display text-h2 text-ink mb-3">Verdict</h2>'
+      + '<p class="text-small text-ink mb-4">' + esc(p.verdict) + '</p>'
+      + '<ul class="flex flex-wrap gap-2" aria-label="Top reasons" style="list-style:none;padding:0">' + reasonChips + '</ul>'
+      + '</section>'
+
+    // — Ingredients —
+    var ingRows = p.ingredients.map(function(ing, i) {
+      return '<li class="ingredient-row"><span class="ingredient-num">' + (i + 1) + '.</span><span class="ingredient-name">' + esc(ing) + '</span></li>'
+    }).join('')
+    var ingredients = '<section aria-labelledby="ingredients-heading">'
+      + '<h2 id="ingredients-heading" class="font-display text-h2 text-ink mb-4">Ingredients</h2>'
+      + '<ol class="ingredient-list">' + ingRows + '</ol>'
+      + '<p class="text-micro text-ink-soft mt-2">Ingredient explanations coming soon.</p>'
+      + '</section>'
+
+    // — Additive flags —
+    var additivesHtml
+    if (p.additives.length === 0) {
+      var cleanIcon = icon('M5 13l4 4L19 7', '#1B7A4B', 5)
+      additivesHtml = '<section aria-labelledby="additives-heading">'
+        + '<h2 id="additives-heading" class="font-display text-h2 text-ink mb-4">Additive flags</h2>'
+        + '<div class="bg-surface border border-hairline rounded-card p-4" style="display:flex;align-items:center;gap:12px">'
+        + cleanIcon
+        + '<p class="text-small text-ink">No Tier 2 or Tier 3 additives detected in this product.</p>'
+        + '</div></section>'
+    } else {
+      var tiers = p.additives
+        .map(function(a) { return a.tier })
+        .filter(function(t, i, arr) { return arr.indexOf(t) === i })
+        .sort(function(a, z) { return z - a })
+
+      var tieredHtml = tiers.map(function(tier) {
+        var tc = TIER_CONFIG[tier]
+        var cards = p.additives
+          .filter(function(a) { return a.tier === tier })
+          .map(function(a) {
+            return '<div class="additive-card">'
+              + '<div class="additive-header"><span class="additive-name">' + esc(a.name) + '</span><span class="additive-fn">' + esc(a.fn) + '</span></div>'
+              + '<p class="additive-impact">' + esc(a.impact) + '</p>'
+              + '<a href="' + esc(a.source.url) + '" target="_blank" rel="noopener noreferrer" class="source-link text-small">Source: ' + esc(a.source.label) + ' ↗</a>'
+              + '</div>'
+          }).join('')
+        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;margin-top:16px">'
+          + '<span style="width:8px;height:8px;border-radius:50%;background:' + tc.color + ';display:inline-block;flex-shrink:0" aria-hidden="true"></span>'
+          + '<span class="text-small font-medium" style="color:' + tc.color + '">' + tc.label + '</span>'
+          + '</div>' + cards
+      }).join('')
+
+      additivesHtml = '<section aria-labelledby="additives-heading">'
+        + '<h2 id="additives-heading" class="font-display text-h2 text-ink mb-2">Additive flags</h2>'
+        + tieredHtml + '</section>'
+    }
+
+    // — Nutrition snapshot —
+    var taurineContent
+    if (p.nutrition.taurine) {
+      taurineContent = '<div style="display:flex;align-items:center;gap:8px;margin-top:8px">'
+        + icon('M5 13l4 4L19 7', '#1B7A4B', 5)
+        + '<span class="text-small font-medium" style="color:#1B7A4B">Present</span></div>'
+    } else {
+      taurineContent = '<div style="display:flex;align-items:center;gap:8px;margin-top:8px">'
+        + icon('M6 18L18 6M6 6l12 12', '#C0392B', 5)
+        + '<span class="text-small font-medium" style="color:#C0392B">Not listed</span></div>'
+    }
+    var nutrition = '<section aria-labelledby="nutrition-heading">'
+      + '<h2 id="nutrition-heading" class="font-display text-h2 text-ink mb-4">Nutrition snapshot</h2>'
+      + '<div class="nutrition-grid">'
+      + '<div class="nutrition-card"><p class="nutrition-label">Crude Protein (DM)</p><p class="nutrition-value">' + esc(p.nutrition.protein) + '<span class="nutrition-unit">%</span></p></div>'
+      + '<div class="nutrition-card"><p class="nutrition-label">Crude Fat (DM)</p><p class="nutrition-value">' + esc(p.nutrition.fat) + '<span class="nutrition-unit">%</span></p></div>'
+      + '<div class="nutrition-card"><p class="nutrition-label">Moisture (as-fed)</p><p class="nutrition-value">' + esc(p.nutrition.moisture) + '<span class="nutrition-unit">%</span></p></div>'
+      + '<div class="nutrition-card"><p class="nutrition-label">Taurine</p>' + taurineContent + '</div>'
+      + '</div>'
+      + '<p class="text-micro text-ink-soft mt-2">DM = dry-matter basis.</p>'
+      + '</section>'
+
+    // — AAFCO adequacy —
+    var aafco = '<section aria-labelledby="aafco-heading">'
+      + '<h2 id="aafco-heading" class="font-display text-h2 text-ink mb-3">AAFCO adequacy</h2>'
+      + '<div class="bg-surface border border-hairline rounded-card p-4">'
+      + '<p class="text-small text-ink mb-3" style="font-style:italic">&ldquo;' + esc(p.aafco.statement) + '&rdquo;</p>'
+      + '<p class="text-micro text-ink-soft">Substantiated by: ' + esc(p.aafco.substantiation) + '</p>'
+      + '</div></section>'
+
+    // — Better alternatives (shown for Poor or Bad) —
+    var alternativesHtml = ''
+    if (p.alternatives.length > 0) {
+      var altCards = p.alternatives.map(function(alt) {
+        var ab = BAND[alt.band]
+        return '<li><a href="./product.html?barcode=' + esc(alt.barcode) + '" class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">'
+          + '<div style="background:' + ab.color + ';width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0" aria-label="Score ' + alt.score + ', ' + ab.label + '">'
+          + '<span class="font-display text-h2 leading-none" style="color:#fff;font-variant-numeric:tabular-nums">' + alt.score + '</span>'
+          + '</div>'
+          + '<div class="min-w-0 flex-1">'
+          + '<p class="text-ink font-medium text-small truncate">' + esc(alt.name) + '</p>'
+          + '<p class="text-ink-soft text-micro">' + esc(alt.brand) + '</p>'
+          + '<span style="background:' + ab.color + ';color:#fff;font-size:.75rem;padding:2px 8px;border-radius:999px;display:inline-block;margin-top:4px">' + ab.label + '</span>'
+          + '</div>'
+          + '<svg aria-hidden="true" style="width:20px;height:20px;flex-shrink:0;color:#56504A" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>'
+          + '</a></li>'
+      }).join('')
+      alternativesHtml = '<section aria-labelledby="alternatives-heading">'
+        + '<h2 id="alternatives-heading" class="font-display text-h2 text-ink mb-4">Better alternatives</h2>'
+        + '<ul class="flex flex-col gap-3" style="list-style:none;padding:0">' + altCards + '</ul>'
+        + '</section>'
+    }
+
+    // — Footer metadata —
+    var completenessIcon = p.dataCompleteness === 'full'
+      ? icon('M5 13l4 4L19 7', '#1B7A4B', 4)
+      : icon('M12 9v2m0 4h.01', '#E08A1E', 4)
+    var meta = '<div class="border-t border-hairline pt-4" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">'
+      + '<div style="display:flex;align-items:center;gap:6px">'
+      + completenessIcon
+      + '<span class="text-micro text-ink-soft">' + (p.dataCompleteness === 'full' ? 'Full data' : 'Partial data') + '</span>'
+      + '</div>'
+      + '<span class="text-micro text-ink-soft">Last reviewed: ' + esc(p.lastReviewed) + '</span>'
+      + '<span class="text-micro text-ink-soft">Barcode: ' + esc(barcode) + '</span>'
+      + '</div>'
+
+    return [scoreHeader, warningsHtml, verdict, ingredients, additivesHtml, nutrition, aafco, alternativesHtml, meta].join('')
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  var barcode = new URLSearchParams(window.location.search).get('barcode') || '0000000000000'
+  var product  = PRODUCTS[barcode]
+  var article  = document.getElementById('product-article')
+
+  if (!product) {
+    document.title = 'Product Not Found — Cat Food Center'
+    article.innerHTML = '<div class="text-center py-16">'
+      + '<p class="font-display text-h2 text-ink mb-3">Product not found</p>'
+      + '<p class="text-small text-ink-soft mb-6">We don’t have a record for barcode <code>' + esc(barcode) + '</code> yet.</p>'
+      + '<a href="./index.html" class="btn-link rounded-pill bg-accent text-white text-small font-medium px-6 py-3" style="display:inline-block;margin-top:8px">Back to home</a>'
+      + '</div>'
+  } else {
+    document.title = product.name + ' — Cat Food Center'
+    article.innerHTML = render(product, barcode)
+  }
   </script>
 
 </body>

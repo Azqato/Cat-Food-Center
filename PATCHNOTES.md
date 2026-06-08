@@ -6,6 +6,28 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.5.0] - 2026-06-07
+
+**MVP completion: all documented sections built out.**
+
+Added
+* `methodology.html`: public scoring explanation page mirroring `PRD.md` §6 — always reachable from the footer. Covers: why cats need a dedicated system, the three-pillar model and weights, Pillar A sub-factors (protein dominance, taurine, carb load, moisture, AAFCO adequacy), Pillar B additive risk tiers (Tier 1–3 with examples), Pillar C transparency factors, hard gates and caps, score bands with color swatches, a worked example, and data sources.
+* All pages: "Methodology" link added to footer alongside "Built by Azqato".
+
+Changed
+* `product.html`: fully rewritten as a JS-driven page. All content is now rendered from embedded product data objects keyed by barcode — different barcodes produce different products. Changes include:
+  * Three distinct products: Instinct Original Grain-Free with Real Chicken (0000000000000, 61, Good), Weruva Paw Lickin' Chicken (0000000000001, 81, Excellent), Friskies Surfin' & Turfin' Favorites (0000000000002, 28, Poor).
+  * Band-appropriate glyphs per `DESIGN.md §5`: Excellent = circle-check, Good = check, Poor = exclamation-triangle, Bad = X-circle. Each rendered in the band color.
+  * Warning banner (conditional): fires for products with Tier 3 additives (Friskies shows amber banner: "Tier 3 additives — score capped at 49").
+  * Alternatives section (conditional): shown for Poor and Bad products; Friskies lists Weruva and Instinct as better options.
+  * Additive flags grouped by tier descending (Tier 3 first, then Tier 2); Weruva shows a "No flagged additives detected" positive message.
+  * Taurine "Not listed" state (red X glyph) for products that don't declare taurine (Friskies).
+  * Not-found state: unknown barcodes show a friendly message and a link back to home.
+  * Dynamic page title set from product name via `document.title`.
+* `search.html`: updated result cards 2 and 3 to match the real product catalog — Weruva (81, Excellent, barcode 0000000000001) and Friskies (28, Poor, barcode 0000000000002). All cards now link to their correct product pages.
+
+---
+
 ## [0.4.0] - 2026-06-07
 
 **Rebuilt as plain HTML/CSS/JS — no build step, runs directly in any browser.**

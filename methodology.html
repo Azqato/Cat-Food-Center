@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Methodology — Cat Food Center</title>
+  <link rel="icon" href="./favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#FAF7F2', surface: '#FFFFFF',
+            ink: '#1C1A17', 'ink-soft': '#56504A',
+            accent: '#C2410C', hairline: '#E7E1D8',
+            'band-excellent': '#1B7A4B', 'band-good': '#5FA855',
+            'band-poor': '#E08A1E', 'band-bad': '#C0392B',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { background: #FAF7F2; font-family: 'Public Sans', system-ui, sans-serif; }
+    .font-display { font-family: 'Fraunces', Georgia, serif; }
+    .text-display { font-size: 3rem;    line-height: 1.1; }
+    .text-h1      { font-size: 1.75rem; line-height: 1.2; }
+    .text-h2      { font-size: 1.25rem; line-height: 1.3; }
+    .text-small   { font-size: .875rem; line-height: 1.5; }
+    .text-micro   { font-size: .75rem;  line-height: 1.4; }
+    .rounded-card { border-radius: 12px; }
+    .rounded-pill { border-radius: 999px; }
+    .max-w-content { max-width: 720px; }
+    .wordmark:hover { color: #C2410C; }
+    .btn-link { text-decoration: none; transition: opacity 150ms; }
+    .btn-link:hover { opacity: .9; }
+    .footer-link { color: #C2410C; text-decoration: none; }
+    .footer-link:hover { text-decoration: underline; }
+    .prose-link { color: #C2410C; text-decoration: none; }
+    .prose-link:hover { text-decoration: underline; }
+    /* Prose styles for long-form content */
+    .prose p   { color: #1C1A17; font-size: .9375rem; line-height: 1.7; margin-bottom: 1rem; }
+    .prose ul  { padding-left: 1.25rem; margin-bottom: 1rem; }
+    .prose ul li { color: #1C1A17; font-size: .9375rem; line-height: 1.7; margin-bottom: .375rem; }
+    .prose h3  { font-family: 'Fraunces', Georgia, serif; font-size: 1.1rem; font-weight: 600; color: #1C1A17; margin: 2rem 0 .75rem; }
+    /* Score band row */
+    .band-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E7E1D8; }
+    .band-row:last-child { border-bottom: none; }
+    .band-swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    /* Pillar weight bar */
+    .pillar-bar  { height: 6px; border-radius: 999px; margin-top: 4px; }
+    /* Tier indicator */
+    .tier-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #E7E1D8; }
+    .tier-row:last-child { border-bottom: none; }
+    .tier-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  </style>
+</head>
+<body class="bg-bg text-ink min-h-screen flex flex-col">
+
+  <!-- ── Header ── -->
+  <header class="sticky top-0 z-50 bg-surface border-b border-hairline">
+    <div class="max-w-content mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="./index.html" class="wordmark font-display text-h2 text-ink font-semibold tracking-tight" style="text-decoration:none;transition:color 150ms;">
+        Cat Food Center
+      </a>
+      <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer"
+        class="btn-link rounded-pill bg-accent text-white text-small font-medium px-4 py-2">
+        Support
+      </a>
+    </div>
+  </header>
+
+  <!-- ── Main ── -->
+  <main class="flex-1 w-full max-w-content mx-auto px-4 py-10">
+
+    <!-- Back link -->
+    <a href="./index.html" class="footer-link text-small flex items-center gap-1 mb-8" style="display:inline-flex">
+      <svg aria-hidden="true" style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to home
+    </a>
+
+    <h1 class="font-display text-h1 text-ink mb-3">Methodology</h1>
+    <p class="text-small text-ink-soft mb-10" style="max-width:540px">
+      How we calculate the CFC Score — completely open, always current. If you find an error or disagree with a weighting decision, <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer" class="prose-link">contact us</a>.
+    </p>
+
+    <!-- ── Why cats need their own system ── -->
+    <section class="mb-10" aria-labelledby="why-heading">
+      <h2 id="why-heading" class="font-display text-h2 text-ink mb-4">Why cats need their own scoring system</h2>
+      <div class="prose">
+        <p>
+          Cats are obligate carnivores. Unlike dogs or humans, they have hard biological requirements for nutrients found only in animal tissue — including taurine, arginine, and arachidonic acid — that they cannot synthesize in sufficient amounts from plant sources. Taurine deficiency alone can cause dilated cardiomyopathy and retinal degeneration.
+        </p>
+        <p>
+          Human food-rating systems like Nutri-Score were built for human diets: they reward fiber, penalize fat, and measure against human nutrient reference values. Those judgments are simply wrong for cats. A high-fat, low-carbohydrate, animal-protein-dominant food is exactly what a healthy adult cat needs. We built the CFC Score from scratch, grounded in AAFCO feline nutrient profiles, FDA guidance, EFSA opinions, and published veterinary research.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── The CFC Score ── -->
+    <section class="mb-10" aria-labelledby="score-heading">
+      <h2 id="score-heading" class="font-display text-h2 text-ink mb-4">The CFC Score</h2>
+      <div class="prose">
+        <p>
+          A single number from 0 to 100, grouped into four color bands. It blends three pillars, each weighted by how much it affects a cat's long-term health.
+        </p>
+      </div>
+
+      <!-- Pillar table -->
+      <div class="bg-surface border border-hairline rounded-card overflow-hidden mb-6">
+        <div class="px-5 py-3 border-b border-hairline" style="display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center">
+          <span class="text-micro text-ink-soft font-medium" style="text-transform:uppercase;letter-spacing:.05em">Pillar</span>
+          <span class="text-micro text-ink-soft font-medium" style="text-transform:uppercase;letter-spacing:.05em">Weight</span>
+          <span class="text-micro text-ink-soft font-medium" style="text-transform:uppercase;letter-spacing:.05em">What it measures</span>
+        </div>
+
+        <div class="px-5 py-4 border-b border-hairline" style="display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:start">
+          <div>
+            <p class="text-small font-medium text-ink">A. Nutritional quality</p>
+            <div class="pillar-bar bg-accent" style="width:55%"></div>
+          </div>
+          <span class="text-small font-medium text-ink" style="white-space:nowrap">55%</span>
+          <span class="text-small text-ink-soft">Species-appropriate nutrition</span>
+        </div>
+
+        <div class="px-5 py-4 border-b border-hairline" style="display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:start">
+          <div>
+            <p class="text-small font-medium text-ink">B. Additives &amp; safety</p>
+            <div class="pillar-bar bg-accent" style="width:35%"></div>
+          </div>
+          <span class="text-small font-medium text-ink" style="white-space:nowrap">35%</span>
+          <span class="text-small text-ink-soft">Presence and risk level of flagged additives</span>
+        </div>
+
+        <div class="px-5 py-4" style="display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:start">
+          <div>
+            <p class="text-small font-medium text-ink">C. Ingredient quality &amp; transparency</p>
+            <div class="pillar-bar bg-accent" style="width:10%"></div>
+          </div>
+          <span class="text-small font-medium text-ink" style="white-space:nowrap">10%</span>
+          <span class="text-small text-ink-soft">Sourcing honesty and named ingredients</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Pillar A ── -->
+    <section class="mb-10" aria-labelledby="pillar-a-heading">
+      <h2 id="pillar-a-heading" class="font-display text-h2 text-ink mb-4">Pillar A: Nutritional quality (55%)</h2>
+      <div class="prose">
+        <p>Scored on a dry-matter basis where data allows. Sub-factors:</p>
+        <ul>
+          <li>
+            <strong>Animal-protein dominance.</strong> Is a named animal protein (chicken, salmon, turkey) the first ingredient? Plant proteins like pea protein, corn gluten meal, and soy protein isolate inflate the crude-protein figure but have lower biological value for cats, so they are discounted.
+          </li>
+          <li>
+            <strong>Essential nutrient sufficiency.</strong> Crude protein, taurine, arginine, arachidonic acid, crude fat, and key vitamins and minerals checked against the AAFCO feline nutrient profile for the stated life stage. Taurine is weighted heavily; deficiency is directly linked to dilated cardiomyopathy and retinal degeneration.
+          </li>
+          <li>
+            <strong>Carbohydrate and filler load.</strong> Lower is better. Heavy grain or starch fillers (corn, wheat gluten, potato starch) reduce the score.
+          </li>
+          <li>
+            <strong>Moisture.</strong> Wet and canned formats receive a small bonus for supporting hydration and urinary-tract health, which is clinically significant in cats.
+          </li>
+          <li>
+            <strong>AAFCO life-stage adequacy.</strong> Complete and balanced for a defined life stage is required to score well. Products substantiated by feeding trials score higher than those substantiated by formulation alone.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── Pillar B ── -->
+    <section class="mb-10" aria-labelledby="pillar-b-heading">
+      <h2 id="pillar-b-heading" class="font-display text-h2 text-ink mb-4">Pillar B: Additives &amp; safety (35%)</h2>
+      <div class="prose">
+        <p>
+          Each additive is matched against our knowledge base and assigned a risk tier based on recommendations from the FDA, EFSA, and the WHO/IARC, plus published veterinary studies. Every flagged additive on a product page shows its function, tier, a plain-language health impact, and the source.
+        </p>
+      </div>
+
+      <div class="bg-surface border border-hairline rounded-card p-5 mb-4">
+
+        <div class="tier-row">
+          <div class="tier-dot" style="background:#C0392B"></div>
+          <div>
+            <p class="text-small font-medium text-ink mb-1">Tier 3 — High Risk <span class="text-micro text-ink-soft font-normal">(triggers a score cap)</span></p>
+            <ul class="prose" style="margin-bottom:0">
+              <li><strong>Propylene glycol</strong> — prohibited by the FDA in cat food; linked to red blood cell damage and Heinz body anemia. Triggers automatic Bad band.</li>
+              <li><strong>BHA, BHT, ethoxyquin</strong> — synthetic preservatives linked to organ and carcinogenicity concerns in animal studies.</li>
+              <li><strong>Artificial dyes</strong> (Red 40, Yellow 5, Blue 2, or "color added") — serve no nutritional purpose for cats; associated with hypersensitivity and carcinogenicity concerns.</li>
+              <li><strong>Menadione Sodium Bisulfite Complex</strong> — synthetic Vitamin K3; linked to hemolytic anemia and liver toxicity in cats at elevated doses.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tier-row">
+          <div class="tier-dot" style="background:#E08A1E"></div>
+          <div>
+            <p class="text-small font-medium text-ink mb-1">Tier 2 — Moderate Risk <span class="text-micro text-ink-soft font-normal">(point penalties)</span></p>
+            <ul class="prose" style="margin-bottom:0">
+              <li><strong>Carrageenan and certain gums</strong> (guar, cassia, xanthan) — associated with intestinal inflammation.</li>
+              <li><strong>Added sugars</strong> (caramel, corn syrup, dextrose) — linked to obesity and diabetes in cats.</li>
+              <li><strong>Unnamed protein sources</strong> ("meat by-products," "animal digest," rendered fat of unknown origin) — quality and species are unverifiable.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tier-row">
+          <div class="tier-dot" style="background:#1B7A4B"></div>
+          <div>
+            <p class="text-small font-medium text-ink mb-1">Tier 1 — Low or No Concern <span class="text-micro text-ink-soft font-normal">(no penalty)</span></p>
+            <ul class="prose" style="margin-bottom:0">
+              <li><strong>Mixed tocopherols</strong> (natural Vitamin E), rosemary extract — natural antioxidant preservatives with no known concern.</li>
+              <li><strong>Natural colorants</strong> (beet juice, turmeric) — no evidence of harm at levels used in pet food.</li>
+              <li><strong>Supplemental taurine</strong> — a required nutrient for cats; presence is a positive signal.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Pillar C ── -->
+    <section class="mb-10" aria-labelledby="pillar-c-heading">
+      <h2 id="pillar-c-heading" class="font-display text-h2 text-ink mb-4">Pillar C: Ingredient quality &amp; transparency (10%)</h2>
+      <div class="prose">
+        <ul>
+          <li><strong>Named versus unnamed</strong> protein and fat sources. Chicken is named; "poultry" is not.</li>
+          <li><strong>Manufacturer transparency</strong> — sourcing disclosure, country of origin, who formulates the food.</li>
+          <li><strong>FDA recall history</strong> for the brand or product line.</li>
+        </ul>
+        <p>
+          We use this pillar instead of an organic bonus because organic certification has far less impact on feline health than protein quality, transparency, and additive load.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── Hard gates and caps ── -->
+    <section class="mb-10" aria-labelledby="gates-heading">
+      <h2 id="gates-heading" class="font-display text-h2 text-ink mb-4">Hard gates and caps</h2>
+      <div class="prose">
+        <p>Some findings override the weighted formula entirely:</p>
+        <ul>
+          <li>
+            <strong>Propylene glycol detected:</strong> automatic Bad band. The product is capped in the 0–24 range regardless of nutritional quality, because propylene glycol is FDA-prohibited in cat food.
+          </li>
+          <li>
+            <strong>Any Tier 3 additive present:</strong> maximum possible score is 49 (top of the Poor band), regardless of nutrition.
+          </li>
+          <li>
+            <strong>Not complete and balanced:</strong> if a product is not AAFCO complete and balanced for any life stage and is not labeled a treat or complementary food, a warning banner appears on the product page.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── Score bands ── -->
+    <section class="mb-10" aria-labelledby="bands-heading">
+      <h2 id="bands-heading" class="font-display text-h2 text-ink mb-4">Score bands</h2>
+      <div class="bg-surface border border-hairline rounded-card p-5">
+
+        <div class="band-row">
+          <div class="band-swatch" style="background:#1B7A4B"></div>
+          <span class="text-small font-medium text-ink" style="width:80px">Excellent</span>
+          <span class="text-small text-ink-soft" style="width:80px">75 – 100</span>
+          <span class="text-small text-ink-soft">Strong nutritional profile, minimal or no additive concerns, transparent sourcing.</span>
+        </div>
+
+        <div class="band-row">
+          <div class="band-swatch" style="background:#5FA855"></div>
+          <span class="text-small font-medium text-ink" style="width:80px">Good</span>
+          <span class="text-small text-ink-soft" style="width:80px">50 – 74</span>
+          <span class="text-small text-ink-soft">A solid choice with moderate trade-offs — typically Tier 2 additives or minor nutritional gaps.</span>
+        </div>
+
+        <div class="band-row">
+          <div class="band-swatch" style="background:#E08A1E"></div>
+          <span class="text-small font-medium text-ink" style="width:80px">Poor</span>
+          <span class="text-small text-ink-soft" style="width:80px">25 – 49</span>
+          <span class="text-small text-ink-soft">Notable concerns — often Tier 3 additives (score capped at 49), heavy fillers, or unnamed proteins.</span>
+        </div>
+
+        <div class="band-row">
+          <div class="band-swatch" style="background:#C0392B"></div>
+          <span class="text-small font-medium text-ink" style="width:80px">Bad</span>
+          <span class="text-small text-ink-soft" style="width:80px">0 – 24</span>
+          <span class="text-small text-ink-soft">Contains an ingredient prohibited in cat food (e.g., propylene glycol), or severely poor nutrition.</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Worked example ── -->
+    <section class="mb-10" aria-labelledby="example-heading">
+      <h2 id="example-heading" class="font-display text-h2 text-ink mb-4">Worked example</h2>
+      <div class="bg-surface border border-hairline rounded-card p-5">
+        <p class="text-small text-ink mb-3">
+          <strong>Scenario:</strong> A semi-moist food whose first ingredient is corn, with unnamed meat by-products, added caramel color, and propylene glycol.
+        </p>
+        <p class="text-small text-ink-soft mb-2">
+          Propylene glycol is detected → the hard gate fires before nutrition math runs → automatic Bad band, score capped at 0–24, prominent warning banner on the product page: <em>"Contains an ingredient prohibited in cat food."</em>
+        </p>
+        <p class="text-small text-ink-soft">
+          Even if the nutritional numbers were acceptable, the hard gate overrides the weighted formula. This reflects the actual risk: propylene glycol causes Heinz body anemia in cats and is banned by the FDA in cat food.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── Data sources ── -->
+    <section class="mb-10" aria-labelledby="sources-heading">
+      <h2 id="sources-heading" class="font-display text-h2 text-ink mb-4">Data sources</h2>
+      <div class="prose">
+        <ul>
+          <li><a href="https://www.aafco.org" target="_blank" rel="noopener noreferrer" class="prose-link">AAFCO</a> — model regulations and feline nutrient profiles</li>
+          <li><a href="https://www.fda.gov/animal-veterinary" target="_blank" rel="noopener noreferrer" class="prose-link">FDA Center for Veterinary Medicine</a> — pet food rules, prohibited ingredients, recall records</li>
+          <li><a href="https://efsa.europa.eu" target="_blank" rel="noopener noreferrer" class="prose-link">EFSA</a> — European Food Safety Authority opinions on additives</li>
+          <li><a href="https://world.openpetfoodfacts.org" target="_blank" rel="noopener noreferrer" class="prose-link">Open Pet Food Facts</a> — open product catalog (barcode lookup and ingredient data)</li>
+          <li>Published peer-reviewed literature, cited per additive on each product page.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── Disclaimer ── -->
+    <div class="bg-surface border border-hairline rounded-card p-5">
+      <p class="text-small text-ink-soft">
+        Cat Food Center is an informational tool, not veterinary advice. Scores help owners compare products and spot red flags. For cats with medical conditions (kidney disease, diabetes, urinary issues), always defer to a veterinarian.
+      </p>
+    </div>
+
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="border-t border-hairline mt-12 py-6 text-center">
+    <p class="text-micro text-ink-soft">
+      Built by <a href="https://azqato.github.io/index.html" target="_blank" rel="noopener noreferrer"
+        class="footer-link">Azqato</a>
+      <span aria-hidden="true"> · </span>
+      <a href="./methodology.html" class="footer-link">Methodology</a>
+    </p>
+  </footer>
+
+</body>
+</html>
