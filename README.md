@@ -1,94 +1,98 @@
 # Cat Food Center
 
-**Trustworthy reviews for your purrfect companion!**
+Science-based cat food reviews: scan a barcode or search the catalog to get an ingredient breakdown, additive risk flags, and a 0–100 CFC Score.
 
-Cat Food Center is a mobile-first web app (with full browser support) that does for cat food what Yuka does for groceries. Scan a barcode or search the catalog, and get a clear breakdown of what is actually in the product: every ingredient, every additive, the health impact of those additives, and a single overall health rating from 0 to 100.
+**Live site:** https://azqato.github.io/Cat-Food-Center/
 
-We believe every cat deserves the best nutrition. Cats are obligate carnivores with needs (taurine, arginine, arachidonic acid, high animal protein) that human nutrition labels were never built to judge, so our rating engine is purpose-built for feline biology and grounded in published standards from AAFCO, the FDA, EFSA, and the WHO/IARC.
-
-## What it does
-
-* **Scan or search.** Point your phone camera at a barcode, or type a product or brand name.
-* **Ingredient breakdown.** Plain-language explanation of each ingredient and what it is doing in the recipe.
-* **Additive flags.** Each additive is tagged by risk tier, with the health concern and the scientific source behind it.
-* **Overall rating.** A 0 to 100 "CFC Score" with a color band: Excellent, Good, Poor, or Bad.
-* **Unbiased by design.** No paid placements, no advertiser influence on scores. The methodology is open and documented.
-
-## How the rating works (summary)
-
-The CFC Score blends three pillars:
-
-* **Nutritional quality (55%):** animal-protein dominance, carbohydrate/filler load, moisture, and sufficiency against the AAFCO feline nutrient profile for the stated life stage.
-* **Additives and safety (35%):** presence of flagged additives, weighted by evidence-based risk tier. A high-risk additive caps the maximum score.
-* **Ingredient quality and transparency (10%):** named versus unnamed proteins, sourcing disclosure, and recall history.
-
-Full scoring logic lives in `PRD.md` and `TRD.md`.
+---
 
 ## Tech stack
 
-* **Framework:** Next.js (App Router) with TypeScript
-* **Styling:** Tailwind CSS
-* **Delivery:** Progressive Web App (installable, offline catalog cache, mobile-first)
-* **Barcode scanning:** in-browser camera via the BarcodeDetector API, with a ZXing fallback
-* **Product data:** Open Pet Food Facts as the primary catalog, supplemented by an internal additive and nutrient knowledge base
-* **Hosting target:** static and edge friendly (Vercel or GitHub Pages compatible build)
+| Layer | Tool | Version |
+|---|---|---|
+| Framework | Next.js (App Router, static export) | 14.2.x |
+| Language | TypeScript | 5.x |
+| UI | React | 18.x |
+| Styling | Tailwind CSS | 3.4.x |
+| Fonts | Fraunces, Public Sans | Google Fonts (next/font) |
+| Hosting | GitHub Pages | — |
+| CI/CD | GitHub Actions | — |
 
-## Repository documents
+## Prerequisites
 
-* `README.md` (this file): project overview and quick start
-* `PRD.md`: product requirements and the full rating methodology
-* `TRD.md`: technical requirements, architecture, and data model
-* `DESIGN.md`: visual system, mobile-first layout, and UX flows
-* `PATCHNOTES.md`: running changelog, updated after every change
+- **Node.js 18 or higher** — Next.js 14 requires it
+- **npm** — bundled with Node.js
+
+No accounts, API keys, or environment variables are needed to run the project locally.
+
+## Installation
+
+```bash
+git clone https://github.com/Azqato/Cat-Food-Center.git
+cd Cat-Food-Center
+npm install
+```
 
 ## Running locally
 
-No build step, no Node.js needed. Just open `index.html` in any browser:
-
-```
-# Windows
-start index.html
-
-# Mac
-open index.html
-```
-
-Or serve with any static server for a more realistic experience:
 ```bash
-# Python (if installed)
-python -m http.server 8080
-# then open http://localhost:8080
+npm run dev
 ```
 
-The three pages — `index.html`, `search.html`, `product.html` — link to each other with relative URLs and work identically from `file://` or any static server.
+The dev server starts at **http://localhost:3000**.
 
-## Deploying to GitHub Pages
+The local dev server does not apply the `/Cat-Food-Center` basePath used in production — all routes resolve from `/`. If you need to test with the basePath applied, run `npm run build` and serve the `out/` directory instead.
 
-The repo already includes `.github/workflows/deploy.yml`. On every push to `main`, GitHub Actions uploads the repo root and deploys it to Pages. **No build step required.**
+## Commands
 
-One-time setup:
-1. Push to `main` (already done).
-2. In the repo: **Settings → Pages → Source → GitHub Actions**.
-3. The site goes live at `https://azqato.github.io/Cat-Food-Center/`.
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start dev server at localhost:3000 |
+| `npm run build` | Static export to `out/` |
+| `npm run lint` | Run ESLint |
 
-## Project structure
+`npm run start` is not used — the project uses static export, not a Node server.
 
-| Path | Purpose |
-| --- | --- |
-| `index.html` | Home page (MVP, served directly) |
-| `search.html` | Search results (MVP, served directly) |
-| `product.html` | Product detail (MVP, served directly) |
-| `app/` | Future Next.js App Router source |
-| `components/` | Future Next.js components |
-| `package.json` etc. | Future Next.js build config |
-| `PRD.md` / `TRD.md` / `DESIGN.md` | Living specs |
+## Environment variables
 
-The `app/` and `components/` directories are the planned Next.js migration path. They don't affect GitHub Pages. When ready to transition to a full server-rendered product, add the build steps back to the workflow and retire the HTML pages.
+None required. The project is a fully static site with no backend.
 
-## Status
+When the Open Pet Food Facts API integration ships, any required variables will be added here.
 
-MVP live on GitHub Pages. All three pages (home, search, product) are plain HTML running entirely client-side with no server. All product data is hardcoded mock. Real Open Pet Food Facts API wiring, the CFC scoring engine, and the barcode scanner are the next phase. `PRD.md` is the living spec; update `PATCHNOTES.md` on every meaningful change.
+## Build
 
-## A note on scope
+```bash
+npm run build
+```
 
-Cat Food Center is an informational tool, not veterinary advice. Ratings help owners compare products and spot red flags. For cats with medical conditions (kidney disease, diabetes, urinary issues), always defer to a veterinarian.
+Output goes to `out/`. The build is configured with `output: 'export'`, `basePath: '/Cat-Food-Center'`, and `trailingSlash: true` for GitHub Pages compatibility.
+
+## Deploy
+
+Every push to `main` triggers `.github/workflows/deploy.yml`, which runs `npm run build` and deploys `out/` to GitHub Pages automatically.
+
+One-time setup for a new fork:
+1. Push the repo to GitHub.
+2. Go to **Settings → Pages → Source** and select **GitHub Actions**.
+3. The site deploys to `https://<your-username>.github.io/Cat-Food-Center/`.
+
+## Project status
+
+MVP live on GitHub Pages. Home, search, and product detail pages are fully built with mock data. The Open Pet Food Facts integration, scoring engine, and barcode scanner are planned next. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the milestone plan.
+
+## Documentation
+
+Full specifications are in [`/docs`](docs/):
+
+| File | Contents |
+|---|---|
+| [`PRD.md`](docs/PRD.md) | Product requirements and CFC scoring methodology |
+| [`TRD.md`](docs/TRD.md) | Architecture, data model, and engineering spec |
+| [`DESIGN.md`](docs/DESIGN.md) | Visual system, color tokens, and UX flows |
+| [`PATCHNOTES.md`](docs/PATCHNOTES.md) | Changelog |
+| [`PRFAQ.md`](docs/PRFAQ.md) | Press release and FAQ |
+| [`TENETS.md`](docs/TENETS.md) | Product principles |
+| [`METRICS.md`](docs/METRICS.md) | Success metrics and targets |
+| [`ROADMAP.md`](docs/ROADMAP.md) | Milestone plan |
+| [`SECURITY.md`](docs/SECURITY.md) | Security model |
+| [`RUNBOOK.md`](docs/RUNBOOK.md) | Operations and troubleshooting |
