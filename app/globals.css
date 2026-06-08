@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #FAF7F2;
+    --surface: #FFFFFF;
+    --ink: #1C1A17;
+    --ink-soft: #56504A;
+    --accent: #C2410C;
+    --hairline: #E7E1D8;
+    --band-excellent: #1B7A4B;
+    --band-good: #5FA855;
+    --band-poor: #E08A1E;
+    --band-bad: #C0392B;
+  }
+
+  body {
+    @apply bg-bg text-ink font-body;
+  }
+}
