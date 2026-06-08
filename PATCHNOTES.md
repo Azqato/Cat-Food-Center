@@ -6,13 +6,22 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.5.2] - 2026-06-07
+
+**Added Search to header navigation.**
+
+Changed
+* All pages: **Search** link added to the nav between Home and Methodology, linking to `./search.html`. Search is highlighted (accent color, bold) when on `search.html`.
+
+---
+
 ## [0.5.1] - 2026-06-07
 
 **Added Home and Methodology links to the header navigation.**
 
 Changed
-* All pages (`index.html`, `search.html`, `product.html`, `methodology.html`): header now contains a `<nav>` element with two links — **Home** (links to `./index.html`) and **Methodology** (links to `./methodology.html`) — between the wordmark and the Support button.
-* The link for the currently visited page is highlighted in accent color and bold via `aria-current="page"` — Home is active on `index.html`; Methodology is active on `methodology.html`; neither is active on `search.html` or `product.html`.
+* All pages (`index.html`, `search.html`, `product.html`, `methodology.html`): header now contains a `<nav>` element with three links — **Home**, **Search**, and **Methodology** — between the wordmark and the Support button.
+* The link for the currently visited page is highlighted in accent color and bold via `aria-current="page"` — Home on `index.html`, Search on `search.html`, Methodology on `methodology.html`; none highlighted on `product.html`.
 
 ---
 
