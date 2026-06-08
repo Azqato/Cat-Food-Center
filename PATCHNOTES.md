@@ -6,6 +6,15 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.5.3] - 2026-06-07
+
+**Removed Methodology from footers — now accessible via header nav.**
+
+Changed
+* All pages: removed the "· Methodology" link from the footer. Footer now contains only "Built by Azqato". Methodology remains reachable via the header nav on every page.
+
+---
+
 ## [0.5.2] - 2026-06-07
 
 **Added Search to header navigation.**
