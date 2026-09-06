@@ -15,7 +15,7 @@ Two things learned in building them shape everything after:
 
 The barcode scanner (M8) is done — the feature ADR-001 was written to make sure static hosting could still support, and it needed no server, as predicted. So is offline support (M9): the app installs, and a product already looked at stays readable with no signal.
 
-So is the not-found / submit flow (M10). Next is the compare page (M11).
+So are the not-found / submit flow (M10) and the compare page (M11). What remains before public beta (M12) is coverage: the API alone will not carry a top-100 SKU catalogue.
 
 ---
 
@@ -35,8 +35,8 @@ So is the not-found / submit flow (M10). Next is the compare page (M11).
 | M8: Barcode scanner | 2026-09-05 | Complete |
 | M9: Service worker / PWA offline | 2026-09-05 | Complete |
 | M10: Not-found / submit flow | 2026-09-05 | Complete |
-| M11: Compare page | 2026-12 | Planned |
-| M12: Public beta | 2027-01 | Planned |
+| M11: Compare page | 2026-09-05 | Complete |
+| M12: Public beta | 2027-01 | Next |
 
 ---
 
@@ -128,11 +128,14 @@ Two details worth keeping: navigations are deliberately **not** cached, because 
 
 **No submission queue of our own, and that is the design rather than a limitation.** A private queue would fork the catalogue: the product would sit in our queue and still be missing from the database every score actually reads, making this site the bottleneck for its own corrections. Contributing upstream means it works here, in the next tool built on the same data, and for the next person who scans the same tin. [ADR-001](./ADR-001-static-first.md) predicted a hosted form as the workaround for not accepting writes; the record now says why the workaround was the wrong shape.
 
-### M11: Compare page
-- `/compare` route
-- Two or three sticky column headers (score + image)
-- Aligned rows for nutrition values and additive flags
-- Highlight differences
+### M11: Compare page — Complete 2026-09-05
+- `compare.html?a=X&b=Y`, sharable and reloadable; products already viewed are offered in a picker, anything else by barcode
+- Figures on a dry-matter basis, because that is the only way a wet food at 11% protein and a dry food at 32% can be read against each other
+- Pillar-by-pillar, and only where **both** products carry that pillar; the rest are named as not compared
+
+**The thing this page had to get right.** Two scores are not always comparable: a 72 from three pillars and a 72 from one are different claims wearing the same number, and only about a fifth of products carry enough data for all three ([DATA-COVERAGE.md](./DATA-COVERAGE.md)). So the page never declares a winner on the overall score, and where the two were scored on different pillars it says so before showing anything else. Where only one product publishes a figure, neither cell is highlighted — that would be a comment on the database, not on the food.
+
+Two items from the original plan were dropped: sticky column headers (the page is short enough not to need them) and a third column (two products already strain a phone's width, and the honest-comparison rules get harder to state with three).
 
 ### M12: Public beta
 - Lighthouse CI passing Core Web Vitals targets (LCP ≤ 2.5 s, CLS ≤ 0.1)

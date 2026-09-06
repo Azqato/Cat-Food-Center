@@ -59,14 +59,14 @@ exceptions worth knowing:
 | `python tools/learn/build.py` | Regenerate the eleven Cat Care Guide pages |
 | `python tools/check-contrast.py` | Verify both palettes against WCAG AA |
 | `python tools/run-tests.py` | Run the test suite headlessly (147 assertions) |
-| `python tools/check-live.py` | Eight end-to-end checks against the live API — needs network |
+| `python tools/check-live.py` | Twelve end-to-end checks against the live API — needs network |
 | `python tools/probe-opff.py` | Re-measure the database behind `docs/DATA-COVERAGE.md` |
 
 ## Testing
 
 There is no Node.js and no build step ([ADR-001](docs/ADR-001-static-first.md)), so the suite is a page: `tests.html` imports the `*.test.js` modules and runs them in a real browser. `tools/run-tests.py` drives it headlessly and exits non-zero on a failure, which is what makes it usable as a gate.
 
-`tools/check-live.py` is different in kind — it hits the real API, so it is not deterministic and is a smoke check rather than a gate. It renders six page states, walks a recently-viewed round-trip across two page loads, and draws a known EAN-13 to decode it back.
+`tools/check-live.py` is different in kind — it hits the real API, so it is not deterministic and is a smoke check rather than a gate. It renders eight page states, walks a recently-viewed round-trip across two page loads, draws a known EAN-13 to decode it back, and installs the service worker to confirm a product still renders — and is labelled as a saved copy — with the network off.
 
 ## Environment variables
 
@@ -142,7 +142,7 @@ Two things about the data are worth knowing before reading the code:
 
 Both are measured, with the method, in [`docs/DATA-COVERAGE.md`](docs/DATA-COVERAGE.md).
 
-The site is also installable and works offline: the shell is precached, and a product already viewed stays readable with no signal — labelled as a saved copy, because a stale score shown as a current one would be wrong in exactly the way this project exists to avoid. Next up is the not-found / submit flow. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+The site is also installable and works offline: the shell is precached, and a product already viewed stays readable with no signal — labelled as a saved copy, because a stale score shown as a current one would be wrong in exactly the way this project exists to avoid. Two foods can also be compared side by side, on a dry-matter basis. What is left before a public beta is coverage: the API alone will not carry a top-100 SKU catalogue. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Documentation
 

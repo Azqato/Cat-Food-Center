@@ -4,6 +4,16 @@ All notable changes to Cat Food Center are documented here. Format follows [Keep
 
 ---
 
+## v0.10.0 — 2026-09-05
+
+### Added
+- **Compare two foods side by side.** Figures are converted to a dry-matter basis, so a wet food and a dry food can be read on the same scale rather than the wetter one looking worse for containing water. The comparison is in the URL, so it can be shared.
+
+### Notes
+- The page compares pillar by pillar and never declares an overall winner. Two scores built from different amounts of data are not the same claim, and the page says so rather than letting the bigger number settle it.
+
+---
+
 ## v0.9.0 — 2026-09-05
 
 ### Added

@@ -6,6 +6,22 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.12.0] - 2026-09-05
+
+**Side-by-side comparison (M11).**
+
+Added
+* `compare.html?a=X&b=Y` — two products next to each other. The URL carries the comparison, so it can be shared and reloaded. Products already viewed are offered in a picker; anything else goes in by barcode.
+* Figures converted to a **dry-matter basis**. Without that a wet food at 11% protein reads as worse than a dry food at 32%, when it is in fact the more protein-dense of the two — the wet food is mostly water.
+* A `Compare` entry in the top navigation.
+
+Notes
+* **The page never declares a winner on the overall score, and that is the point of it.** A 72 worked out from three pillars and a 72 worked out from one are different claims wearing the same number. Only about a fifth of products carry enough data for all three pillars, so this is the normal case rather than an edge case. Where the two products were scored on different pillars, the page says so before showing anything else, and the comparison is pillar by pillar — only across pillars both products actually have.
+* **Where only one product publishes a figure, neither cell is highlighted.** Marking the one that happens to have data would be a comment on the database rather than on the food.
+* Fat is shown without a "better" direction. More fat is not simply better, and pretending a single number has an obvious direction is how a comparison tool starts lying.
+
+---
+
 ## [0.11.0] - 2026-09-05
 
 **A real answer for a product that is not in the database (M10).**
