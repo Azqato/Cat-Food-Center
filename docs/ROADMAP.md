@@ -17,7 +17,7 @@ The barcode scanner (M8) is done — the feature ADR-001 was written to make sur
 
 So are the not-found / submit flow (M10) and the compare page (M11). What remains before public beta (M12) is coverage: the API alone will not carry a top-100 SKU catalogue.
 
-Two planned but unscheduled pieces of work sit alongside it: a documentation consolidation audit (M13) and a sitewide move onto the Cat Care Guide's interface (M14).
+Three planned but unscheduled pieces of work sit alongside it: a documentation consolidation audit (M13), a sitewide move onto the Cat Care Guide's interface (M14), and a rebuild of search plus product photography (M15), which is the first milestone here to come from owner feedback on the live site rather than from the plan.
 
 M13 is not started. It collapses the eleven files in `/docs` to three plus the README, and its full scope is written out below so it survives the session that requested it.
 
@@ -43,6 +43,7 @@ M13 is not started. It collapses the eleven files in `/docs` to three plus the R
 | M12: Public beta | 2027-01 | Next |
 | M13: Documentation consolidation audit | Not scheduled | Planned |
 | M14: Unify the site on the Cat Care Guide interface | Not scheduled | Planned |
+| M15: Make search work, and show the product | Not scheduled | Planned |
 
 ---
 
@@ -251,6 +252,46 @@ So the guide bar is better looking and the app bar is better connected, and the 
 - **Dropping the Tailwind CDN is on the table and is a real win if taken.** It removes a third-party script from the critical path of every app page, which M12 will be measuring for Core Web Vitals. It is also a large rewrite of eight pages of utility-class markup, so it should be a stated decision rather than a side effect.
 
 **Definition of done.** Every page on the site shares one top bar with working navigation to every destination, one footer, one stylesheet family, and one set of component patterns. `docs/DESIGN.md` describes what was actually built rather than what preceded it. `tools/check-contrast.py`, `tools/run-tests.py` and `tools/check-live.py` all pass, and no page scrolls horizontally at 360px.
+
+
+### M15: Make search work, and show the product (Planned, not started)
+
+Owner feedback, 2026-09-05, recorded verbatim because the wording is the finding:
+
+> The search doesn't really work at all
+>
+> Just see what catfooddb is like
+>
+> That's a lot better
+>
+> There's no photo either
+
+Not scheduled, not started. What follows is what was verified against the code and the live API on the day the feedback was given, so the next person starts from measurements rather than from the complaint.
+
+**The photo is the cheap half, and it is a rendering gap rather than a data gap.** `assets/js/opff.js` already requests `image_front_url` and `image_front_small_url` in `FIELDS`, and `normalize()` already exposes the result as `product.imageUrl`. A live search for "chicken" returned 24 products, **23 of which carry a front image**. Exactly one page renders it: `product-page.js`, as an 80px thumbnail. The search cards, the compare page and the recently-viewed list all have the URL in hand and draw nothing. So the fix is markup and layout, not a data-layer change, and the coverage is good enough that an image-first result card is viable.
+
+**Why search does not work.** Five separate causes, all confirmed by reading `assets/js/search-page.js` and `searchProducts()` in `opff.js`, and by querying the API directly:
+
+1. **There is no second page.** `searchProducts()` accepts a `page` argument and `search-page.js` never passes one. The query for "chicken" reports 1571 matches and the page renders 24 of them, with no control anywhere that reaches result 25. The results label says "24 of 1571", which states the problem accurately and then does nothing about it.
+2. **Relevance is thrown away on purpose, and the purpose has expired.** Results are re-sorted scorable-first and then by score, so whatever ranking the API returned is discarded. The reasoning is in the file and was sound when a page of "not scored" tiles was the alternative, but it means the closest name match to what someone typed can sit below a loosely related product that happens to score well.
+3. **The match is not restricted to the name or the brand.** That same "chicken" query returns "Whiskas ocean fish flavour" and "ws pouch mackeres n salmon" above several actual chicken products.
+4. **The records themselves are poor, and nothing compensates.** In one page of 24 results: a product named "fancy feast" with the brand recorded as "fancy", two products whose brand field is a bare numeric id ("121978", "134353"), and untranslated Cyrillic product names. The cards render these exactly as stored, so the list looks broken even where the search behaved correctly.
+5. **There is nothing to search *with*.** No filters, no facets, no sort control, no browse-by-brand, no food-type axis. A free-text box against a community database with these record-quality problems is the hardest possible way to find a product, and it is currently the only way.
+
+**On CatFoodDB, and what was actually checked.** The homepage was fetched and read on 2026-09-05. What is verifiably true of it: the site is organised **brand-first**, with 150-plus brands listed alphabetically in an A-Z navigation plus a "Popular Brands" shortlist, and it has curated entry points by food type ("Best Wet Cat Food", "Best Dry Cat Food", "Best Kitten Food"). The most useful observation is the one that inverts the feedback: **CatFoodDB's own free-text search is disabled**, with a notice on the site saying so. The site the owner prefers is better *without* working search, because browsing by brand and by curated list is a better fit for the problem than a text box is.
+
+That is the lesson to take, and it is more actionable than "improve search": the answer is probably not a better free-text ranker but a **browse structure** on top of one. Two attempts to reach a CatFoodDB brand page and a "best of" listing returned 404 on guessed URLs, so **what an individual product entry shows there (photo, rating shape, price, nutrition figures, ordering) has not been verified** and should be checked before it is copied.
+
+**Candidate work, not yet a committed scope.**
+
+- Render `product.imageUrl` on the search card, the compare page and the recently-viewed list, with a drawn placeholder for the one record in twenty-odd that has none.
+- Pagination, or infinite scroll, so the other 1547 results exist.
+- Rethink the ordering: keep relevance as the spine and surface scorability as a visible signal on the card rather than as a hidden sort key. A filter for "only products that can be scored" would give the same benefit without lying about relevance.
+- A brand axis. Open Pet Food Facts has `brands_tags`, which makes a browse-by-brand page achievable with the existing keyless API and no new infrastructure. This is the piece that most directly answers the feedback.
+- Filters for food type (wet, dry, treat) and for band, since both are already computed for every card.
+- Decide what to do about junk records: a numeric brand id or an empty product name is worth suppressing or repairing at the normaliser rather than rendering faithfully, and that decision belongs in [DATA-COVERAGE.md](./DATA-COVERAGE.md) alongside the coverage measurements.
+
+**Relationship to other milestones.** M12 (public beta) already carries "top-100 SKU catalogue coverage", and a curated local catalogue under `assets/data/` would fix causes 3, 4 and 5 more directly than any change to the query would, since it replaces the bad records rather than ranking around them. M15 and the M12 coverage work should be planned together rather than separately. M14 changes the markup of every card this milestone touches, so doing M15 first means doing the card twice.
 
 ---
 

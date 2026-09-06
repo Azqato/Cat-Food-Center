@@ -6,6 +6,20 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.12.2] - 2026-09-05
+
+**Owner feedback on the live site recorded as a milestone (M15).**
+
+Added
+* `docs/ROADMAP.md` M15: make search work, and show the product. The feedback is quoted verbatim, and the entry records what was measured on the day rather than the complaint alone. Planned, not scheduled, not started.
+
+Notes
+* **The missing photo is a rendering gap, not a data gap.** `opff.js` already requests `image_front_url` and exposes it as `product.imageUrl`, and 23 of 24 results in a live "chicken" search carry one. Only `product-page.js` draws it; the search cards, the compare page and the recently-viewed list all have the URL in hand and render nothing.
+* **Five confirmed causes for search.** No pagination, and the page never passes the `page` argument `searchProducts()` already accepts, so 24 of 1571 results are reachable. API relevance is discarded by a deliberate scorable-first re-sort. The match is not restricted to name or brand, so a chicken query returns ocean fish above real chicken products. The records themselves are poor, with brands stored as numeric ids and names left untranslated, and the cards render them faithfully. And there is no filter, facet, sort or brand browse to compensate.
+* **The reference site inverts the request, which is the useful part.** CatFoodDB's homepage was read on the day: it is organised brand-first with an A-Z of 150-plus brands and curated best-of lists by food type, and **its own free-text search is disabled**, with a notice saying so. It is better without working search, which suggests the answer is a browse structure rather than a better ranker. Its product-entry layout was not verified: two guessed URLs returned 404, and the entry says so rather than describing a page nobody opened.
+
+---
+
 ## [0.12.1] - 2026-09-05
 
 **Documentation brought back in line with the code, and two milestones planned.**
