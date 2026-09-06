@@ -4,6 +4,16 @@ All notable changes to Cat Food Center are documented here. Format follows [Keep
 
 ---
 
+## v0.9.0 — 2026-09-05
+
+### Added
+- **A page for products that are not in the database.** It checks the barcode for a typo and re-queries first — a mistyped digit looks exactly like a missing product — then explains which two panels to photograph and links the contribution straight to Open Pet Food Facts with the barcode filled in.
+
+### Notes
+- Contributions go to the open database the scores are derived from, not to a queue of ours. That way a product added once works here, in every other tool built on the same data, and for the next person who scans the same tin.
+
+---
+
 ## v0.8.0 — 2026-09-05
 
 ### Added

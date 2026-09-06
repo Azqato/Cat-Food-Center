@@ -6,6 +6,26 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.11.0] - 2026-09-05
+
+**A real answer for a product that is not in the database (M10).**
+
+Added
+* `submit.html?barcode=X`, reached from the not-found state on any product page.
+  * **Rules out a typo first.** A mistyped digit looks exactly like a missing product, and it is the only cause the visitor can fix in five seconds. The page checks the barcode against its own check digit and re-queries the database before sending anyone off to photograph a tin. If the product turns out to be there after all, it links straight to its page.
+  * **Names the two panels that matter.** The ingredient list — without it there is no score at all, not a low one — and the guaranteed analysis including moisture, without which a wet food cannot honestly be compared to a dry one.
+  * **Deep-links the contribution** to Open Pet Food Facts with the barcode filled in, and says plainly that the form is hosted on Open Food Facts, the project's main site, so the hand-off is not a surprise.
+
+Changed
+* The not-found state now links here rather than dropping the visitor straight onto an unexplained external form.
+* `docs/ADR-001-static-first.md` updated: the "no server-side writes" row predicted a hosted form or a GitHub issue as the workaround. Building it showed the workaround was the wrong shape, and the ADR now records why.
+
+Notes
+* **There is no submission queue of our own, by choice.** A private queue — hosted form, GitHub issue, serverless endpoint, any of them — would fork the catalogue. The product would sit in our queue and still be missing from the database every score on this site actually reads, which would make us the bottleneck for our own corrections. Sending it upstream means it works here, in the next tool built on the same database, and for the next person who scans the same tin.
+* The general lesson, recorded in the ADR: not every limitation of static hosting needs a workaround. This one was better answered by not holding the data at all.
+
+---
+
 ## [0.10.0] - 2026-09-05
 
 **Offline support, and installability (M9). The app works in the aisle where the signal does not.**

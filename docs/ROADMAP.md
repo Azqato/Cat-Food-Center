@@ -15,7 +15,7 @@ Two things learned in building them shape everything after:
 
 The barcode scanner (M8) is done — the feature ADR-001 was written to make sure static hosting could still support, and it needed no server, as predicted. So is offline support (M9): the app installs, and a product already looked at stays readable with no signal.
 
-Next is the not-found / submit flow (M10).
+So is the not-found / submit flow (M10). Next is the compare page (M11).
 
 ---
 
@@ -34,7 +34,7 @@ Next is the not-found / submit flow (M10).
 | M7: Scoring engine | 2026-09-05 | Complete |
 | M8: Barcode scanner | 2026-09-05 | Complete |
 | M9: Service worker / PWA offline | 2026-09-05 | Complete |
-| M10: Not-found / submit flow | 2026-12 | Planned |
+| M10: Not-found / submit flow | 2026-09-05 | Complete |
 | M11: Compare page | 2026-12 | Planned |
 | M12: Public beta | 2027-01 | Planned |
 
@@ -120,10 +120,13 @@ Next is the not-found / submit flow (M10).
 
 Two details worth keeping: navigations are deliberately **not** cached, because every product is the same document under a different query string and caching the response would add one identical entry per product viewed — the precached document is found with `ignoreSearch` instead. And a 404 from the API is never cached, because it is how an unknown barcode is detected, and caching it would keep reporting "not found" after the product is added to the database.
 
-### M10: Not-found / submit flow
-- 404 state when a barcode is not in the Open Pet Food Facts catalog
-- `/submit/[barcode]` route: form to submit barcode + ingredient label photo
-- Review queue (initially manual email/form; backend later)
+### M10: Not-found / submit flow — Complete 2026-09-05
+- `submit.html?barcode=X`, reached from the not-found state on any product page
+- Checks the barcode against its own check digit, and re-queries the database, before sending anyone off to photograph a tin — a typo looks exactly like a missing product, and is the only cause of "not in the database" the visitor can fix in five seconds
+- Names the two panels that decide whether a product can be scored at all: the ingredient list, and the guaranteed analysis with moisture
+- Deep-links the contribution to Open Pet Food Facts with the barcode filled in, and says plainly that the form is hosted on Open Food Facts, the project's main site
+
+**No submission queue of our own, and that is the design rather than a limitation.** A private queue would fork the catalogue: the product would sit in our queue and still be missing from the database every score actually reads, making this site the bottleneck for its own corrections. Contributing upstream means it works here, in the next tool built on the same data, and for the next person who scans the same tin. [ADR-001](./ADR-001-static-first.md) predicted a hosted form as the workaround for not accepting writes; the record now says why the workaround was the wrong shape.
 
 ### M11: Compare page
 - `/compare` route

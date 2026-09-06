@@ -53,12 +53,22 @@ These are the roadblocks. They are recorded here so that hitting one is a recogn
 
 | Limitation | Affects | Mitigation within static hosting | Escape hatch if the mitigation fails |
 |---|---|---|---|
-| **No server-side writes.** There is nowhere to POST to. | M10 submit flow — a user reporting a missing barcode or uploading a label photo | Link out to a hosted form (Google Forms, Tally) or open a pre-filled GitHub issue | A single serverless function (Cloudflare Worker / Netlify Function) alongside Pages; does not require abandoning static hosting |
+| **No server-side writes.** There is nowhere to POST to. | M10 submit flow — a user reporting a missing barcode or uploading a label photo | **Resolved differently than expected — see below.** Contributions go to Open Pet Food Facts itself, deep-linked with the barcode | A single serverless function (Cloudflare Worker / Netlify Function) alongside Pages; does not require abandoning static hosting |
 | **No secrets.** Anything shipped to the browser is public. | Any future API that requires a key | Prefer keyless public APIs; Open Pet Food Facts is one | Same serverless function acting as a signing proxy |
 | **No server-side rendering or dynamic routes.** `product.html?barcode=X` works; `/product/X` as a real path does not, without pre-generating a file per barcode. | M6 product pages, share links, SEO | Query-string routing, rendered client-side. Accept that per-product pages are not individually indexed in v1. | Pre-generate HTML for the top-100 SKU catalog at build time via `tools/` — this is the likely M12 move, and it fits the generator pattern we already use |
 | **No rate-limit shielding.** Every visitor hits the upstream API directly under our referrer. | M6 at scale | Service worker caching (M9), plus a local JSON cache for the top-100 catalog | Proxy + cache layer, if Open Pet Food Facts ever objects to our traffic |
 | **Client-side rendering hurts crawlability.** | Discoverability | The Cat Care Guide — our main SEO surface — is fully static HTML with content in the markup, so this cost lands on product pages only | Pre-generation, as above |
 | **No build step means no type checking.** JSDoc types in editors, but nothing enforces them in CI. | Scoring engine correctness | Keep scoring pure and cover it with golden-file tests runnable in the browser and in Node | Add a type-check-only CI job (`tsc --checkJs --noEmit`) without changing what is served |
+
+### How M10 actually resolved (2026-09-05)
+
+This row anticipated linking out to a hosted form, or opening a pre-filled GitHub issue, as a workaround for not being able to accept writes. Building it made clear that the workaround was the wrong shape.
+
+Every score on this site is derived from Open Pet Food Facts. A private submission queue — hosted form, GitHub issue, serverless endpoint, any of them — would fork the catalogue: the product would exist in our queue and still be missing from the database that every score actually reads, and this site would become the bottleneck for its own corrections. Sending the contribution upstream instead means it works here, in the next tool built on the same database, and for the next person who scans the same tin.
+
+So `submit.html` hands off, and its job is to hand off *well*: name the two panels that decide whether a product can be scored at all, and rule out a mistyped barcode — by far the most common cause of "not in the database", and the only one the visitor can fix in five seconds — before sending anyone off to photograph a tin.
+
+**The general lesson, worth keeping:** not every limitation in the table above needs a workaround. This one was better answered by not holding the data at all. Check whether that applies before reaching for the escape hatch.
 
 ## Alternatives considered
 
@@ -68,7 +78,7 @@ These are the roadblocks. They are recorded here so that hitting one is a recogn
 
 ## Revisit this when
 
-- The submit queue (M10) needs to accept real uploads rather than linking out.
+- Contributing upstream stops being the right answer — for instance if Open Pet Food Facts closes to public contribution, or if we need to hold data it will not accept. (M10 did *not* trigger this: see above.)
 - We want per-product URLs indexed by search engines, and pre-generation proves insufficient.
 - The scoring engine grows past roughly 1,500 lines, where the absence of enforced types starts costing more than the build step would.
 

@@ -90,8 +90,8 @@ async def main():
     httpd, port = serve()
     base = 'http://127.0.0.1:%d' % port
     failures = []
-    # The six page loads below, plus the two multi-page checks that follow them.
-    total = 6
+    # The seven page loads below, plus the four multi-page checks after them.
+    total = 7
 
     try:
         async with async_playwright() as p:
@@ -100,7 +100,8 @@ async def main():
                 [('/product.html?barcode=%s' % code, desc) for code, desc in CASES]
                 + [('/search.html?q=chicken', 'text search for "chicken"'),
                    ('/scan.html', 'scan page with no camera available'),
-                   ('/index.html', 'home page')])
+                   ('/index.html', 'home page'),
+                   ('/submit.html?barcode=9999999999999', 'submit page for a missing barcode')])
             for path, description in paths:
                 page = await browser.new_page(viewport={'width': 1280, 'height': 900})
                 errors = []

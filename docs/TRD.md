@@ -30,7 +30,6 @@ What is implemented:
 
 What is deferred:
 - Compare page
-- Submit-missing-product flow
 
 ## 1. Architecture overview
 
@@ -86,6 +85,7 @@ Cat-Food-Center/
 ├── search.html              # Search (Tailwind CDN)
 ├── product.html             # Product detail; barcode via ?barcode= query string
 ├── scan.html                # Camera barcode scanner + manual entry
+├── submit.html              # Missing-product hand-off; barcode via ?barcode=
 ├── offline.html             # Shown for a page never opened on this device
 ├── sw.js                    # Service worker — MUST stay at the root for scope
 ├── manifest.webmanifest     # PWA manifest
@@ -249,7 +249,7 @@ generator pattern already exists) but is not the MVP.
 | `methodology.html` | Built | Public scoring explanation (mirrors PRD §6) |
 | `scan.html` | Built | Camera barcode scanner and manual entry |
 | `compare.html` | Deferred | Side-by-side product comparison |
-| `submit.html` | Deferred | Submit a missing product |
+| `submit.html` | Built | Missing-product hand-off; `?barcode=` |
 
 There is no layout component, so the header and footer are duplicated across the
 four Tailwind pages and generated into the eleven guide pages. **This is the main

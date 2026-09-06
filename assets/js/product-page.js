@@ -284,7 +284,7 @@ function renderNotFound(barcode, error) {
     : `Open Pet Food Facts has no record for barcode <code>${esc(barcode)}</code>. The catalogue is community-maintained and far from complete, so a miss is common and does not say anything about the product.`}</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
       <a href="./search.html" class="btn-link rounded-pill bg-accent text-on-accent text-small font-medium px-6 py-3" style="display:inline-block">Search by name instead</a>
-      <a href="https://world.openpetfoodfacts.org/cgi/product.pl?type=add&code=${esc(barcode)}" target="_blank" rel="noopener noreferrer" class="btn-link rounded-pill text-small font-medium px-6 py-3" style="display:inline-block;border:1px solid var(--hairline);color:var(--ink)">Add it to the database</a>
+      <a href="./submit.html?barcode=${esc(barcode)}" class="btn-link rounded-pill text-small font-medium px-6 py-3" style="display:inline-block;border:1px solid var(--hairline);color:var(--ink)">Add it to the database</a>
     </div>
   </div>`;
 }
