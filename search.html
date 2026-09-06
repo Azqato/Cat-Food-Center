@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search — Cat Food Center</title>
+  <title>Search - Cat Food Center</title>
   <link rel="icon" href="./favicon.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#C2410C">
@@ -52,6 +52,7 @@
         <a href="./index.html" class="nav-link">Home</a>
         <a href="./scan.html" class="nav-link">Scan</a>
         <a href="./search.html" class="nav-link" aria-current="page">Search</a>
+        <a href="./brands.html" class="nav-link">Brands</a>
         <a href="./compare.html" class="nav-link">Compare</a>
         <a href="./learn.html" class="nav-link">Learn</a>
         <a href="./methodology.html" class="nav-link">Methodology</a>
@@ -81,9 +82,22 @@
 
       <!-- Results -->
       <section aria-label="Search results">
+        <h1 id="results-heading" class="font-display text-h1 text-ink mb-2" hidden></h1>
         <p id="results-label" class="text-small text-ink-soft mb-4" hidden></p>
 
+        <!-- Shown once there are results. The filter works on the page you are
+             looking at, not on the query (see assets/js/search-page.js). -->
+        <div id="results-controls" class="flex items-center justify-between gap-4 mb-4 flex-wrap" hidden>
+          <label class="flex items-center gap-2 text-small text-ink-soft" style="cursor:pointer">
+            <input type="checkbox" id="only-scorable" style="accent-color:var(--accent);width:16px;height:16px;cursor:pointer">
+            Only products that can be scored
+          </label>
+          <a href="./brands.html" class="text-small text-accent footer-link">Browse by brand &rarr;</a>
+        </div>
+
         <ul id="results-list" class="flex flex-col gap-3" style="list-style:none;padding:0"></ul>
+
+        <nav id="pager" class="flex items-center justify-between gap-4 mt-6" aria-label="Search result pages" hidden></nav>
       </section>
 
     </div>

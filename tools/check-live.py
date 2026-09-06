@@ -3,9 +3,9 @@
 
     python tools/check-live.py
 
-Loads the real search and product pages in headless Chromium, hits the real
+Loads the real search and product pages in headless Edge, hits the real
 API, and reports what rendered. Unlike tools/run-tests.py this needs network
-and is not deterministic — the database is community-maintained and moves — so
+and is not deterministic (the database is community-maintained and moves) so
 it is a smoke check, not a gate.
 """
 import asyncio
@@ -14,6 +14,13 @@ import os
 import socketserver
 import sys
 import threading
+
+# Edge, never Chrome: Chrome is the maintainer's day-to-day browser and driving
+# it would disturb a live session. Edge runs the same engine, is installed on
+# Windows by default, and costs nothing to use. Playwright reaches it through
+# the msedge channel rather than its own bundled Chromium build, so no browser
+# download is needed. See docs/PRD.md, "Browser Testing".
+EDGE_CHANNEL = 'msedge'
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -90,12 +97,12 @@ async def main():
     httpd, port = serve()
     base = 'http://127.0.0.1:%d' % port
     failures = []
-    # The eight page loads below, plus the four multi-page checks after them.
-    total = 8
+    # The twelve page loads below, plus the four multi-page checks after them.
+    total = 12
 
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch()
+            browser = await p.chromium.launch(channel=EDGE_CHANNEL)
             paths = (
                 [('/product.html?barcode=%s' % code, desc) for code, desc in CASES]
                 + [('/search.html?q=chicken', 'text search for "chicken"'),
@@ -103,7 +110,12 @@ async def main():
                    ('/index.html', 'home page'),
                    ('/submit.html?barcode=9999999999999', 'submit page for a missing barcode'),
                    ('/compare.html?a=0064992282189&b=3596710487455',
-                    'compare two fully scorable products')])
+                    'compare two fully scorable products'),
+                   ('/brands.html', 'brand index'),
+                   ('/search.html?q=chicken&page=2', 'second page of text results'),
+                   ('/search.html?brand=purina%7CPurina', 'brand-filtered results'),
+                   ('/search.html?q=chicken&only=scorable',
+                    'text results filtered to scorable only')])
             for path, description in paths:
                 page = await browser.new_page(viewport={'width': 1280, 'height': 900})
                 errors = []
@@ -128,11 +140,16 @@ async def main():
                     pass
                 await page.wait_for_timeout(1200)
 
-                # Scope to the content area — otherwise this reads the top bar
-                # wordmark and every page looks identical.
+                # Scope to the content area - otherwise this reads the top bar
+                # wordmark and every page looks identical. The first *non-empty*
+                # match wins rather than the first match: the search page now
+                # carries an h1 that stays empty unless the results are a brand,
+                # and querySelector would return that empty element and report a
+                # working page as a failure.
                 heading = await page.evaluate(
-                    "(document.querySelector('#product-article h1, #product-article .text-h2,"
-                    " #results-list .text-h2, #results-label, main h1') || {}).textContent || ''")
+                    "[...document.querySelectorAll('#product-article h1, #product-article .text-h2,"
+                    " #results-list .text-h2, main h1, #results-label')]"
+                    ".map(el => (el.textContent || '').trim()).find(Boolean) || ''")
                 sections = await page.evaluate(
                     "document.querySelectorAll('main section, #results-list li').length")
                 overflow = await page.evaluate(
@@ -149,7 +166,7 @@ async def main():
             total += 1
             # The recently-viewed list is the one thing that spans two pages, so
             # it needs one context that visits a product and then goes home.
-            # Headless Chromium starts with empty storage, which is exactly the
+            # Headless Edge starts with empty storage, which is exactly the
             # first-visit state the section is supposed to hide itself in.
             context = await browser.new_context()
             page = await context.new_page()
@@ -180,7 +197,7 @@ async def main():
             # The decoder is the one part of scanning that a headless browser can
             # genuinely exercise: draw a known EAN-13, decode it back, and check
             # our own validator agrees with the result. It does not prove the
-            # camera works — nothing here can — but it does prove that a correct
+            # camera works - nothing here can - but it does prove that a correct
             # frame produces the correct barcode rather than a plausible wrong one.
             page = await browser.new_page()
             await page.goto(base + '/scan.html')
@@ -196,7 +213,7 @@ async def main():
             total += 2
             # The service worker, end to end: install it, view a product, go
             # offline, and check the same product still renders *and says it is
-            # a saved copy*. The label is the part that matters — an old score
+            # a saved copy*. The label is the part that matters - an old score
             # shown as a current one is the failure this cache could introduce.
             context = await browser.new_context()
             page = await context.new_page()

@@ -2,12 +2,12 @@
    Service worker.
 
    Written by hand rather than generated, because there is no build step
-   (docs/ADR-001-static-first.md) and because a cache that behaves in ways
+   (docs/PRD.md section 16.2) and because a cache that behaves in ways
    nobody can read is worse than no cache. Every decision here is one of three
    strategies, chosen per resource for a stated reason.
 
    The point of caching is not speed. It is that the phone in a supermarket
-   aisle — exactly where this app is used — has the worst connectivity in the
+   aisle (exactly where this app is used) has the worst connectivity in the
    building, and a product someone has already looked at should still be
    readable when the signal goes.
 
@@ -34,6 +34,7 @@ const SHELL_ASSETS = [
   './',
   './index.html',
   './search.html',
+  './brands.html',
   './product.html',
   './scan.html',
   './submit.html',
@@ -50,6 +51,7 @@ const SHELL_ASSETS = [
   './assets/js/history.js',
   './assets/js/product-page.js',
   './assets/js/search-page.js',
+  './assets/js/brands-page.js',
   './assets/js/scan-page.js',
   './assets/js/submit-page.js',
   './assets/js/compare-page.js',
@@ -64,7 +66,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(SHELL);
     // addAll is atomic: one 404 fails the whole install and the old worker
-    // stays. That is the behaviour we want — a half-populated shell would
+    // stays. That is the behaviour we want, a half-populated shell would
     // break pages offline in ways that are very hard to diagnose.
     await cache.addAll(SHELL_ASSETS);
     await self.skipWaiting();
@@ -94,8 +96,8 @@ async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   try {
     const response = await fetch(request);
-    // Only successful responses are cached. A 404 from the API is meaningful —
-    // it is how an unknown barcode is detected — but caching it would keep
+    // Only successful responses are cached. A 404 from the API is meaningful, 
+    // it is how an unknown barcode is detected, but caching it would keep
     // reporting "not found" after the product is added to the database.
     if (response.ok) cache.put(request, response.clone());
     return response;
@@ -105,7 +107,7 @@ async function networkFirst(request, cacheName) {
     // Stamp it, so the page can say it is showing a saved copy. A Response's
     // headers are immutable, so this is a rebuild rather than a mutation.
     // Without the stamp the page has no way to tell a cached answer from a
-    // fresh one, and would present an old score as current — the same class of
+    // fresh one, and would present an old score as current, the same class of
     // failure as reporting an unreadable label as clean.
     const headers = new Headers(cached.headers);
     headers.set('x-cfc-cached', String(cached.headers.get('date') || 'yes'));
@@ -164,7 +166,7 @@ self.addEventListener('fetch', (event) => {
      immediately, falling back to the precached page and then to offline.html.
 
      Deliberately not cached here. Every product is a different query string on
-     the same document — product.html?barcode=X — so caching the response would
+     the same document, product.html?barcode=X,  so caching the response would
      add one entry per product viewed, all of them byte-identical, and grow the
      shell cache without bound. The document is already precached, so
      `ignoreSearch` finds it whatever the query, and the barcode is read from
@@ -184,7 +186,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Same-origin sub-resources — CSS, JS, JSON.
+  // Same-origin sub-resources: CSS, JS, JSON.
   if (url.origin === self.location.origin) {
     event.respondWith(staleWhileRevalidate(request, SHELL));
   }

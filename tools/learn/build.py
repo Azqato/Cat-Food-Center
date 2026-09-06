@@ -7,7 +7,7 @@ Each c_*.py module holds the article body for one page and calls shell.build()
 on import. shell.py owns the documentation chrome shared by all of them: the
 top bar, sidebar, breadcrumb, on-this-page rail, prev/next, and site footer.
 Output is plain static HTML written to the repository root, so deployment
-still needs no build step -- this script exists so the eleven pages cannot
+still needs no build step: this script exists so the eleven pages cannot
 drift apart, not because the site requires it.
 
 Edit content in tools/learn/c_*.py and rerun. Do not hand-edit learn*.html;

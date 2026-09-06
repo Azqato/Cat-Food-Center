@@ -2,7 +2,7 @@
  *
  * The engine is pure, so these are golden-file tests: fixed input, fixed
  * expected output. They cover each band, both hard gates, the partial-data
- * paths that docs/DATA-COVERAGE.md showed are the normal case, and the worked
+ * paths that docs/PRD.md section 12 showed are the normal case, and the worked
  * example published in PRD.md §6.7. */
 import {
   scoreProduct, toDryMatter, carbsByDifference, bandFor, matchesTerm, WEIGHTS,
@@ -56,7 +56,7 @@ function product(overrides = {}) {
   };
 }
 
-suite('matchesTerm — word boundaries', (t) => {
+suite('matchesTerm: word boundaries', (t) => {
   t.ok(matchesTerm('preserved with bha', 'bha'), 'matches BHA as its own word');
   t.ok(!matchesTerm('bhakti blend', 'bha'), 'does not match BHA inside another word');
   t.ok(!matchesTerm('sugar coating', 'oat'), 'does not match "oat" inside "coating"');
@@ -105,7 +105,7 @@ suite('a good product scores well', (t) => {
   t.equal(result.pillarsUsed, ['nutrition', 'additives', 'transparency'], 'all three pillars ran');
 });
 
-suite('hard gate — propylene glycol (PRD §6.5)', (t) => {
+suite('hard gate: propylene glycol (PRD §6.5)', (t) => {
   const result = scoreProduct(product({
     ingredients: ['Chicken', 'chicken broth', 'propylene glycol', 'mixed tocopherols'],
   }), KB);
@@ -116,7 +116,7 @@ suite('hard gate — propylene glycol (PRD §6.5)', (t) => {
   t.ok(result.flaggedAdditives.some((f) => f.id === 'propylene-glycol'), 'the additive is listed');
 });
 
-suite('hard gate — any Tier 3 caps at 49 (PRD §6.5)', (t) => {
+suite('hard gate: any Tier 3 caps at 49 (PRD §6.5)', (t) => {
   const result = scoreProduct(product({
     ingredients: ['Chicken', 'chicken liver', 'chicken fat preserved with BHA'],
   }), KB);
@@ -145,14 +145,14 @@ suite('the worked example from PRD §6.7', (t) => {
   t.ok(result.vagueTerms.some((v) => v.id === 'unnamed-meat'), 'meat by-products flagged as unnamed');
 });
 
-suite('partial data — the normal case', (t) => {
+suite('partial data: the normal case', (t) => {
   const noNutrition = scoreProduct(product({
     nutrition: { confidence: 'none', energyCorrected: false },
     format: 'unknown',
   }), KB);
   t.ok(noNutrition.scorable, 'a product with ingredients but no analysis is still scorable');
   t.equal(noNutrition.pillars.nutrition.available, true,
-    'the nutrition pillar still runs — animal-protein dominance comes from the ingredient list');
+    'the nutrition pillar still runs: animal-protein dominance comes from the ingredient list');
   t.equal(noNutrition.pillars.nutrition.analysisAvailable, false,
     'but it records that no published analysis contributed');
   t.equal(noNutrition.confidence, 'low',
@@ -206,7 +206,7 @@ suite('nutrition sub-factors', (t) => {
     nutrition: { ...product().nutrition, taurinePresent: undefined },
   }), KB);
   t.equal(noTaurine.pillars.nutrition.score, meatFirst.pillars.nutrition.score,
-    'an undeclared taurine figure is neutral, not a penalty — absence of data is not absence of taurine');
+    'an undeclared taurine figure is neutral, not a penalty; absence of data is not absence of taurine');
 });
 
 suite('transparency pillar', (t) => {
@@ -233,8 +233,8 @@ suite('determinism', (t) => {
 
 /* The bug this guards against was found by rendering a real product, not by a
    test: barcode 3596710487455 has a French label reading "Viandes et
-   sous-produits animaux" and "sucres" — unnamed meat by-products and added
-   sugar — and the English-only matcher scored it 77/Excellent with a perfect
+   sous-produits animaux" and "sucres": unnamed meat by-products and added
+   sugar: and the English-only matcher scored it 77/Excellent with a perfect
    transparency pillar and the reason "Ingredient sources are named rather than
    generic". Silence from a matcher that cannot read the label must never be
    reported as a clean result. */
@@ -294,7 +294,7 @@ suite('beneficial credit is not awarded to unnamed sources', (t) => {
   t.ok(!unnamed.pillars.additives.reasons.some((x) => /Named by-products/i.test(x)),
     'an unnamed by-product earns no credit for being a named one');
   t.ok(unnamed.pillars.transparency.reasons.some((x) => /Unnamed or catch-all/.test(x)),
-    'and is still penalised as unnamed — a product cannot be both');
+    'and is still penalised as unnamed; a product cannot be both');
 
   const named = scoreProduct(product({
     ingredients: ['Chicken by-product meal', 'chicken broth', 'carrageenan', 'minerals'],

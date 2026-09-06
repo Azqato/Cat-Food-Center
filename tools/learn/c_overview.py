@@ -6,7 +6,7 @@ BODY = "\n\n".join([
 
 h2("start", "Start here"),
 """<p>The guide is written to be read in order, but every page stands on its own. If you want
-the single densest page, go straight to the daily nutrient requirements — it is the reference
+the single densest page, go straight to the daily nutrient requirements; it is the reference
 everything else is built around.</p>""",
 
 cards([
@@ -40,7 +40,7 @@ available to a healthy cat.</p>
   on the shelf.</li>
 
   <li><strong>Transition food slowly, and never let a cat go without eating for more than 48&nbsp;hours.</strong>
-  A cat that stops eating is a genuine emergency, not a fussy phase — see hepatic lipidosis.</li>
+  A cat that stops eating is a genuine emergency, not a fussy phase (see hepatic lipidosis).</li>
 </ol>""",
 
 callout("tip", """<p>Almost every difficult question in feline nutrition resolves to the same test:
@@ -78,12 +78,12 @@ h2("scope", "What this guide is and is not"),
 """<p>Everything here describes population-level nutrition for healthy cats, drawn from the AAFCO
 nutrient profiles, the NRC's <em>Nutrient Requirements of Dogs and Cats</em>, FDA and EFSA guidance,
 WSAVA's nutrition toolkit, and the peer-reviewed veterinary literature. Where the evidence is genuinely
-contested — carrageenan, grain-free diets, raw feeding — the page says so rather than picking a side
+contested (carrageenan, grain-free diets, raw feeding) the page says so rather than picking a side
 and pretending the argument is settled.</p>""",
 
 callout("danger", """<p>This is educational content, not veterinary advice, and it cannot account for
 your individual cat. Any cat that is unwell, losing weight, straining in the litter box, vomiting
-repeatedly, or has a diagnosed condition needs a plan from a veterinarian — ideally with input from a
+repeatedly, or has a diagnosed condition needs a plan from a veterinarian, ideally with input from a
 board-certified veterinary nutritionist (ACVN or ECVCN). Never change the diet of a cat with kidney,
 liver, heart, or endocrine disease on the strength of a web page.</p>""",
 title="Please read this before you change anything"),
@@ -103,6 +103,6 @@ build(
     title="The Cat Care Guide",
     crumb="Overview",
     description="A free, science-based guide to feeding and raising a cat: exact daily nutrient requirements, additives to avoid, hydration, food types, life stages, label reading, and diet in disease.",
-    lede="Everything you need to feed and raise a cat well &mdash; grounded in AAFCO nutrient profiles, NRC research, FDA and EFSA guidance, and the published veterinary literature. Free, open, and updated as the science moves.",
+    lede="Everything you need to feed and raise a cat well, grounded in AAFCO nutrient profiles, NRC research, FDA and EFSA guidance, and the published veterinary literature. Free, open, and updated as the science moves.",
     body=BODY,
 )

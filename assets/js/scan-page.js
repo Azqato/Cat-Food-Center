@@ -1,10 +1,10 @@
 /* ==========================================================================
-   scan.html — camera, permission, and the manual fallback.
+   scan.html: camera, permission, and the manual fallback.
 
    The scanner itself lives in scanner.js. This file is the part that has to be
    kind about failure, which is most of the work: a camera feature fails for
-   half a dozen unrelated reasons — no HTTPS, no camera, permission denied,
-   another app holding the device, a browser without the API — and each one
+   half a dozen unrelated reasons: no HTTPS, no camera, permission denied,
+   another app holding the device, a browser without the API, and each one
    needs a different sentence and a different suggested next step. A single
    "Could not start camera" would be accurate and useless.
 
@@ -43,8 +43,8 @@ function toProduct(code) {
 /**
  * Turn a getUserMedia rejection into something worth reading.
  *
- * The DOMException names are the only reliable signal here — the messages
- * differ per browser — and the distinction that matters most to the visitor is
+ * The DOMException names are the only reliable signal here, the messages
+ * differ per browser: and the distinction that matters most to the visitor is
  * "you said no" versus "something else is wrong", because only the first one is
  * theirs to undo.
  */
@@ -54,7 +54,7 @@ function explain(err) {
     case 'SecurityError':
       return ['Camera permission was declined',
         'Nothing was captured. If you changed your mind, allow camera access for this site in '
-        + 'your browser settings and start again — or type the barcode number in below.'];
+        + 'your browser settings and start again: or type the barcode number in below.'];
     case 'NotFoundError':
     case 'OverconstrainedError':
       return ['No camera found',
@@ -138,7 +138,7 @@ manualForm.addEventListener('submit', (event) => {
     // digit is a typo, and "no product found" would send the visitor looking
     // for a gap in the database instead of at their own typing.
     manualError.textContent = /^\d+$/.test(code)
-      ? 'That number does not check out as a barcode — one of the digits is probably wrong. '
+      ? 'That number does not check out as a barcode, one of the digits is probably wrong. '
         + 'Barcodes carry a check digit, so a single mistyped number is detectable.'
       : 'A barcode is digits only, 8 to 13 of them.';
     show(manualError, true);

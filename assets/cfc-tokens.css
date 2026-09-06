@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Cat Food Center — design tokens and the theme toggle.
+   Cat Food Center: design tokens and the theme toggle.
 
    Shared by BOTH page families:
      * the Tailwind CDN pages (index, search, product, methodology), whose
@@ -26,7 +26,7 @@
      * --warning-ink is a darkened --poor for callout text, since --poor itself
        is a fill colour and is too light to read as text on cream.
 
-   The dark values appear twice below — once for the explicit
+   The dark values appear twice below: once for the explicit
    [data-theme="dark"] choice and once under prefers-color-scheme for visitors
    who have made no choice. THE TWO LISTS MUST BE KEPT IN SYNC.
    ══════════════════════════════════════════════════════════════════════════ */
@@ -66,7 +66,7 @@
   --toc-w:     240px;
 }
 
-/* Dark — explicit choice. Keep in sync with the prefers-color-scheme block. */
+/* Dark: explicit choice. Keep in sync with the prefers-color-scheme block. */
 :root[data-theme="dark"] {
   color-scheme: dark;
 
@@ -99,7 +99,7 @@
   --scrim:     rgba(0, 0, 0, .62);
 }
 
-/* Dark — system preference, for visitors who have not chosen. */
+/* Dark: system preference, for visitors who have not chosen. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;

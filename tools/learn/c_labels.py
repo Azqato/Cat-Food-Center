@@ -21,7 +21,7 @@ bag from doing your thinking.</p>
   recall traceability.</li>
 </ol>""",
 
-h2("aafco-statement", "2. The AAFCO statement — the most important sentence"),
+h2("aafco-statement", "2. The AAFCO statement - the most important sentence"),
 """<p>Usually set in small type near the feeding guide, sometimes on the back or side panel. It comes in
 a few forms, and they are not equivalent.</p>""",
 
@@ -41,13 +41,13 @@ table(
 
 callout("note", """<p>The statement also names a life stage: <em>growth</em>, <em>gestation and
 lactation</em>, <em>maintenance</em> of adult cats, or <em>all life stages</em>. “All life stages” means
-the food meets the growth column, which is the more demanding one — it is safe for an adult but is
+the food meets the growth column, which is the more demanding one; it is safe for an adult but is
 higher in calories, calcium, and phosphorus than an adult strictly needs. There is no AAFCO “senior”
 life stage; senior foods are formulated to the adult maintenance profile with marketing on top.</p>"""),
 
 h2("guaranteed-analysis", "3. The guaranteed analysis and dry-matter maths"),
 """<p>The guaranteed analysis declares minimum crude protein, minimum crude fat, maximum crude fibre,
-and maximum moisture. Note the words <em>minimum</em> and <em>maximum</em> — these are regulatory
+and maximum moisture. Note the words <em>minimum</em> and <em>maximum</em>; these are regulatory
 guarantees, not measurements. The actual protein content is usually a little above the stated minimum.</p>
 
 <p>Because the figures are “as fed”, a wet food's numbers are diluted by water and cannot be compared
@@ -59,10 +59,10 @@ panel("The dry-matter conversion",
 <p><code>Nutrient on DM basis = (nutrient as fed &divide; dry matter %) &times; 100</code></p>"""),
 
 panel("Worked comparison: a can that looks weak against a kibble that looks strong",
-"""<p><strong>Wet food</strong> &mdash; 10&nbsp;% protein, 78&nbsp;% moisture.<br>
+"""<p><strong>Wet food</strong>: 10&nbsp;% protein, 78&nbsp;% moisture.<br>
 Dry matter = 100 &minus; 78 = <strong>22&nbsp;%</strong>.<br>
 Protein DM = (10 &divide; 22) &times; 100 = <strong>45.5&nbsp;% protein</strong>.</p>
-<p><strong>Dry food</strong> &mdash; 32&nbsp;% protein, 10&nbsp;% moisture.<br>
+<p><strong>Dry food</strong>: 32&nbsp;% protein, 10&nbsp;% moisture.<br>
 Dry matter = 100 &minus; 10 = <strong>90&nbsp;%</strong>.<br>
 Protein DM = (32 &divide; 90) &times; 100 = <strong>35.6&nbsp;% protein</strong>.</p>
 <p class="note">The can that appeared to have a third of the protein actually has considerably more.
@@ -73,7 +73,7 @@ Every cross-format comparison you make must go through this step.</p>"""),
 
 panel("Carbohydrate by difference (nitrogen-free extract)",
 """<p><code>Carbohydrate % = 100 &minus; protein &minus; fat &minus; moisture &minus; ash &minus; crude fibre</code></p>
-<p class="note">All as-fed. If ash is not declared — it often is not — assume roughly 2&nbsp;% for wet
+<p class="note">All as-fed. If ash is not declared (it often is not) assume roughly 2&nbsp;% for wet
 food and 6–8&nbsp;% for dry. Convert the answer to dry matter before comparing. This is an estimate
 built on minimums and maximums, so treat it as a range rather than a number.</p>"""),
 
@@ -87,7 +87,7 @@ cooking. That single detail creates most of the ways an ingredient list can misl
 
 <h3>Ingredient splitting</h3>
 <p>A manufacturer that wants chicken at the top of the list can split a single ingredient into several
-lighter entries. “Chicken, pea protein, pea fibre, pea starch, peas” puts chicken first — but if you
+lighter entries. “Chicken, pea protein, pea fibre, pea starch, peas” puts chicken first, but if you
 recombined the pea fractions they might outweigh it. Read the whole list and mentally recombine
 related entries.</p>
 
@@ -95,7 +95,7 @@ related entries.</p>
 <p>Fresh chicken is around 70&nbsp;% water. Listed pre-cooking, it outweighs a dry ingredient of the
 same final contribution by a factor of three or so. So “Chicken, corn gluten meal, …” in a kibble may
 end up delivering less chicken protein than corn protein in the finished food. A <em>named meal</em>
-— “chicken meal” — is already water-removed, so its position in the list reflects its real
+ (“chicken meal”) is already water-removed, so its position in the list reflects its real
 contribution more honestly. Meals are not a red flag; unnamed meals are.</p>""",
 
 table(
@@ -104,7 +104,7 @@ table(
     [
         ["“Chicken”, “Salmon”, “Turkey”", "Clean flesh, with or without accompanying skin and bone, from the named species.", "<span class=\"chip chip-excellent\">Good</span>"],
         ["“Chicken meal”", "Rendered chicken with water and most fat removed. Protein-dense and species-identified.", "<span class=\"chip chip-good\">Fine</span>"],
-        ["“Chicken by-product meal”", "Rendered organs, bone, and other non-flesh parts — liver, heart, lungs, spleen. Nutritionally excellent in principle; heart is the best taurine source there is.", "<span class=\"chip chip-good\">Acceptable</span>"],
+        ["“Chicken by-product meal”", "Rendered organs, bone, and other non-flesh parts, liver, heart, lungs, spleen. Nutritionally excellent in principle; heart is the best taurine source there is.", "<span class=\"chip chip-good\">Acceptable</span>"],
         ["“Meat and bone meal”, “Animal by-product meal”, “Poultry fat”", "Species not identified. Not necessarily poor quality, but batch-to-batch consistency and sourcing cannot be verified.", "<span class=\"chip chip-poor\">Watch</span>"],
         ["“Corn gluten meal”, “Pea protein”, “Soy protein isolate”", "Plant protein concentrates. Raise crude protein on the label without matching feline amino acid needs.", "<span class=\"chip chip-poor\">Discount</span>"],
         ["“Animal digest”", "Enzymatically hydrolysed animal tissue, sprayed on kibble as a palatant. Very effective; species usually unnamed.", "<span class=\"chip chip-poor\">Neutral</span>"],
@@ -126,7 +126,7 @@ table(
         ["“Chicken Cat Food”", "The 95&nbsp;% rule", "95&nbsp;% of the product excluding water; 70&nbsp;% including it"],
         ["“Chicken Dinner”, “…Entrée”, “…Formula”, “…Platter”, “…Recipe”", "The 25&nbsp;% (“dinner”) rule", "25&nbsp;% excluding water; 10&nbsp;% including it"],
         ["“Cat Food <em>with</em> Chicken”", "The 3&nbsp;% (“with”) rule", "3&nbsp;%"],
-        ["“Chicken <em>Flavour</em> Cat Food”", "The flavour rule", "No minimum &mdash; only enough to be detectable"],
+        ["“Chicken <em>Flavour</em> Cat Food”", "The flavour rule", "No minimum, only enough to be detectable"],
     ]),
 
 callout("tip", """<p>One small word changes the recipe by a factor of thirty. “Chicken Cat Food” is
@@ -135,14 +135,14 @@ similar and one is much cheaper, the name is usually where the difference is hid
 
 h2("calories", "6. Calorie content"),
 """<p>Expressed as kcal ME per kilogram and usually also per can or per cup. You need it to portion the
-food properly — see <a href="./learn-feeding.html">how much and how often</a>. Two cautions:</p>
+food properly (see <a href="./learn-feeding.html">how much and how often</a>. Two cautions:)</p>
 
 <ul>
   <li><strong>“Per cup” is unreliable.</strong> Kibble density varies by shape, and how you scoop varies
   by mood. Weigh dry food on a kitchen scale; a cheap scale is the single best-value piece of feline
   health equipment you can buy.</li>
-  <li><strong>Calorie density varies enormously between wet foods</strong> — from roughly 0.7 to
-  1.3&nbsp;kcal per gram — so switching brands at the same can count can change intake by 40&nbsp;%.</li>
+  <li><strong>Calorie density varies enormously between wet foods</strong>, from roughly 0.7 to
+  1.3&nbsp;kcal per gram: so switching brands at the same can count can change intake by 40&nbsp;%.</li>
 </ul>""",
 
 h2("marketing", "7. Words that mean nothing"),
@@ -150,17 +150,17 @@ h2("marketing", "7. Words that mean nothing"),
 They are not necessarily signs of a bad product, but they carry no information.</p>
 
 <ul>
-  <li><strong>“Premium”, “super-premium”, “gourmet”, “ultra”</strong> — undefined.</li>
-  <li><strong>“Holistic”</strong> — undefined.</li>
-  <li><strong>“Human-grade”</strong> — meaningful only if <em>every</em> ingredient and the entire plant
+  <li><strong>“Premium”, “super-premium”, “gourmet”, “ultra”</strong>, undefined.</li>
+  <li><strong>“Holistic”</strong>: undefined.</li>
+  <li><strong>“Human-grade”</strong>: meaningful only if <em>every</em> ingredient and the entire plant
   meet human food manufacturing standards; frequently used more loosely than that.</li>
-  <li><strong>“Natural”</strong> — loosely defined by AAFCO as free of chemically synthetic ingredients,
+  <li><strong>“Natural”</strong>: loosely defined by AAFCO as free of chemically synthetic ingredients,
   with a specific exemption for added vitamins and minerals. Says nothing about quality.</li>
-  <li><strong>“Grain-free”</strong> — a marketing category, not a nutritional one. Grain is usually
+  <li><strong>“Grain-free”</strong>: a marketing category, not a nutritional one. Grain is usually
   replaced with potato, tapioca, or pea starch at a similar carbohydrate level.</li>
-  <li><strong>“Ancestral”, “biologically appropriate”, “prey-model”</strong> — descriptive language, not
+  <li><strong>“Ancestral”, “biologically appropriate”, “prey-model”</strong>, descriptive language, not
   a standard.</li>
-  <li><strong>“Veterinarian recommended”</strong> — unverifiable unless a specific study is cited.</li>
+  <li><strong>“Veterinarian recommended”</strong>: unverifiable unless a specific study is cited.</li>
 </ul>""",
 
 h2("checklist", "8. A shelf-side checklist"),
@@ -179,9 +179,9 @@ h2("checklist", "8. A shelf-side checklist"),
 
 h2("sources", "Sources"),
 """<ul class="sources">
-  <li>Association of American Feed Control Officials — <em>Official Publication</em>, model pet food regulations (labelling, naming, and adequacy statements). <a href="https://www.aafco.org/" target="_blank" rel="noopener noreferrer">aafco.org</a></li>
-  <li>US Food and Drug Administration, Center for Veterinary Medicine — <em>Pet Food Labels</em> guidance. <a href="https://www.fda.gov/animal-veterinary/animal-health-literacy/pet-food-labels-general" target="_blank" rel="noopener noreferrer">fda.gov</a></li>
-  <li>WSAVA Global Nutrition Committee — <em>Guidelines on Selecting Pet Foods</em>. <a href="https://wsava.org/global-guidelines/global-nutrition-guidelines/" target="_blank" rel="noopener noreferrer">wsava.org</a></li>
+  <li>Association of American Feed Control Officials, <em>Official Publication</em>, model pet food regulations (labelling, naming, and adequacy statements). <a href="https://www.aafco.org/" target="_blank" rel="noopener noreferrer">aafco.org</a></li>
+  <li>US Food and Drug Administration, Center for Veterinary Medicine, <em>Pet Food Labels</em> guidance. <a href="https://www.fda.gov/animal-veterinary/animal-health-literacy/pet-food-labels-general" target="_blank" rel="noopener noreferrer">fda.gov</a></li>
+  <li>WSAVA Global Nutrition Committee: <em>Guidelines on Selecting Pet Foods</em>. <a href="https://wsava.org/global-guidelines/global-nutrition-guidelines/" target="_blank" rel="noopener noreferrer">wsava.org</a></li>
 </ul>""",
 ])
 

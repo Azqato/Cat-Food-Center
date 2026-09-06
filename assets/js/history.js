@@ -4,11 +4,11 @@
    Kept in `localStorage`, which means it lives on the visitor's device and
    nowhere else. There is no account, no sync and no server, and that is a
    feature rather than a limitation of the static architecture
-   (docs/ADR-001-static-first.md): a list of what someone feeds their cat is
+   (docs/PRD.md section 16.2): a list of what someone feeds their cat is
    not information we have any reason to hold.
 
    What is stored is the minimum needed to redraw a card without a network
-   round-trip — barcode, name, brand, score, band. Not the full product: the
+   round-trip: barcode, name, brand, score, band. Not the full product: the
    score is derived, the engine changes, and a stale score rendered as current
    would be a quiet lie. Anything shown from here is labelled as a past view,
    and clicking through recomputes it.

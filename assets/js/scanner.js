@@ -3,7 +3,7 @@
 
    The whole feature runs in the browser: camera frames never leave the device,
    and the only network call is the product lookup that any search would make
-   anyway. This is what docs/ADR-001-static-first.md was written to establish —
+   anyway. This is what docs/PRD.md section 16.2 was written to establish, 
    scanning decomposes into camera access, decoding and lookup, and none of the
    three needs a server.
 
@@ -11,8 +11,8 @@
 
      1. `BarcodeDetector`, the platform API. Hardware-accelerated where it
         exists, no download, and on Android Chrome it is markedly faster than
-        anything shipped as JavaScript. Support is real but partial — Chrome and
-        Edge yes, Safari and Firefox largely not — so it cannot be the only path.
+        anything shipped as JavaScript. Support is real but partial, Chrome and
+        Edge yes, Safari and Firefox largely not, so it cannot be the only path.
      2. ZXing compiled to JavaScript, fetched from a CDN only when the platform
         API is missing. It costs a download, so it is never loaded speculatively.
 
@@ -56,7 +56,7 @@ export function unsupportedReason() {
  *
  * UPC-E is UPC-A with runs of zeros squeezed out, and the last data digit says
  * where they were. Its check digit is computed over the *expanded* code, so a
- * UPC-E cannot be checksum-validated in place — without this, every 8-digit
+ * UPC-E cannot be checksum-validated in place: without this, every 8-digit
  * UPC-E would be judged by the EAN-8 rule, fail, and be discarded in silence.
  * The scanner would appear to simply never see small US packages.
  *
@@ -82,7 +82,7 @@ export function expandUpcE(code) {
  *
  * Decoders do this themselves, but a misread that happens to satisfy the
  * checksum is exactly the failure worth catching before it becomes a lookup for
- * somebody else's product — a wrong product page is worse than no product page,
+ * somebody else's product: a wrong product page is worse than no product page,
  * because nothing about it looks wrong.
  */
 export function isValidBarcode(code) {
@@ -159,7 +159,7 @@ export async function startScanner(video, handlers) {
     if (stopped) return;
     stopped = true;
     if (rafId) cancelAnimationFrame(rafId);
-    // ZXing's teardown is reset(), not stop() — it stops the decode loop and
+    // ZXing's teardown is reset(), not stop(); it stops the decode loop and
     // releases the reader's own hold on the stream.
     if (zxingReader) { try { zxingReader.reset(); } catch { /* already reset */ } }
     // Releasing the tracks is what turns the device's camera light off. Leaving
@@ -194,8 +194,8 @@ export async function startScanner(video, handlers) {
           const codes = await detector.detect(video);
           if (codes.length) settle(codes[0].rawValue);
         } catch {
-          /* A single dropped frame is normal — the video element is not always
-             ready — and must not tear down the scanner. */
+          /* A single dropped frame is normal; the video element is not always
+             ready: and must not tear down the scanner. */
         }
         if (!stopped) rafId = requestAnimationFrame(tick);
       };

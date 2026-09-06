@@ -1,9 +1,9 @@
 /* ==========================================================================
    A test runner small enough to justify not having one.
 
-   There is no Node.js in this project and no build step (ADR-001), so the
+   There is no Node.js in this project and no build step (docs/PRD.md section 16.2), so the
    tests run where the code runs: in a browser, on tests.html. That page is
-   also what CI-less verification uses — Playwright loads it and reads
+   also what CI-less verification uses: Playwright loads it and reads
    window.__testResults.
 
    Usage:
@@ -36,7 +36,7 @@ function stringify(v) {
 function makeContext(results) {
   const record = (pass, message, detail) => results.push({ pass, message, detail });
   return {
-    /** Deep equality by JSON shape — enough for the plain data this project moves. */
+    /** Deep equality by JSON shape: enough for the plain data this project moves. */
     equal(actual, expected, message) {
       const a = stringify(actual);
       const b = stringify(expected);
@@ -45,7 +45,7 @@ function makeContext(results) {
     ok(value, message) {
       record(Boolean(value), message, value ? '' : `got ${stringify(value)}`);
     },
-    /** Assert a number is within tolerance — for anything that divides. */
+    /** Assert a number is within tolerance, for anything that divides. */
     close(actual, expected, tolerance, message) {
       const pass = Number.isFinite(actual) && Math.abs(actual - expected) <= tolerance;
       record(pass, message, pass ? '' : `got ${stringify(actual)}\n     want ${expected} ±${tolerance}`);
@@ -82,7 +82,7 @@ export function run(mount = document.getElementById('results')) {
     passed,
     failed,
     failures: report.flatMap((s) =>
-      s.results.filter((r) => !r.pass).map((r) => `${s.name}: ${r.message} — ${r.detail}`)),
+      s.results.filter((r) => !r.pass).map((r) => `${s.name}: ${r.message}, ${r.detail}`)),
   };
 
   if (!mount) return window.__testResults;

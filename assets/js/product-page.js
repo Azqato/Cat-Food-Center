@@ -1,11 +1,11 @@
 /* ==========================================================================
-   product.html — fetch a barcode, score it, render it.
+   product.html: fetch a barcode, score it, render it.
 
    The page previously rendered a hardcoded mock. It now renders whatever
    Open Pet Food Facts actually holds, which is usually less, and the job of
    this file is mostly to be honest about the difference.
 
-   docs/DATA-COVERAGE.md is the reason for most of the shape here: roughly a
+   docs/PRD.md section 12 is the reason for most of the shape here: roughly a
    fifth of products carry a full analysis, and a quarter of published protein
    figures are wrong. So every section has a "not published" state that says
    so plainly, rather than a zero or a blank that reads as a finding.
@@ -22,8 +22,8 @@ const BAND = {
 };
 
 const TIER = {
-  3: { label: 'Tier 3 — High risk', color: 'var(--bad)', ink: 'var(--chip-bad-ink)', bg: 'var(--chip-bad-bg)' },
-  2: { label: 'Tier 2 — Moderate risk', color: 'var(--poor)', ink: 'var(--chip-poor-ink)', bg: 'var(--chip-poor-bg)' },
+  3: { label: 'Tier 3, High risk', color: 'var(--bad)', ink: 'var(--chip-bad-ink)', bg: 'var(--chip-bad-bg)' },
+  2: { label: 'Tier 2, Moderate risk', color: 'var(--poor)', ink: 'var(--chip-poor-ink)', bg: 'var(--chip-poor-bg)' },
 };
 
 const CONFIDENCE = {
@@ -135,7 +135,7 @@ function renderPillars(result) {
   const weights = { nutrition: '55%', additives: '35%', transparency: '10%' };
 
   const rows = Object.entries(result.pillars).map(([key, pillar]) => {
-    const value = pillar.available ? `${pillar.score}` : '&mdash;';
+    const value = pillar.available ? `${pillar.score}` : ', ';
     const bar = pillar.available
       ? `<div style="height:6px;border-radius:3px;background:var(--hairline);overflow:hidden"><div style="height:100%;width:${pillar.score}%;background:var(--accent)"></div></div>`
       : '<div style="height:6px;border-radius:3px;background:var(--hairline)"></div>';
@@ -155,7 +155,7 @@ function renderPillars(result) {
 function renderIngredients(product) {
   if (!product.ingredients.length) {
     return section('ingredients-heading', 'Ingredients',
-      unknownCard('No ingredient list has been recorded for this product. Open Pet Food Facts is community-maintained — anyone can add one.'));
+      unknownCard('No ingredient list has been recorded for this product. Open Pet Food Facts is community-maintained; anyone can add one.'));
   }
   const rows = product.ingredients
     .map((ing, i) => `<li class="ingredient-row"><span class="ingredient-num">${i + 1}.</span><span class="ingredient-name">${esc(ing)}</span></li>`)
@@ -222,9 +222,9 @@ function renderNutrition(product) {
 
   const taurine = n.taurinePresent
     ? `<div class="nutrition-card"><p class="nutrition-label">Taurine</p><div style="display:flex;align-items:center;gap:8px;margin-top:8px">${icon('M5 13l4 4L19 7', 'var(--excellent)', 5)}<span class="text-small font-medium" style="color:var(--excellent)">Declared</span></div></div>`
-    // Not "absent" — 4% of records carry a taurine figure at all, so its absence
+    // Not "absent": 4% of records carry a taurine figure at all, so its absence
     // says something about the database, not about the food.
-    : '<div class="nutrition-card"><p class="nutrition-label">Taurine</p><p class="text-small text-ink-soft" style="margin:8px 0 0">Not recorded &mdash; this does not mean it is absent from the food</p></div>';
+    : '<div class="nutrition-card"><p class="nutrition-label">Taurine</p><p class="text-small text-ink-soft" style="margin:8px 0 0">Not recorded; this does not mean it is absent from the food</p></div>';
 
   const anyFigure = [n.crudeProteinPct, n.crudeFatPct, n.moisturePct, n.kcalPer100g]
     .some((v) => typeof v === 'number');
@@ -253,7 +253,7 @@ function renderAdequacy(product) {
   return section('aafco-heading', 'AAFCO adequacy',
     `<div class="bg-surface border border-hairline rounded-card p-4">
       <p class="text-small text-ink" style="margin:0 0 8px">Not recorded.</p>
-      <p class="text-small text-ink-soft" style="margin:0">Open Pet Food Facts does not capture the AAFCO complete-and-balanced statement, so we cannot report it here &mdash; and its absence from this page is not evidence that the food lacks one. It is the single most important sentence on a cat food label: <a href="./learn-labels.html#aafco">what to look for and why</a>.</p>
+      <p class="text-small text-ink-soft" style="margin:0">Open Pet Food Facts does not capture the AAFCO complete-and-balanced statement, so we cannot report it here, and its absence from this page is not evidence that the food lacks one. It is the single most important sentence on a cat food label: <a href="./learn-labels.html#aafco">what to look for and why</a>.</p>
     </div>`);
 }
 
@@ -306,15 +306,15 @@ async function main() {
   ]);
 
   if (!found || !product) {
-    document.title = 'Product not found — Cat Food Center';
+    document.title = 'Product not found: Cat Food Center';
     article.innerHTML = renderNotFound(barcode, error);
     return;
   }
 
   const result = scoreProduct(product, kb);
-  document.title = `${product.name} — Cat Food Center`;
+  document.title = `${product.name}: Cat Food Center`;
 
-  // Stored on this device only — see history.js.
+  // Stored on this device only (see history.js).
   recordView({
     barcode: product.barcode,
     name: product.name,

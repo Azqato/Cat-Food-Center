@@ -25,7 +25,7 @@ table(
         ["<strong>Blunted thirst response</strong>",
          "Descended from the African wildcat, a desert animal that took its water from prey. A cat does not compensate fully for a dry diet by drinking more, so total water intake falls when the food is dry."],
         ["<strong>Sensory wiring for meat</strong>",
-         "Cats cannot taste sweetness — the <em>Tas1r2</em> sweet-receptor gene is a non-functional pseudogene. They are instead strongly responsive to amino acids and to the nucleotides and free amino acids released by animal tissue, which is why palatants in commercial food are animal digest."],
+         "Cats cannot taste sweetness: the <em>Tas1r2</em> sweet-receptor gene is a non-functional pseudogene. They are instead strongly responsive to amino acids and to the nucleotides and free amino acids released by animal tissue, which is why palatants in commercial food are animal digest."],
     ]),
 
 callout("note", """<p>None of this makes a cat unable to <em>digest</em> cooked starch. A well-processed,
@@ -50,8 +50,8 @@ consequences:</p>
   potato protein, and soy protein isolate all raise crude protein without supplying a feline-appropriate
   amino acid profile. They are typically short on taurine, methionine, and arginine relative to what a cat
   needs, and their digestibility in cats is lower.</li>
-  <li><strong>Adulteration is possible in principle.</strong> The 2007 melamine recall — melamine and cyanuric
-  acid added to wheat gluten to fake a higher crude-protein reading — killed and injured a large number of
+  <li><strong>Adulteration is possible in principle.</strong> The 2007 melamine recall, melamine and cyanuric
+  acid added to wheat gluten to fake a higher crude-protein reading, killed and injured a large number of
   cats and dogs and is the reason manufacturer quality control matters as much as ingredient lists.</li>
 </ul>
 
@@ -64,14 +64,14 @@ table(
     ["Tier", "Sources", "Notes"],
     [
         ["<span class=\"chip chip-excellent\">Excellent</span>",
-         "Named muscle meat and organ — chicken, turkey, rabbit, salmon, beef, liver, heart",
+         "Named muscle meat and organ: chicken, turkey, rabbit, salmon, beef, liver, heart",
          "Complete amino acid profile, high digestibility, naturally taurine-rich. Heart is the single richest practical taurine source."],
         ["<span class=\"chip chip-good\">Good</span>",
-         "Named meals — “chicken meal”, “salmon meal”; whole egg",
+         "Named meals: “chicken meal”, “salmon meal”; whole egg",
          "A meal is rendered and water-removed, so it is protein-dense by weight. A <em>named</em> meal is a legitimate, concentrated ingredient. Egg is the reference protein for biological value."],
         ["<span class=\"chip chip-poor\">Watch</span>",
          "Unnamed “meat meal”, “poultry by-product meal”, “animal fat”",
-         "By-products are not inherently bad — organ meat is a by-product and is excellent — but an unnamed source means you cannot verify species or consistency between batches."],
+         "By-products are not inherently bad (organ meat is a by-product and is excellent) but an unnamed source means you cannot verify species or consistency between batches."],
         ["<span class=\"chip chip-bad\">Discount</span>",
          "Pea protein, corn gluten meal, soy protein isolate, potato protein, wheat gluten",
          "Raise crude protein on the label without matching the amino acid needs of an obligate carnivore. Fine as a minor component; a problem when they sit high in the ingredient list."],
@@ -79,7 +79,7 @@ table(
 
 callout("warning", """<p>Reading crude protein straight off a wet food label and concluding it is
 protein-poor. A can showing 10&nbsp;% protein and 78&nbsp;% moisture is 45&nbsp;% protein on a dry-matter
-basis — considerably richer than a kibble showing 32&nbsp;%. You must convert to dry matter before
+basis: considerably richer than a kibble showing 32&nbsp;%. You must convert to dry matter before
 comparing anything.
 <a href="./learn-labels.html">How to do the conversion &rarr;</a></p>"""),
 
@@ -116,7 +116,7 @@ h2("carbs", "4. Carbohydrate"),
 
 compare(
     "Reasonably well established",
-    ["Cats have no dietary carbohydrate requirement — the NRC sets no minimum.",
+    ["Cats have no dietary carbohydrate requirement, the NRC sets no minimum.",
      "Cats digest and absorb large starch loads less efficiently than dogs, and excess reaches the colon.",
      "Reduced-carbohydrate, higher-protein diets improve glycaemic control in diabetic cats and increase the rate of diabetic remission.",
      "Carbohydrate displaces protein and fat within a fixed calorie budget; extruded dry food generally cannot be made below roughly 25&nbsp;% carbohydrate because starch is needed for the kibble to hold together."],
@@ -146,7 +146,7 @@ h2("fibre", "5. Fibre"),
 psyllium, and inulin feed colonic bacteria and produce short-chain fatty acids that nourish the colonic
 lining; insoluble fibres add bulk and speed transit. In practice fibre earns its place in three
 situations: constipation and megacolon, hairball management, and weight-loss diets where it adds
-satiety without calories. In a healthy cat on a good diet it is unremarkable — neither a benefit to
+satiety without calories. In a healthy cat on a good diet it is unremarkable, neither a benefit to
 chase nor a problem to avoid.</p>""",
 
 h2("essential", "6. The nutrients cats cannot make themselves"),
@@ -156,7 +156,7 @@ concern, and each is the reason a cat cannot simply eat what a dog or a person e
 entry("Taurine", [("bad", "Fatal if deficient")],
 """<p>A sulfonic amino acid found almost exclusively in animal tissue. Cats have very low activity of
 cysteine dioxygenase and cysteine sulfinic acid decarboxylase, the enzymes that build taurine from
-cysteine, and they obligately conjugate bile acids with taurine — so they lose it continuously in bile
+cysteine, and they obligately conjugate bile acids with taurine, so they lose it continuously in bile
 whether or not they can spare it. There is no glycine fallback as there is in dogs.</p>
 <dl>
   <dt>Deficiency causes</dt>
@@ -173,7 +173,7 @@ whether or not they can spare it. There is no glycine fallback as there is in do
 
 entry("Arginine", [("bad", "Fatal within hours")],
 """<p>Cats cannot synthesise enough ornithine or citrulline to keep the urea cycle running without
-dietary arginine. A <em>single</em> arginine-free meal can produce hyperammonaemia — salivation,
+dietary arginine. A <em>single</em> arginine-free meal can produce hyperammonaemia, salivation,
 vomiting, ataxia, tetany, and death within hours. This is the fastest-acting nutritional deficiency
 described in any domestic species, and it is why feeding a cat a plant-based diet is dangerous rather
 than merely suboptimal. Arginine is abundant in all animal protein, so a cat eating meat never
@@ -199,18 +199,18 @@ The dietary requirement is roughly four times a dog's, which is why the profile 
 entry("Vitamin D<sub>3</sub>", [("neutral", "Dietary only")],
 """<p>Cats have very little 7-dehydrocholesterol in their skin and cannot make useful vitamin&nbsp;D from
 sunlight. A cat sunbathing on a windowsill is thermoregulating, not synthesising. All of it must be
-eaten — and it has a defined AAFCO maximum, because excess causes hypercalcaemia and soft-tissue
+eaten: and it has a defined AAFCO maximum, because excess causes hypercalcaemia and soft-tissue
 mineralisation including of the kidneys.</p>"""),
 
 entry("Vitamin B<sub>12</sub> (cobalamin)", [("neutral", "Animal sources only")],
 """<p>Available in usable form only from animal tissue. Cats also have an unusually short cobalamin
-half-life — around 13 days, against weeks to years in other species — so intestinal disease that
+half-life (around 13 days, against weeks to years in other species) so intestinal disease that
 impairs absorption produces clinical deficiency quickly. Low cobalamin is a common, easily missed,
 and readily treatable finding in cats with chronic diarrhoea, weight loss, or chronic enteropathy.</p>"""),
 
 entry("Thiamine (vitamin B<sub>1</sub>)", [("poor", "Easily destroyed")],
 """<p>Cats require roughly three to four times as much thiamine as dogs, and it is the least stable
-vitamin in pet food — degraded by heat processing, by prolonged storage, and by thiaminase enzymes
+vitamin in pet food: degraded by heat processing, by prolonged storage, and by thiaminase enzymes
 present in raw fish and raw shellfish. Deficiency causes anorexia, then a characteristic ventroflexion
 of the neck, ataxia, dilated pupils, seizures, and death. Historic thiamine-deficiency recalls of
 canned cat food are the reason this vitamin is watched closely, and the reason an all-raw-fish diet
@@ -226,7 +226,7 @@ title="Vegan and vegetarian diets"),
 
 h2("summary", "7. What good looks like"),
 """<p>Pulling the above together, a species-appropriate diet for a healthy adult cat looks roughly
-like this on a dry-matter basis. These are not regulatory requirements — they are what the biology
+like this on a dry-matter basis. These are not regulatory requirements; they are what the biology
 above points at.</p>""",
 
 table(
@@ -248,12 +248,12 @@ everything else on the packaging is marketing.</p>"""),
 
 h2("sources", "Sources"),
 """<ul class="sources">
-  <li>National Research Council — <em>Nutrient Requirements of Dogs and Cats</em> (National Academies Press, 2006).</li>
-  <li>Association of American Feed Control Officials — <em>AAFCO Dog and Cat Food Nutrient Profiles</em>, Official Publication. <a href="https://www.aafco.org/" target="_blank" rel="noopener noreferrer">aafco.org</a></li>
-  <li>Merck Veterinary Manual — <em>Nutritional Requirements of Small Animals</em>. <a href="https://www.merckvetmanual.com/management-and-nutrition/nutrition-small-animals/nutritional-requirements-of-small-animals" target="_blank" rel="noopener noreferrer">merckvetmanual.com</a></li>
-  <li>Li X. et al. — “Pseudogenization of a sweet-receptor gene accounts for cats' indifference toward sugar,” <em>PLoS Genetics</em> (2005).</li>
-  <li>Morris J.G. — “Idiosyncratic nutrient requirements of cats appear to be diet-induced evolutionary adaptations,” <em>Nutrition Research Reviews</em> (2002).</li>
-  <li>WSAVA Global Nutrition Committee — <em>Global Nutrition Guidelines</em>. <a href="https://wsava.org/global-guidelines/global-nutrition-guidelines/" target="_blank" rel="noopener noreferrer">wsava.org</a></li>
+  <li>National Research Council: <em>Nutrient Requirements of Dogs and Cats</em> (National Academies Press, 2006).</li>
+  <li>Association of American Feed Control Officials, <em>AAFCO Dog and Cat Food Nutrient Profiles</em>, Official Publication. <a href="https://www.aafco.org/" target="_blank" rel="noopener noreferrer">aafco.org</a></li>
+  <li>Merck Veterinary Manual: <em>Nutritional Requirements of Small Animals</em>. <a href="https://www.merckvetmanual.com/management-and-nutrition/nutrition-small-animals/nutritional-requirements-of-small-animals" target="_blank" rel="noopener noreferrer">merckvetmanual.com</a></li>
+  <li>Li X. et al., “Pseudogenization of a sweet-receptor gene accounts for cats' indifference toward sugar,” <em>PLoS Genetics</em> (2005).</li>
+  <li>Morris J.G., “Idiosyncratic nutrient requirements of cats appear to be diet-induced evolutionary adaptations,” <em>Nutrition Research Reviews</em> (2002).</li>
+  <li>WSAVA Global Nutrition Committee: <em>Global Nutrition Guidelines</em>. <a href="https://wsava.org/global-guidelines/global-nutrition-guidelines/" target="_blank" rel="noopener noreferrer">wsava.org</a></li>
 </ul>""",
 ])
 

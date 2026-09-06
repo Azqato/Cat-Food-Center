@@ -1,12 +1,12 @@
 /* ==========================================================================
    Open Pet Food Facts client and normaliser.
 
-   Turns a raw API record into the `Product` shape in docs/TRD.md §4, or says
+   Turns a raw API record into the `Product` shape in docs/PRD.md section 16.5, or says
    clearly why it cannot. Everything here runs in the browser: the API is
    public, keyless, and CORS-enabled, so there is no server in the path.
-   See docs/ADR-001-static-first.md.
+   See docs/PRD.md section 16.2.
 
-   The design of this module is driven by docs/DATA-COVERAGE.md, which measured
+   The design of this module is driven by docs/PRD.md section 12, which measured
    what the database actually holds. Three findings shape the code:
 
      1. Two nutriment schemas coexist and mostly do not overlap. The pet-food
@@ -16,12 +16,12 @@
         We prefer the former and record which one we used.
 
      2. A quarter of the products carrying a protein figure carry an
-        implausible one — per-serving or per-kilogram values mislabelled as
+        implausible one: per-serving or per-kilogram values mislabelled as
         per-100g. So every figure passes a plausibility gate before it is
         allowed near a score. Discarding a number is better than scoring on it.
 
      3. Most products are missing most fields. Partial data is the normal case,
-        not an error, and `normalize` never throws for it — it returns a
+        not an error, and `normalize` never throws for it; it returns a
         Product with absent fields and an honest `dataCompleteness`.
 
    One browser constraint worth knowing: `User-Agent` is a forbidden header, so
@@ -41,7 +41,7 @@ const FIELDS = [
 ].join(',');
 
 /* A cat food as fed. A value outside its band is a data-entry error rather
-   than an unusual product — see docs/DATA-COVERAGE.md for the evidence. */
+   than an unusual product (see docs/PRD.md section 12 for the evidence). */
 const PLAUSIBLE = {
   protein: [3, 50],
   fat: [0.5, 40],
@@ -95,7 +95,7 @@ function readAnalysis(nutriments, crudeKeys, humanKeys, band) {
 /**
  * Energy in kcal per 100 g.
  *
- * Values above the plausible ceiling are almost always per kilogram — Hill's
+ * Values above the plausible ceiling are almost always per kilogram, Hill's
  * publishes 1774, which is 177.4 kcal/100 g. We correct by a factor of ten
  * when that lands in range, and otherwise discard rather than guess.
  */
@@ -113,8 +113,8 @@ function readEnergy(nutriments) {
 /**
  * Split a label ingredient string into an ordered list.
  *
- * Commas inside parentheses belong to the parent ingredient — "meat and animal
- * derivatives (including chicken, 4%)" is one entry, not three — so we track
+ * Commas inside parentheses belong to the parent ingredient, "meat and animal
+ * derivatives (including chicken, 4%)" is one entry, not three, so we track
  * nesting depth rather than calling split(',').
  */
 function splitIngredients(text) {
@@ -168,10 +168,10 @@ function readLifeStage(tags, labels, text) {
 /* ── Normalisation ── */
 
 /**
- * Convert a raw Open Pet Food Facts record into a Product (docs/TRD.md §4).
+ * Convert a raw Open Pet Food Facts record into a Product (docs/PRD.md section 16.5).
  *
  * Never throws on missing data. A product with nothing but a barcode still
- * normalises — it simply reports dataCompleteness 'minimal'.
+ * normalises: it simply reports dataCompleteness 'minimal'.
  *
  * @param {object} raw
  * @returns {object} Product
@@ -238,7 +238,7 @@ export function normalize(raw) {
     format: readFormat(tags, nutrition.moisturePct),
     lifeStage: readLifeStage(tags, labels, name),
     // Open Pet Food Facts records no AAFCO adequacy statement, so this is not
-    // "false" — it is unknown, and the UI must not imply otherwise.
+    // "false": it is unknown, and the UI must not imply otherwise.
     aafcoComplete: undefined,
     substantiation: 'unknown',
     ingredients,
@@ -298,7 +298,7 @@ export async function fetchProduct(barcode, { signal } = {}) {
       : { found: false };
   } catch (err) {
     if (err.name === 'AbortError') throw err;
-    // Do not cache a network failure — the next attempt may well succeed.
+    // Do not cache a network failure; the next attempt may well succeed.
     return { found: false, error: 'Could not reach Open Pet Food Facts.' };
   }
   cache.set(code, result);
@@ -306,19 +306,29 @@ export async function fetchProduct(barcode, { signal } = {}) {
 }
 
 /**
- * Text search across cat food.
+ * Text search across cat food, optionally narrowed to a brand.
  *
  * Scoped to the cat-food category rather than the whole pet-food database, so
  * a query like "chicken" does not return dog food.
  *
- * @returns {Promise<{products: object[], total: number, error?: string}>}
+ * Either `query` or `brand` may be empty, but not both: a bare category listing
+ * of every cat food in the database is not a useful page, and asking for one is
+ * a bug in the caller rather than an empty search.
+ *
+ * `brand` is a tag expression as built by `brandTagExpression`, one or more
+ * raw brand tags joined by `|`, which the API reads as OR.
+ *
+ * @returns {Promise<{products: object[], total: number, page: number,
+ *                    pageSize: number, error?: string}>}
  */
-export async function searchProducts(query, { page = 1, pageSize = 24, signal } = {}) {
+export async function searchProducts(query, { page = 1, pageSize = 24, brand = '', signal } = {}) {
   const q = String(query || '').trim();
-  if (!q) return { products: [], total: 0 };
+  const b = String(brand || '').trim();
+  if (!q && !b) return { products: [], total: 0, page: 1, pageSize };
 
   const url = API + '/search?categories_tags_en=cat-food'
-    + '&search_terms=' + encodeURIComponent(q)
+    + (q ? '&search_terms=' + encodeURIComponent(q) : '')
+    + (b ? '&brands_tags=' + encodeURIComponent(b) : '')
     + '&page=' + page + '&page_size=' + pageSize + '&fields=' + FIELDS;
 
   try {
@@ -326,14 +336,116 @@ export async function searchProducts(query, { page = 1, pageSize = 24, signal } 
     return {
       products: (data.products || []).map(normalize),
       total: data.count || 0,
+      page: data.page || page,
+      pageSize: data.page_size || pageSize,
     };
   } catch (err) {
     if (err.name === 'AbortError') throw err;
-    return { products: [], total: 0, error: 'Could not reach Open Pet Food Facts.' };
+    return {
+      products: [], total: 0, page, pageSize,
+      error: 'Could not reach Open Pet Food Facts.',
+    };
+  }
+}
+
+/* ── Brands ──
+
+   The brand facet is the one browse axis the database supports well, and it is
+   the answer to a problem free-text search cannot fix: the records are thin and
+   inconsistently named (docs/PRD.md section 12), so typing a product name is the
+   hardest way to find something. Picking a brand from a list is the easiest.
+
+   This endpoint is outside the v2 API (a facet listing rather than a search)
+   but it is CORS-enabled like the rest, so it still needs no server. The URL is
+   spelled with the display form of the category ("Cat food") because the
+   canonical slug redirects to it, and following two redirects on every visit is
+   a waste when the destination is known. */
+const BRANDS_URL = 'https://world.openpetfoodfacts.org/facets/categories/Cat%20food/brands.json';
+
+/**
+ * Merge brand tags that differ only in case or spacing.
+ *
+ * The facet treats `purina` and `Purina` as two brands, with 110 and 15
+ * products. They are one brand, and showing them as two is the same failure as
+ * any other place this project renders the database's inconsistencies as if
+ * they were facts about cat food. Nine such collisions exist in the cat-food
+ * facet as measured.
+ *
+ * The merged entry keeps every raw tag, because the API filter needs all of
+ * them, and `brands_tags=purina|Purina` is the only way to ask for both.
+ *
+ * @param {{name: string, products: number}[]} tags Raw facet entries.
+ * @returns {{name: string, tags: string[], count: number}[]} Merged, biggest first.
+ */
+export function mergeBrandTags(tags) {
+  const byKey = new Map();
+  for (const tag of tags || []) {
+    const raw = String(tag.name || '').trim();
+    if (!raw) continue;
+    const key = raw.toLowerCase().replace(/\s+/g, ' ');
+    const entry = byKey.get(key)
+      || { name: raw, tags: [], count: 0, _best: -1 };
+    entry.tags.push(raw);
+    entry.count += tag.products || 0;
+    // Display the spelling used by the most products: the majority form is the
+    // one a reader is most likely to recognise from a packet.
+    if ((tag.products || 0) > entry._best) {
+      entry._best = tag.products || 0;
+      entry.name = raw;
+    }
+    byKey.set(key, entry);
+  }
+  return [...byKey.values()]
+    .map(({ name, tags: t, count }) => ({ name, tags: t, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+/**
+ * The filter expression for a merged brand. `|` is OR in the v2 tag filters,
+ * which is what lets one request cover every spelling of a brand.
+ */
+export function brandTagExpression(brand) {
+  return (brand && brand.tags ? brand.tags : []).join('|');
+}
+
+/**
+ * A brand tag expression rendered back as something to put in a heading.
+ * `purina|Purina` reads as "Purina": the longest variant wins, on the theory
+ * that a capitalised spelling is a deliberate one and an all-lowercase tag is
+ * a transcription.
+ */
+export function brandDisplayName(expression) {
+  const parts = String(expression || '').split('|').map((p) => p.trim()).filter(Boolean);
+  if (!parts.length) return '';
+  const best = parts.slice().sort((a, b) => {
+    const caps = (s) => (/[A-Z]/.test(s) ? 1 : 0);
+    return caps(b) - caps(a) || b.length - a.length;
+  })[0];
+  return best;
+}
+
+/**
+ * Every brand in the cat-food category, merged and ordered by product count.
+ *
+ * @param {{minProducts?: number}} options Brands below the threshold are
+ *   dropped. The default of 2 removes the long tail of one-product brands,
+ *   which is 379 of 439 entries and is mostly transcription noise.
+ * @returns {Promise<{brands: object[], error?: string}>}
+ */
+export async function fetchBrands({ minProducts = 2, signal } = {}) {
+  try {
+    const data = await getJSON(BRANDS_URL, signal);
+    const brands = mergeBrandTags(data.tags || [])
+      .filter((b) => b.count >= minProducts);
+    return { brands };
+  } catch (err) {
+    if (err.name === 'AbortError') throw err;
+    return { brands: [], error: 'Could not reach Open Pet Food Facts.' };
   }
 }
 
 /* Exported for the test suite only. */
 export const _internal = {
   splitIngredients, readAnalysis, readEnergy, readFormat, readLifeStage, PLAUSIBLE,
+  BRANDS_URL,
 };

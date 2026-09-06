@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scan a barcode - Cat Food Center</title>
+  <title>Brands - Cat Food Center</title>
   <link rel="icon" href="./favicon.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#C2410C">
@@ -38,20 +38,6 @@
     .nav-link { font-size: .875rem; color: var(--ink-soft); text-decoration: none; padding: 4px 8px; border-radius: 6px; transition: color 150ms; white-space: nowrap; }
     .nav-link:hover:not([aria-current]) { color: var(--ink); }
     .nav-link[aria-current="page"] { color: var(--accent); font-weight: 600; }
-    /* Viewfinder. The video fills a fixed-aspect box and is cropped rather
-       than letterboxed, because a letterboxed preview makes people hold the
-       phone at the wrong distance. */
-    .viewfinder { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #000;
-                  border-radius: 12px; overflow: hidden; }
-    .viewfinder video { width: 100%; height: 100%; object-fit: cover; display: block; }
-    /* A window over the middle of the frame. It is guidance, not a crop, the
-       decoder reads the whole frame: so it is drawn with a scrim rather than
-       anything that could be mistaken for a hard boundary. */
-    .reticle { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-               pointer-events: none; }
-    .reticle-box { width: 78%; height: 38%; border: 2px solid rgba(255,255,255,.9);
-                   border-radius: 8px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.35); }
-    .scan-status { min-height: 1.5rem; }
   </style>
 </head>
 <body class="bg-bg text-ink min-h-screen flex flex-col">
@@ -64,9 +50,9 @@
       </a>
       <nav class="flex items-center gap-1 min-w-0" aria-label="Main navigation" style="overflow-x:auto;scrollbar-width:none">
         <a href="./index.html" class="nav-link">Home</a>
-        <a href="./scan.html" class="nav-link" aria-current="page">Scan</a>
+        <a href="./scan.html" class="nav-link">Scan</a>
         <a href="./search.html" class="nav-link">Search</a>
-        <a href="./brands.html" class="nav-link">Brands</a>
+        <a href="./brands.html" class="nav-link" aria-current="page">Brands</a>
         <a href="./compare.html" class="nav-link">Compare</a>
         <a href="./learn.html" class="nav-link">Learn</a>
         <a href="./methodology.html" class="nav-link">Methodology</a>
@@ -81,63 +67,35 @@
 
   <!-- ── Main ── -->
   <main class="flex-1 w-full max-w-content mx-auto px-4 py-8">
-    <div class="flex flex-col gap-6" style="max-width:34rem;margin:0 auto;width:100%">
+    <div class="flex flex-col gap-6">
 
       <div>
-        <h1 class="font-display text-h1 text-ink">Scan a barcode</h1>
-        <p class="text-ink-soft text-small mt-2">
-          Point your camera at the barcode on the packaging. The picture is decoded on your
-          device and never leaves it: the only thing sent anywhere is the barcode number,
-          to look the product up.
+        <h1 class="font-display text-h1 text-ink">Browse by brand</h1>
+        <p class="text-small text-ink-soft mt-2" style="max-width:52ch">
+          Every brand with more than one cat food on record, biggest first. Picking a brand
+          is usually a faster route to a product than typing its name: the database records
+          brands consistently and product names badly.
         </p>
       </div>
 
-      <!-- Everything below is driven by assets/js/scan-page.js. -->
-      <div id="scan-idle">
-        <button id="scan-start" type="button"
-          class="btn-link w-full rounded-card bg-accent text-on-accent font-medium text-small px-5 py-4 border-0 cursor-pointer">
-          Start camera
-        </button>
-        <p class="text-ink-soft text-micro mt-3">
-          Your browser will ask permission first. Nothing starts until you allow it.
-        </p>
-      </div>
+      <label class="flex gap-2" style="margin:0">
+        <span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Filter brands</span>
+        <input type="search" id="brand-filter" placeholder="Filter brands…"
+          autocomplete="off"
+          class="flex-1 min-w-0 border border-hairline rounded-card px-4 py-3 text-small text-ink bg-surface" />
+      </label>
 
-      <div id="scan-live" hidden>
-        <div class="viewfinder">
-          <video id="scan-video" muted playsinline></video>
-          <div class="reticle" aria-hidden="true"><div class="reticle-box"></div></div>
-        </div>
-        <p id="scan-status" class="scan-status text-small text-ink-soft mt-3" role="status" aria-live="polite"></p>
-        <button id="scan-stop" type="button"
-          class="btn-link w-full rounded-card bg-surface border border-hairline text-ink font-medium text-small px-5 py-3 mt-1 cursor-pointer">
-          Stop camera
-        </button>
-      </div>
+      <p id="brand-count" class="text-micro text-ink-soft" style="margin:0"></p>
 
-      <div id="scan-message" hidden
-        class="bg-surface border border-hairline rounded-card p-5">
-        <p id="scan-message-title" class="font-display text-h2 text-ink mb-2"></p>
-        <p id="scan-message-body" class="text-small text-ink-soft"></p>
-      </div>
+      <ul id="brand-list" class="flex flex-col gap-2" style="list-style:none;padding:0">
+        <li style="list-style:none" class="text-small text-ink-soft py-6">Loading brands…</li>
+      </ul>
 
-      <!-- Always available, and the only path on a device with no camera. -->
-      <section class="bg-surface border border-hairline rounded-card p-5">
-        <h2 class="font-display text-h2 text-ink mb-3">Type it instead</h2>
-        <form id="manual-form" class="flex gap-2">
-          <input type="text" id="manual-input" inputmode="numeric" autocomplete="off"
-            placeholder="Barcode number" aria-label="Enter a barcode number"
-            class="flex-1 min-w-0 border border-hairline rounded-card px-4 py-3 text-small text-ink bg-surface" />
-          <button type="submit"
-            class="btn-link rounded-card bg-accent text-on-accent font-medium text-small px-5 py-3 shrink-0 border-0 cursor-pointer">
-            Look up
-          </button>
-        </form>
-        <p id="manual-error" class="text-small mt-3" style="color:var(--bad)" hidden></p>
-        <p class="text-ink-soft text-micro mt-3">
-          The number under the bars, 8 to 13 digits. Or <a href="./search.html" class="text-accent">search by name</a>.
-        </p>
-      </section>
+      <p class="text-micro text-ink-soft" style="max-width:52ch">
+        Counts come from Open Pet Food Facts and move as people contribute. Brands that the
+        database spells more than one way (<code>purina</code> and <code>Purina</code>) are
+        merged here and searched together.
+      </p>
 
     </div>
   </main>
@@ -150,7 +108,7 @@
     </p>
   </footer>
 
-  <script type="module" src="./assets/js/scan-page.js"></script>
+  <script type="module" src="./assets/js/brands-page.js"></script>
 
   <script src="./assets/js/pwa.js"></script>
 

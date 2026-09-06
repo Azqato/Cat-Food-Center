@@ -4,7 +4,7 @@
    A classic script rather than a module: it has no imports, and it needs to run
    on the guide pages too, which are generated and do not use modules.
 
-   Registration is deliberately late — on `load` — so that installing the worker
+   Registration is deliberately late (on `load`) so that installing the worker
    and warming its cache never competes with rendering the page the visitor is
    actually waiting for.
    ========================================================================== */
@@ -50,8 +50,8 @@
   }
 
   function sync() {
-    // navigator.onLine is famously optimistic — it reports a network interface,
-    // not reachability — so it is trusted only in the negative direction, where
+    // navigator.onLine is famously optimistic; it reports a network interface,
+    // not reachability: so it is trusted only in the negative direction, where
     // it is reliable. A false "you are online" simply shows nothing.
     if (navigator.onLine) {
       if (banner) banner.hidden = true;

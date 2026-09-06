@@ -1,8 +1,8 @@
 /* ==========================================================================
-   submit.html — what to do when a product is not in the database.
+   submit.html: what to do when a product is not in the database.
 
    There is no submission queue of our own, and that is a decision rather than
-   a gap. A static site cannot accept writes (docs/ADR-001-static-first.md),
+   a gap. A static site cannot accept writes (docs/PRD.md section 16.2),
    but the more important reason is that we do not want to hold a private copy
    of the catalogue: every score here is derived from Open Pet Food Facts, so a
    product added *there* works here, in the next tool built on it, and for the
@@ -11,7 +11,7 @@
 
    So this page's job is to hand off well: say where the data goes, name the
    two panels that actually decide whether a product can be scored, and rule
-   out the most common false alarm — a mistyped barcode — before sending
+   out the most common false alarm (a mistyped barcode) before sending
    anybody off to fill in a form.
    ========================================================================== */
 import { isValidBarcode } from './scanner.js';
@@ -37,7 +37,7 @@ if (barcode) {
   barcodeLine.innerHTML = `Open Pet Food Facts has no record for barcode <code>${esc(barcode)}</code>. `;
   addLink.href = ADD_URL + encodeURIComponent(barcode);
   verifyInput.value = barcode;
-  document.title = `Add ${barcode} — Cat Food Center`;
+  document.title = `Add ${barcode}: Cat Food Center`;
 } else {
   // Reached directly rather than from a failed lookup.
   addLink.href = 'https://world.openpetfoodfacts.org/cgi/product.pl?type=add';
@@ -80,7 +80,7 @@ verifyForm.addEventListener('submit', async (event) => {
     return;
   }
 
-  say('The barcode checks out and there is no record for it. It is genuinely missing — worth adding.', null);
+  say('The barcode checks out and there is no record for it. It is genuinely missing, worth adding.', null);
   addLink.href = ADD_URL + encodeURIComponent(code);
   if (!barcode) barcodeLine.innerHTML = `Open Pet Food Facts has no record for barcode <code>${esc(code)}</code>. `;
 });

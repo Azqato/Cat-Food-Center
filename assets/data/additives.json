@@ -1,7 +1,7 @@
 {
   "version": "1.1.0",
   "updated": "2026-09-05",
-  "note": "Additive Knowledge Base for the CFC Score. Tiers and evidence match learn-additives.html exactly — if you change a tier here, change it there. Tier 3 = documented harm in cats, a regulatory prohibition, or a credible toxicity signal with no feline safe dose established. Tier 2 = plausible mechanism with incomplete evidence. Tier 1 = flagged by marketing rather than evidence. Tier 0 records are explicitly benign and exist so the engine can stop penalising things that merely sound synthetic.",
+  "note": "Additive Knowledge Base for the CFC Score. Tiers and evidence match learn-additives.html exactly, if you change a tier here, change it there. Tier 3 = documented harm in cats, a regulatory prohibition, or a credible toxicity signal with no feline safe dose established. Tier 2 = plausible mechanism with incomplete evidence. Tier 1 = flagged by marketing rather than evidence. Tier 0 records are explicitly benign and exist so the engine can stop penalising things that merely sound synthetic.",
   "matching": "aliases are lowercased and matched as whole words or phrases, with an optional trailing 's'. They include French, German, Spanish, Italian and Dutch forms for the highest-impact entries, because only ~9.5% of records carry English ingredients and an English-only matcher silently reports non-English labels as clean. See docs/DATA-COVERAGE.md.",
   "additives": [
     {
@@ -14,7 +14,7 @@
       ],
       "function": "humectant",
       "tier": 3,
-      "healthImpact": "Causes Heinz body formation and shortened red blood cell survival in cats — a haemolytic anaemia — at doses that do not affect other species. Feline haemoglobin has eight reactive sulfhydryl groups against two to four in most mammals, which is the same quirk behind onion, garlic and paracetamol toxicity in cats.",
+      "healthImpact": "Causes Heinz body formation and shortened red blood cell survival in cats (a haemolytic anaemia) at doses that do not affect other species. Feline haemoglobin has eight reactive sulfhydryl groups against two to four in most mammals, which is the same quirk behind onion, garlic and paracetamol toxicity in cats.",
       "regulatory": "Prohibited in cat food by the US FDA (21 CFR 589.1001). Still legal in dog food, so it reaches cats mainly through shared dog treats.",
       "hardGate": true,
       "sources": [
@@ -106,7 +106,7 @@
       ],
       "function": "colourant",
       "tier": 3,
-      "healthImpact": "No nutritional function whatsoever. Cats are dichromats and cannot see the colours these produce — they exist to influence the person buying the food. Several carry contested behavioural and allergenic signals in humans and none has feline safety data.",
+      "healthImpact": "No nutritional function whatsoever. Cats are dichromats and cannot see the colours these produce; they exist to influence the person buying the food. Several carry contested behavioural and allergenic signals in humans and none has feline safety data.",
       "regulatory": "Permitted, but purely cosmetic. Their presence is a formulation-priorities signal as much as a safety one.",
       "hardGate": false,
       "sources": [
@@ -249,7 +249,7 @@
       "hardGate": false,
       "sources": [
         {
-          "label": "AAFCO Official Publication — flavour definitions",
+          "label": "AAFCO Official Publication, flavour definitions",
           "url": "https://www.aafco.org/"
         }
       ]
@@ -281,7 +281,7 @@
       ],
       "function": "palatant, humectant, colourant",
       "tier": 2,
-      "healthImpact": "Cats lack functional sweet taste receptors, so added sugar does not make food taste sweeter to them — it adds digestible carbohydrate to an obligate carnivore's diet and contributes to the diabetes and obesity risk that already dominate feline nutrition.",
+      "healthImpact": "Cats lack functional sweet taste receptors, so added sugar does not make food taste sweeter to them; it adds digestible carbohydrate to an obligate carnivore's diet and contributes to the diabetes and obesity risk that already dominate feline nutrition.",
       "regulatory": "Permitted.",
       "hardGate": false,
       "sources": [
@@ -365,7 +365,7 @@
       "hardGate": false,
       "sources": [
         {
-          "label": "ASPCA Animal Poison Control — Allium toxicity",
+          "label": "ASPCA Animal Poison Control, Allium toxicity",
           "url": "https://www.aspca.org/pet-care/animal-poison-control"
         }
       ]
@@ -384,12 +384,12 @@
       ],
       "function": "protein source",
       "tier": 0,
-      "healthImpact": "Not a problem. Named by-products — chicken by-product meal, for instance — are organ meats: liver, spleen, kidney, lung. These are nutrient-dense and closer to what a cat eats in the wild than muscle meat alone. Liver is the practical source of preformed vitamin A, which cats cannot make from beta-carotene. Only unnamed sources ('meat by-products') are a transparency concern.",
+      "healthImpact": "Not a problem. Named by-products (chicken by-product meal, for instance) are organ meats: liver, spleen, kidney, lung. These are nutrient-dense and closer to what a cat eats in the wild than muscle meat alone. Liver is the practical source of preformed vitamin A, which cats cannot make from beta-carotene. Only unnamed sources ('meat by-products') are a transparency concern.",
       "regulatory": "AAFCO-defined term with a specific meaning; excludes hair, horn, hide and manure.",
       "hardGate": false,
       "sources": [
         {
-          "label": "AAFCO — What is in pet food",
+          "label": "AAFCO; What is in pet food",
           "url": "https://www.aafco.org/consumers/understanding-pet-food/"
         }
       ]
@@ -511,7 +511,7 @@
         "viandes et sous-produits animaux",
         "vlees en dierlijke bijproducten"
       ],
-      "why": "An unnamed source cannot be traced to a species, so the buyer cannot know what the cat is eating or keep a diagnosed protein allergy out of the bowl. Named equivalents — 'chicken by-product meal', 'beef fat' — carry the same nutrition with none of the opacity."
+      "why": "An unnamed source cannot be traced to a species, so the buyer cannot know what the cat is eating or keep a diagnosed protein allergy out of the bowl. Named equivalents ('chicken by-product meal', 'beef fat') carry the same nutrition with none of the opacity."
     },
     {
       "id": "unnamed-flavour",

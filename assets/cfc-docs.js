@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Cat Food Center — Learn section behaviour.
+   Cat Food Center: Learn section behaviour.
 
    Two small enhancements, both optional: the page is fully readable and
    navigable with JavaScript disabled.

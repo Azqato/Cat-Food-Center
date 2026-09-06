@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Cat Food Center — theme (light / dark / system).
+   Cat Food Center: theme (light / dark / system).
 
    Load this SYNCHRONOUSLY in <head>, before any markup:
 
@@ -11,7 +11,7 @@
    of truth is worth more here than the one small same-origin request, and the
    file is served from cache after the first page.
 
-   Preference model — three states, cycled in this order:
+   Preference model: three states, cycled in this order:
 
        system  →  light  →  dark  →  system
 
@@ -31,7 +31,7 @@
       var v = localStorage.getItem(KEY);
       return ORDER.indexOf(v) > 0 ? v : 'system';
     } catch (e) {
-      // Private mode or blocked site data — fall back to the system theme.
+      // Private mode or blocked site data: fall back to the system theme.
       return 'system';
     }
   }

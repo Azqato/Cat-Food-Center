@@ -6,7 +6,7 @@ BODY = "\n\n".join([
 
 callout("danger", """<p>This page describes the dietary principles used in each condition so that you
 can have a better conversation with your vet. It is not a treatment plan. Every condition here requires
-diagnosis — several of them look identical from the outside — and several require a prescription
+diagnosis (several of them look identical from the outside) and several require a prescription
 therapeutic diet whose formulation cannot be replicated by choosing carefully in a supermarket.
 Do not diagnose from a web page, and do not change the diet of a cat with kidney, liver, heart, or
 endocrine disease without veterinary direction.</p>""",
@@ -39,7 +39,7 @@ supervised. This is the single most important reason to run a weight-loss plan t
 than improvising.</p>"""),
 
 h2("ckd", "2. Chronic kidney disease"),
-"""<p>Extremely common in older cats — a large proportion of cats over fifteen have some degree of it.
+"""<p>Extremely common in older cats: a large proportion of cats over fifteen have some degree of it.
 It is progressive and not curable, but diet is the intervention with the best evidence for extending
 both survival and quality of life. Cats fed a therapeutic renal diet live significantly longer than
 those maintained on standard food.</p>""",
@@ -58,7 +58,7 @@ table(
 
 callout("note", """<p>Appetite is the limiting factor. A therapeutic renal diet that the cat refuses
 does nothing. It is better to have a cat eating a less-ideal food than a perfect food it will not touch,
-and inappetence in CKD needs to be addressed actively — appetite stimulants such as mirtazapine,
+and inappetence in CKD needs to be addressed actively, appetite stimulants such as mirtazapine,
 anti-nausea medication, and treating gastric acidity all have a role. Introduce a renal diet slowly,
 ideally before the cat feels unwell, and never during a hospital stay where the cat may form a food
 aversion.</p>"""),
@@ -66,7 +66,7 @@ aversion.</p>"""),
 h2("flutd", "3. FLUTD, cystitis and urinary stones"),
 """<p>Feline lower urinary tract disease is an umbrella term. The commonest form by far is
 <strong>feline idiopathic cystitis</strong>, which is a stress-associated inflammatory condition rather
-than an infection — bacterial urinary infection is actually uncommon in cats under ten. The rest is
+than an infection: bacterial urinary infection is actually uncommon in cats under ten. The rest is
 mostly urolithiasis: struvite and calcium oxalate stones.</p>""",
 
 callout("danger", """<p>A cat straining in the litter tray, making repeated trips producing nothing,
@@ -80,14 +80,14 @@ title="Urethral obstruction is a life-threatening emergency"),
   <li><strong>Dilute the urine. This is the primary intervention</strong> for every form of FLUTD.
   Wet food, added water, multiple water stations. Target a urine specific gravity below about 1.035;
   your vet can measure it.</li>
-  <li><strong>Struvite stones can be dissolved by diet</strong> — a therapeutic diet that acidifies urine
+  <li><strong>Struvite stones can be dissolved by diet</strong>, a therapeutic diet that acidifies urine
   and restricts magnesium and phosphorus typically dissolves them over weeks.</li>
   <li><strong>Calcium oxalate stones cannot be dissolved</strong> and must be removed surgically or, for
   small ones, managed by dilution and by avoiding over-acidification. Note that these two stone types
   need opposite urinary pH, which is exactly why the stone must be identified before the diet is chosen.</li>
   <li><strong>For idiopathic cystitis, stress is the driver.</strong> Multimodal environmental
-  modification — more litter trays (one per cat plus one), more vertical space, hiding places, predictable
-  routine, reducing conflict between cats — has as much evidence behind it as any diet. Some therapeutic
+  modification: more litter trays (one per cat plus one), more vertical space, hiding places, predictable
+  routine, reducing conflict between cats, has as much evidence behind it as any diet. Some therapeutic
   diets add tryptophan and alpha-casozepine for this reason.</li>
 </ul>""",
 
@@ -102,7 +102,7 @@ is central to that.</p>
 
 <h3>Dietary principles</h3>
 <ul>
-  <li><strong>Low carbohydrate, high protein</strong> — typically under about 12&nbsp;% of calories from
+  <li><strong>Low carbohydrate, high protein</strong>, typically under about 12&nbsp;% of calories from
   carbohydrate. This lowers post-meal glucose excursions, reduces insulin requirements, and increases
   remission rates.</li>
   <li><strong>Wet food</strong> is the practical way to achieve that carbohydrate level; extruded kibble
@@ -123,20 +123,20 @@ the thyroid. The picture is a cat that is losing weight while eating ravenously,
 increased thirst, restlessness, and a poor coat.</p>
 
 <p>Treatment options are medication (methimazole), radioactive iodine (curative), surgery, or an
-<strong>iodine-restricted therapeutic diet</strong>. The dietary route works — thyroid hormone cannot be
-made without iodine — but it has a hard condition attached: <strong>the cat must eat absolutely nothing
+<strong>iodine-restricted therapeutic diet</strong>. The dietary route works; thyroid hormone cannot be
+made without iodine: but it has a hard condition attached: <strong>the cat must eat absolutely nothing
 else.</strong> No treats, no other food, no hunting, no stealing from another cat's bowl. That makes it
 impractical in most multi-cat and indoor-outdoor households, and it is generally reserved for cats that
 cannot tolerate the other options.</p>""",
 
 callout("note", """<p>Hyperthyroidism masks chronic kidney disease. The elevated thyroid hormone
 increases renal blood flow and makes kidney values look better than they are. Treating the thyroid often
-unmasks CKD that was there all along — which is not a reason to leave the thyroid untreated, but is a
+unmasks CKD that was there all along, which is not a reason to leave the thyroid untreated, but is a
 reason your vet will recheck kidney values after starting treatment.</p>"""),
 
 h2("gi", "6. Inflammatory bowel disease and chronic enteropathy"),
 """<p>Chronic vomiting, diarrhoea, weight loss, or a combination. The differential includes food-responsive
-enteropathy, inflammatory bowel disease, and small-cell intestinal lymphoma — which can be difficult to
+enteropathy, inflammatory bowel disease, and small-cell intestinal lymphoma, which can be difficult to
 distinguish without biopsy, and which is why chronic GI signs deserve a proper workup rather than a
 succession of food changes.</p>
 
@@ -144,7 +144,7 @@ succession of food changes.</p>
 <ul>
   <li><strong>A hydrolysed protein diet</strong>, in which protein is broken into fragments too small to
   trigger an immune response. Often the first therapeutic trial.</li>
-  <li><strong>A novel protein diet</strong> using a protein the cat has genuinely never eaten — rabbit,
+  <li><strong>A novel protein diet</strong> using a protein the cat has genuinely never eaten, rabbit,
   venison, duck. Its usefulness depends entirely on a complete dietary history.</li>
   <li><strong>Highly digestible, moderate fat</strong> formulations to reduce the digestive workload.</li>
   <li><strong>Cobalamin (B<sub>12</sub>) supplementation.</strong> Cats have an unusually short cobalamin
@@ -153,8 +153,8 @@ succession of food changes.</p>
   <li><strong>Fibre modification</strong>, and probiotics with reasonable but not overwhelming evidence.</li>
 </ul>
 
-<p>A therapeutic diet trial needs to be strict — the target diet and nothing else, including flavoured
-medications and dental chews — and needs six to eight weeks before you can judge it.</p>""",
+<p>A therapeutic diet trial needs to be strict: the target diet and nothing else, including flavoured
+medications and dental chews: and needs six to eight weeks before you can judge it.</p>""",
 
 h2("allergy", "7. Food allergy and adverse food reaction"),
 """<p>Less common than the internet suggests: most itchy cats are reacting to fleas or environmental
@@ -162,7 +162,7 @@ allergens, not food. True cutaneous adverse food reaction typically presents as 
 around the head and neck, miliary dermatitis, eosinophilic lesions, or over-grooming, sometimes with GI
 signs.</p>
 
-<p>The offending allergens are almost always <em>proteins the cat has eaten a lot of</em> — beef, fish,
+<p>The offending allergens are almost always <em>proteins the cat has eaten a lot of</em>, beef, fish,
 chicken, and dairy head the published lists. Grain allergy in cats is rare, despite the marketing.</p>
 
 <p>Diagnosis is by <strong>elimination diet trial</strong>: a strict hydrolysed or genuinely novel protein
@@ -179,7 +179,7 @@ observation. When a cat stops eating, it mobilises peripheral fat faster than th
 triglyceride accumulates in the hepatocytes and the liver fails.</p>
 
 <ul>
-  <li><strong>Risk factors:</strong> obesity above all, plus any cause of anorexia — stress, a house move,
+  <li><strong>Risk factors:</strong> obesity above all, plus any cause of anorexia, stress, a house move,
   dental pain, a rapid diet change, another illness, or an ill-judged crash diet.</li>
   <li><strong>Timeline:</strong> risk becomes real after 48–72 hours without adequate intake.</li>
   <li><strong>Treatment:</strong> aggressive nutritional support, very often via an oesophagostomy feeding
@@ -189,14 +189,14 @@ triglyceride accumulates in the hepatocytes and the liver fails.</p>
 
 callout("danger", """<p>A cat that has not eaten for 24 hours should be seen by a vet. A cat that has not
 eaten for 48 hours needs to be seen urgently. Never withhold food to force a diet change, and never
-assume an overweight cat can afford to skip meals — it is precisely the overweight cat that is most at
+assume an overweight cat can afford to skip meals; it is precisely the overweight cat that is most at
 risk.</p>"""),
 
 h2("dental", "9. Dental disease"),
 """<p>Periodontal disease and tooth resorption are extremely common and painful, and cats show it by
 eating less, favouring one side, or dropping food rather than by any obvious sign of pain.</p>
 
-<p>Diet plays a limited role. Ordinary kibble does <em>not</em> clean teeth — it shatters on contact and
+<p>Diet plays a limited role. Ordinary kibble does <em>not</em> clean teeth; it shatters on contact and
 does little at the gum line where disease begins. Genuine <strong>dental diets</strong> with enlarged
 kibble and an engineered fibre matrix do work, and several carry the Veterinary Oral Health Council seal;
 so do some dental treats and additives. But none of it substitutes for professional cleaning under
@@ -205,7 +205,7 @@ which is often the biggest nutritional intervention available.</p>""",
 
 h2("constipation", "10. Constipation and megacolon"),
 """<p>Common in older cats, and frequently driven by dehydration. Management combines increasing dietary
-moisture aggressively, adding fibre — psyllium or a fibre-enhanced therapeutic diet — and laxatives such
+moisture aggressively, adding fibre (psyllium or a fibre-enhanced therapeutic diet) and laxatives such
 as lactulose or polyethylene glycol under veterinary direction. Because dehydration is so often the
 underlying driver, the hydration measures on the <a href="./learn-hydration.html">hydration page</a> are
 the first thing to fix. Untreated recurrent constipation can progress to megacolon, where the colon
@@ -221,13 +221,13 @@ cards([
 
 h2("sources", "Sources"),
 """<ul class="sources">
-  <li>International Renal Interest Society (IRIS) — staging and treatment guidelines for feline chronic kidney disease. <a href="http://www.iris-kidney.com/" target="_blank" rel="noopener noreferrer">iris-kidney.com</a></li>
-  <li>AAFP and ISFM — <em>Consensus Guidelines on the Diagnosis and Management of Feline Idiopathic Cystitis</em> and the <em>Feline Environmental Needs Guidelines</em>.</li>
-  <li>ISFM — <em>Consensus Guidelines on the Practical Management of Diabetes Mellitus in Cats</em>.</li>
-  <li>AAHA — <em>Weight Management Guidelines</em> and <em>Dental Care Guidelines for Dogs and Cats</em>.</li>
-  <li>Merck Veterinary Manual — feline hepatic lipidosis, hyperthyroidism, chronic enteropathy, and urolithiasis.</li>
-  <li>Veterinary Oral Health Council — accepted products for plaque and tartar control in cats. <a href="https://vohc.org/" target="_blank" rel="noopener noreferrer">vohc.org</a></li>
-  <li>Tufts Cummings School <em>Petfoodology</em> — clinical nutrition reviews. <a href="https://sites.tufts.edu/petfoodology/" target="_blank" rel="noopener noreferrer">tufts.edu</a></li>
+  <li>International Renal Interest Society (IRIS): staging and treatment guidelines for feline chronic kidney disease. <a href="http://www.iris-kidney.com/" target="_blank" rel="noopener noreferrer">iris-kidney.com</a></li>
+  <li>AAFP and ISFM: <em>Consensus Guidelines on the Diagnosis and Management of Feline Idiopathic Cystitis</em> and the <em>Feline Environmental Needs Guidelines</em>.</li>
+  <li>ISFM: <em>Consensus Guidelines on the Practical Management of Diabetes Mellitus in Cats</em>.</li>
+  <li>AAHA: <em>Weight Management Guidelines</em> and <em>Dental Care Guidelines for Dogs and Cats</em>.</li>
+  <li>Merck Veterinary Manual: feline hepatic lipidosis, hyperthyroidism, chronic enteropathy, and urolithiasis.</li>
+  <li>Veterinary Oral Health Council: accepted products for plaque and tartar control in cats. <a href="https://vohc.org/" target="_blank" rel="noopener noreferrer">vohc.org</a></li>
+  <li>Tufts Cummings School <em>Petfoodology</em>: clinical nutrition reviews. <a href="https://sites.tufts.edu/petfoodology/" target="_blank" rel="noopener noreferrer">tufts.edu</a></li>
 </ul>""",
 ])
 

@@ -23,8 +23,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # No build step — the site is plain HTML/CSS/JS served directly from the repo root.
-      # There is deliberately no build step. See docs/ADR-001-static-first.md:
+      # No build step - the site is plain HTML/CSS/JS served directly from the repo root.
+      # There is deliberately no build step. See docs/PRD.md section 16.2:
       # the site is static HTML by decision, and the Learn pages are generated
       # locally by tools/learn/ with their output committed.
 

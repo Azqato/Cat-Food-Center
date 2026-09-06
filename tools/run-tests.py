@@ -4,8 +4,8 @@
     python tools/run-tests.py
 
 The suite itself lives in the browser (there is no Node.js in this project and
-no build step — see docs/ADR-001-static-first.md). This script serves the
-repository, loads tests.html in headless Chromium, and reads back
+no build step (see docs/PRD.md section 16.2). This script serves the)
+repository, loads tests.html in headless Edge, and reads back
 window.__testResults. Exits non-zero if anything failed.
 """
 import asyncio
@@ -14,6 +14,13 @@ import os
 import socketserver
 import sys
 import threading
+
+# Edge, never Chrome: Chrome is the maintainer's day-to-day browser and driving
+# it would disturb a live session. Edge runs the same engine, is installed on
+# Windows by default, and costs nothing to use. Playwright reaches it through
+# the msedge channel rather than its own bundled Chromium build, so no browser
+# download is needed. See docs/PRD.md, "Browser Testing".
+EDGE_CHANNEL = 'msedge'
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,7 +45,7 @@ async def main():
     httpd, port = serve()
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch()
+            browser = await p.chromium.launch(channel=EDGE_CHANNEL)
             page = await browser.new_page()
             errors = []
             page.on('console', lambda m: errors.append(m.text) if m.type == 'error' else None)

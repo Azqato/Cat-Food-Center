@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Measure what Open Pet Food Facts actually contains for cat food.
 
-Regenerates the numbers in docs/DATA-COVERAGE.md:
+Regenerates the numbers in docs/PRD.md section 12:
 
     python tools/probe-opff.py [pages]
 
 Hits the public API (no key needed) and prints field coverage, the split
 between the two competing nutriment schemas, and how many figures are
-implausible. Re-run before relying on any coverage claim — the database is
+implausible. Re-run before relying on any coverage claim; the database is
 crowd-sourced and moves.
 """
 import collections
@@ -21,7 +21,7 @@ FIELDS = ('code,product_name,brands,quantity,ingredients_text,ingredients_text_e
           'nutriments,categories_tags,labels_tags,countries_tags,lang,image_front_url')
 
 # A cat food as fed. Anything outside these ranges is a data-entry error, not an
-# unusual product. See docs/DATA-COVERAGE.md.
+# unusual product. See docs/PRD.md section 12.
 PLAUSIBLE = {'protein': (3, 50), 'fat': (0.5, 40), 'moisture': (0, 90), 'kcal': (15, 600)}
 
 

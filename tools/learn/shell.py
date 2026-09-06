@@ -172,7 +172,7 @@ TEMPLATE = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>%(title)s — Cat Food Center</title>
+  <title>%(title)s - Cat Food Center</title>
   <meta name="description" content="%(description)s">
   <link rel="icon" href="./favicon.svg">
   <!-- Blocking on purpose: applies the stored theme before first paint. -->

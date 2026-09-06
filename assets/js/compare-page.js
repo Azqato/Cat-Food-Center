@@ -1,19 +1,19 @@
 /* ==========================================================================
-   compare.html — two products side by side.
+   compare.html: two products side by side.
 
    ── The problem this page has to solve honestly ──
 
    Two scores are not always comparable. A 72 derived from all three pillars
    and a 72 derived from ingredients alone are different claims wearing the
    same number, and putting them next to each other in a big font invites a
-   comparison the data does not support. docs/DATA-COVERAGE.md makes this the
+   comparison the data does not support. docs/PRD.md section 12 makes this the
    normal case rather than an edge case: only about a fifth of products carry
    enough data to score all three pillars.
 
    So this page never declares a winner on the overall score. It compares
    pillar by pillar, and only where *both* products have that pillar; anywhere
    they were scored on different pillars it says so before showing anything
-   else. The comparison people actually want — this food versus that food — is
+   else. The comparison people actually want (this food versus that food) is
    still there, just not overstated.
 
    Figures are shown on a dry-matter basis, because that is the only way a wet
@@ -84,7 +84,7 @@ function renderPickers() {
 function setSlot(index, value) {
   slots[index] = value;
   // The URL carries the comparison, so it can be shared and reloaded. There is
-  // no router here — replaceState is the whole of it.
+  // no router here: replaceState is the whole of it.
   const next = new URLSearchParams();
   if (slots[0]) next.set('a', slots[0]);
   if (slots[1]) next.set('b', slots[1]);
@@ -122,13 +122,13 @@ function scoreTile(entry) {
 /**
  * A row comparing one number.
  *
- * `better` is 'high' or 'low' or null. Where it is null — or where either side
- * is missing — nothing is highlighted, because an arrow pointing at the only
+ * `better` is 'high' or 'low' or null. Where it is null, or where either side
+ * is missing; nothing is highlighted, because an arrow pointing at the only
  * product that happened to publish a figure would read as a verdict on the
  * food rather than on the database.
  */
 function numberRow(label, a, b, unit, better, note, decimals = 1) {
-  const fmt = (v) => (typeof v === 'number' ? `${v.toFixed(decimals)}${unit}` : '—');
+  const fmt = (v) => (typeof v === 'number' ? `${v.toFixed(decimals)}${unit}` : 'not published');
   let winner = null;
   if (better && typeof a === 'number' && typeof b === 'number' && a !== b) {
     winner = (better === 'high') === (a > b) ? 0 : 1;
@@ -193,8 +193,8 @@ function renderComparison(entries) {
 
     <p class="cmp-label" style="margin-top:28px">First ingredient</p>
     <div class="cmp-row">
-      <div class="cmp-cell"><span class="text-small text-ink">${esc(px.ingredients[0] || '—')}</span></div>
-      <div class="cmp-cell"><span class="text-small text-ink">${esc(py.ingredients[0] || '—')}</span></div>
+      <div class="cmp-cell"><span class="text-small text-ink">${esc(px.ingredients[0] || 'not listed')}</span></div>
+      <div class="cmp-cell"><span class="text-small text-ink">${esc(py.ingredients[0] || 'not listed')}</span></div>
     </div>
 
     <p class="cmp-label" style="margin-top:28px">Flagged additives</p>
@@ -206,7 +206,7 @@ function renderComparison(entries) {
     </div>
 
     <p class="text-ink-soft text-micro" style="margin-top:24px">
-      Highlighted cells mark the higher or lower figure, not a verdict &mdash; a single number is
+      Highlighted cells mark the higher or lower figure, not a verdict; a single number is
       not a food. Where only one product publishes a figure, neither is highlighted, because that
       would be a comment on the database rather than on the food.
       <a href="./methodology.html" class="text-accent">Full methodology</a>.
@@ -218,7 +218,7 @@ function renderComparison(entries) {
 async function load(barcode, kb) {
   if (!barcode) return null;
   if (!isValidBarcode(barcode)) {
-    return { error: `${barcode} is not a valid barcode — it fails its own check digit.` };
+    return { error: `${barcode} is not a valid barcode; it fails its own check digit.` };
   }
   const { found, product, error } = await fetchProduct(barcode);
   if (error) return { error };
@@ -261,7 +261,7 @@ async function run() {
     notice.innerHTML = `<div role="status" style="background:var(--warn-bg);border-left:4px solid var(--poor);border-radius:8px;padding:12px 16px">
       <p class="text-small" style="color:var(--warn-ink);margin:0">
         These two scores were worked out from different pillars, so the overall numbers are not
-        directly comparable &mdash; they are answers to slightly different questions. Compare the
+        directly comparable: they are answers to slightly different questions. Compare the
         individual pillars below instead.
       </p></div>`;
   }

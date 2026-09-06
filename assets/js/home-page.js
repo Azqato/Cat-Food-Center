@@ -1,9 +1,9 @@
 /* ==========================================================================
-   index.html — the "Recently viewed" list.
+   index.html: the "Recently viewed" list.
 
    Read from this device's own storage (history.js). Until someone has looked
    at a product there is nothing to show, so the section removes itself rather
-   than standing there empty — an empty list on a home page reads as something
+   than standing there empty: an empty list on a home page reads as something
    broken.
    ========================================================================== */
 import { recentProducts, clearRecent } from './history.js';

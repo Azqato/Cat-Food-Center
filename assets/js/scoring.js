@@ -3,8 +3,8 @@
 
    A pure, deterministic module: the same product always yields the same
    result, and nothing here touches the network or the DOM. It runs in the
-   visitor's browser, which is deliberate — a sceptical reader can open
-   devtools and watch a score being derived. See docs/ADR-001-static-first.md.
+   visitor's browser, which is deliberate; a sceptical reader can open
+   devtools and watch a score being derived. See docs/PRD.md section 16.2.
 
    The methodology is published in PRD.md §6 and on methodology.html. This file
    is the implementation of that document; if the two disagree, the document is
@@ -12,7 +12,7 @@
 
    ── The thing that shapes this file most ──
 
-   docs/DATA-COVERAGE.md measured the real database: about a fifth of products
+   docs/PRD.md section 12 measured the real database: about a fifth of products
    carry enough data to score all three pillars, and a quarter of the products
    with a protein figure carry an implausible one. So partial data is the
    normal path, not an error path, and the engine is built around three rules:
@@ -43,7 +43,7 @@ export const BANDS = [
    the two the API can ever supply. */
 const AAFCO_ADULT_MIN = { proteinDM: 26, fatDM: 9 };
 
-/* Named animal proteins. A named source is the signal — "chicken" scores,
+/* Named animal proteins. A named source is the signal, "chicken" scores,
    "meat" does not, which is Pillar C's whole point. */
 const ANIMAL_PROTEINS = [
   'chicken', 'turkey', 'duck', 'goose', 'quail', 'salmon', 'tuna', 'trout',
@@ -53,7 +53,7 @@ const ANIMAL_PROTEINS = [
   /* The same species in the other languages the database carries. A named
      species is the signal, and the signal does not stop at the Channel: an
      English-only list reported a French beef pate as having no identifiable
-     protein source at all. Generic words for meat — viande, Fleisch, carne —
+     protein source at all. Generic words for meat (viande, Fleisch, carne)
      are deliberately absent, because "meat" unnamed is exactly what this
      check is meant not to reward. */
   'poulet', 'dinde', 'canard', 'saumon', 'thon', 'boeuf', 'bœuf', 'agneau',
@@ -94,9 +94,9 @@ const STARCH_FILLERS = [
 ];
 
 /* Languages the additive aliases cover. Only about a tenth of records carry
-   English ingredients (docs/DATA-COVERAGE.md), and the database is
+   English ingredients (docs/PRD.md section 12), and the database is
    Europe-weighted, so an English-only matcher would silently report the other
-   nine tenths as free of flagged additives — a false clean bill of health, and
+   nine tenths as free of flagged additives: a false clean bill of health, and
    the worst direction for a trust product to be wrong in. */
 export const MATCHED_LANGUAGES = ['en', 'fr', 'de', 'es', 'it', 'nl'];
 
@@ -109,7 +109,7 @@ export const MATCHED_LANGUAGES = ['en', 'fr', 'de', 'es', 'it', 'nl'];
  * "bhakti", and "oat" on "coating". Both are real ingredient-label words.
  *
  * A trailing "s" is allowed, because aliases are written in the singular but
- * labels are usually plural — "meat by-products", "mixed tocopherols",
+ * labels are usually plural, "meat by-products", "mixed tocopherols",
  * "artificial colours". Without this the unnamed-source penalty never fires on
  * a real label, which is exactly the bug the tests caught.
  */
@@ -141,14 +141,14 @@ export function toDryMatter(asFedPct, moisturePct) {
 }
 
 /**
- * Carbohydrate by difference — nitrogen-free extract (learn-labels.html §5).
+ * Carbohydrate by difference: nitrogen-free extract (learn-labels.html §5).
  * Needs all four other fractions, so it is often unavailable.
  */
 export function carbsByDifference({ proteinDM, fatDM, fibreDM, ashDM }) {
   const parts = [proteinDM, fatDM, fibreDM, ashDM];
   if (parts.some((v) => typeof v !== 'number')) return undefined;
   const carbs = 100 - parts.reduce((a, b) => a + b, 0);
-  // A negative result means the analysis does not add up — a data error, not a
+  // A negative result means the analysis does not add up, a data error, not a
   // food with negative carbohydrate.
   return carbs >= 0 && carbs <= 100 ? carbs : undefined;
 }
@@ -181,7 +181,7 @@ function scoreNutrition(product, kb) {
      parenthetical, but the entry is still overwhelmingly unspecified meat, and
      reading that 4% as a named animal protein would award marks for the
      opposite of what the label shows. So any entry matching an unnamed-source
-     term is judged on the part before its parenthesis — and this must apply to
+     term is judged on the part before its parenthesis, and this must apply to
      the whole leading window, not just the first entry: masking only the first
      one simply moved the same 4% down to the "appears in the first three"
      branch and scored it there instead. */
@@ -194,7 +194,7 @@ function scoreNutrition(product, kb) {
   const first = named[0] || '';
   const firstIsUnnamed = anyMatch((ingredients[0] || '').toLowerCase(), vagueAliases);
 
-  /* Animal-protein dominance — 35 points. */
+  /* Animal-protein dominance: 35 points. */
   if (ingredients.length) {
     possible += 35;
     if (anyMatch(first, ANIMAL_PROTEINS)) {
@@ -229,7 +229,7 @@ function scoreNutrition(product, kb) {
     }
   }
 
-  /* Protein level on a dry-matter basis — 25 points, against the AAFCO adult
+  /* Protein level on a dry-matter basis: 25 points, against the AAFCO adult
      minimum of 26% DM. */
   if (typeof proteinDM === 'number') {
     possible += 25;
@@ -243,7 +243,7 @@ function scoreNutrition(product, kb) {
         : `Crude protein is ${proteinDM.toFixed(1)}% dry matter, below the AAFCO adult minimum of ${AAFCO_ADULT_MIN.proteinDM}%.`);
   }
 
-  /* Carbohydrate load — 20 points. Lower is better for an obligate carnivore. */
+  /* Carbohydrate load: 20 points. Lower is better for an obligate carnivore. */
   if (typeof carbsDM === 'number') {
     possible += 20;
     const bands = [[10, 20], [20, 16], [30, 11], [40, 5]];
@@ -253,7 +253,7 @@ function scoreNutrition(product, kb) {
     reasons.push(`Carbohydrate by difference is about ${carbsDM.toFixed(0)}% of dry matter.`);
   }
 
-  /* Moisture — 10 points. Wet formats support hydration and urinary health
+  /* Moisture: 10 points. Wet formats support hydration and urinary health
      (learn-hydration.html). */
   if (product.format && product.format !== 'unknown') {
     possible += 10;
@@ -266,7 +266,7 @@ function scoreNutrition(product, kb) {
     }
   }
 
-  /* Taurine — 10 points. Only a positive figure is informative; its absence
+  /* Taurine: 10 points. Only a positive figure is informative; its absence
      from the database does not mean it is absent from the food. */
   if (n.taurinePresent === true) {
     possible += 10;
@@ -301,7 +301,7 @@ function scoreAdditives(product, kb) {
   /* Beneficial (Tier 0) credit is awarded per ingredient entry, not against the
      whole list, and is withheld when that same entry is itself an unnamed
      source. "Named by-products" is the case that forced this: its aliases are
-     bare stems — "by-product", "sous-produits" — so "meat by-products" matched
+     bare stems ("by-product", "sous-produits") so "meat by-products" matched
      it and earned a bonus for being a named source while the transparency
      pillar was penalising the very same words for being unnamed. One product
      cannot be both. The knowledge base entry says as much itself: only named
@@ -315,7 +315,7 @@ function scoreAdditives(product, kb) {
     }));
 
   /* Penalties are per occurrence, so three Tier 3 additives cost more than
-     one. The floor is zero — the pillar cannot go negative and drag an
+     one. The floor is zero; the pillar cannot go negative and drag an
      otherwise decent product below what the other pillars justify. */
   const PENALTY = { 3: 30, 2: 10 };
   let score = 100;
@@ -398,7 +398,7 @@ export function bandFor(score) {
 /**
  * Score a normalised Product against the additive knowledge base.
  *
- * @param {object} product Product shape — see docs/TRD.md §4
+ * @param {object} product Product shape (see docs/PRD.md section 16.5)
  * @param {object} kb      Parsed assets/data/additives.json
  * @returns {object} ScoreResult
  */
@@ -469,7 +469,7 @@ export function scoreProduct(product, kb) {
     warnings.push(`The ingredient list is in ${product.ingredientsLang === 'unknown' ? 'an unrecognised language' : `'${product.ingredientsLang}'`}, which this additive checker does not fully cover. Flagged additives may have been missed, so treat the additive and transparency pillars as incomplete rather than clean.`);
   }
   if (product.aafcoComplete === undefined) {
-    warnings.push('No AAFCO complete-and-balanced statement is on record. Check the packaging — this database does not capture it.');
+    warnings.push('No AAFCO complete-and-balanced statement is on record. Check the packaging; this database does not capture it.');
   }
   if (product.format === 'treat') {
     warnings.push('This is a treat, not a complete diet. It is scored on the same scale, but should be under 10% of daily calories.');

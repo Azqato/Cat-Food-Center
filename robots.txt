@@ -1,0 +1,23 @@
+# Cat Food Center - robots.txt
+#
+# Fully open, deliberately. Search engines, AI assistants and answer engines
+# are explicitly permitted to crawl, index, quote, summarise and cite this
+# site; see LICENSE.md section 4. That permission is the point, not an
+# oversight, so a future tightening of this file should be a decision somebody
+# makes rather than something that happens by default.
+#
+# LICENSE.md is authoritative if this file and it ever appear to disagree.
+#
+# SCOPE, which matters here: this site is served from a subpath of
+# azqato.github.io, a domain this project does not own. The robots.txt that
+# actually governs crawler behaviour for that host is the one at
+# https://azqato.github.io/robots.txt, which belongs to the domain owner. This
+# file is served at https://azqato.github.io/Cat-Food-Center/robots.txt and is
+# NOT the authoritative robots policy for the host. It is committed because it
+# is correct if the site ever moves to its own domain, and because it records
+# the intent either way. The same limitation applies to the sitemap below.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://azqato.github.io/Cat-Food-Center/sitemap.xml
