@@ -27,6 +27,55 @@ CASES = [
 ]
 
 
+DECODE_ROUNDTRIP = r"""
+async () => {
+  await new Promise((res, rej) => { const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+    s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+
+  // EAN-13 encoding tables. Drawing the bars here rather than loading a
+  // fixture image keeps the check self-contained, and means the barcode under
+  // test is one whose digits we chose.
+  const L = ['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'];
+  const G = ['0100111','0110011','0011011','0100001','0011101','0111001','0000101','0010001','0001001','0010111'];
+  const R = L.map((s) => s.split('').map((c) => (c === '1' ? '0' : '1')).join(''));
+  const P = ['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGLGGL','LGGLGL'];
+  function bars(code) {
+    const d = code.split('').map(Number);
+    const par = P[d[0]];
+    let bits = '101';
+    for (let i = 1; i <= 6; i++) bits += (par[i - 1] === 'L' ? L : G)[d[i]];
+    bits += '01010';
+    for (let i = 7; i <= 12; i++) bits += R[d[i]];
+    return bits + '101';
+  }
+
+  const scanner = await import('./assets/js/scanner.js');
+  const out = {};
+  for (const code of ['3596710487455', '5000159461122']) {
+    const bits = bars(code), M = 3, quiet = 36;   // quiet zone, or nothing decodes
+    const canvas = document.createElement('canvas');
+    canvas.width = bits.length * M + quiet * 2;
+    canvas.height = 180;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
+    for (let i = 0; i < bits.length; i++) if (bits[i] === '1') ctx.fillRect(quiet + i * M, 20, M, 120);
+
+    const Z = window.ZXing;
+    const reader = new Z.MultiFormatReader();
+    const hints = new Map();
+    hints.set(Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.EAN_13, Z.BarcodeFormat.UPC_A]);
+    reader.setHints(hints);
+    const bitmap = new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(canvas)));
+    let text;
+    try { text = reader.decode(bitmap).getText(); } catch (e) { text = 'FAILED: ' + e; }
+    out[code] = { decoded: text, matches: text === code, valid: scanner.isValidBarcode(String(text)) };
+  }
+  return out;
+}
+"""
+
 def serve():
     handler = lambda *a, **kw: http.server.SimpleHTTPRequestHandler(*a, directory=ROOT, **kw)
     httpd = socketserver.TCPServer(('127.0.0.1', 0), handler)
@@ -41,13 +90,18 @@ async def main():
     httpd, port = serve()
     base = 'http://127.0.0.1:%d' % port
     failures = []
+    # The six page loads below, plus the two multi-page checks that follow them.
+    total = 6
 
     try:
         async with async_playwright() as p:
             browser = await p.chromium.launch()
-            for path, description in (
-                    [('/product.html?barcode=%s' % code, desc) for code, desc in CASES]
-                    + [('/search.html?q=chicken', 'text search for "chicken"')]):
+            paths = (
+                [('/product.html?barcode=%s' % code, desc) for code, desc in CASES]
+                + [('/search.html?q=chicken', 'text search for "chicken"'),
+                   ('/scan.html', 'scan page with no camera available'),
+                   ('/index.html', 'home page')])
+            for path, description in paths:
                 page = await browser.new_page(viewport={'width': 1280, 'height': 900})
                 errors = []
 
@@ -75,7 +129,7 @@ async def main():
                 # wordmark and every page looks identical.
                 heading = await page.evaluate(
                     "(document.querySelector('#product-article h1, #product-article .text-h2,"
-                    " #results-list .text-h2, #results-label') || {}).textContent || ''")
+                    " #results-list .text-h2, #results-label, main h1') || {}).textContent || ''")
                 sections = await page.evaluate(
                     "document.querySelectorAll('main section, #results-list li').length")
                 overflow = await page.evaluate(
@@ -88,11 +142,58 @@ async def main():
                 print('       sections=%d overflow=%s%s'
                       % (sections, overflow, ('  ERRORS: %s' % errors) if errors else ''))
                 await page.close()
+
+            total += 1
+            # The recently-viewed list is the one thing that spans two pages, so
+            # it needs one context that visits a product and then goes home.
+            # Headless Chromium starts with empty storage, which is exactly the
+            # first-visit state the section is supposed to hide itself in.
+            context = await browser.new_context()
+            page = await context.new_page()
+            await page.goto(base + '/index.html')
+            await page.wait_for_timeout(400)
+            hidden_first = await page.evaluate(
+                "document.getElementById('recent-section').hidden")
+
+            await page.goto(base + '/product.html?barcode=%s' % CASES[0][0])
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Loading')", timeout=25000)
+            await page.wait_for_timeout(600)
+
+            await page.goto(base + '/index.html')
+            await page.wait_for_timeout(600)
+            shown_after = await page.evaluate(
+                "!document.getElementById('recent-section').hidden"
+                " && document.querySelectorAll('#recent-list li').length === 1")
+            await context.close()
+
+            ok = hidden_first and shown_after
+            if not ok:
+                failures.append('recently viewed')
+            print('%s %-44s %s' % ('PASS' if ok else 'FAIL', 'recently viewed records a real visit',
+                                   'hidden when empty=%s, shows after a visit=%s'
+                                   % (hidden_first, shown_after)))
+            total += 1
+            # The decoder is the one part of scanning that a headless browser can
+            # genuinely exercise: draw a known EAN-13, decode it back, and check
+            # our own validator agrees with the result. It does not prove the
+            # camera works — nothing here can — but it does prove that a correct
+            # frame produces the correct barcode rather than a plausible wrong one.
+            page = await browser.new_page()
+            await page.goto(base + '/scan.html')
+            roundtrip = await page.evaluate(DECODE_ROUNDTRIP)
+            ok = all(r['matches'] and r['valid'] for r in roundtrip.values())
+            if not ok:
+                failures.append('decode round-trip')
+            print('%s %-44s %s' % ('PASS' if ok else 'FAIL', 'barcode decode round-trip',
+                                   ', '.join('%s->%s' % (k, v['decoded'][:16])
+                                             for k, v in roundtrip.items())))
+            await page.close()
             await browser.close()
     finally:
         httpd.shutdown()
 
-    print('\n%d of %d page states OK' % (4 - len(failures), 4))
+    print('\n%d of %d checks OK' % (total - len(failures), total))
     return 1 if failures else 0
 
 

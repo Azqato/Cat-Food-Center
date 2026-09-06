@@ -6,6 +6,32 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.9.0] - 2026-09-05
+
+**The scanner (M8), and a home page that shows your own history instead of two invented products.**
+
+Added
+* `scan.html` and `assets/js/scanner.js` — barcode scanning, entirely client-side. Frames are decoded on the device and never uploaded; the only thing that leaves is the barcode number, to look the product up. `BarcodeDetector` is used where the platform provides it, and ZXing is downloaded only when it does not — never speculatively.
+* `assets/js/scan-page.js` — the part that has to be kind about failure. Declined permission, no camera, camera held by another app, a browser with no camera API and a page not on HTTPS each get their own sentence and their own suggested next step.
+* Manual barcode entry on the same page, always visible. On a desktop browser it is the primary path, not a consolation prize. Entries are checksum-validated before navigating, so a typo is reported as a typo rather than as a gap in the database.
+* `assets/js/history.js`, `assets/js/home-page.js` — "Recently viewed", kept in `localStorage` on the device and nowhere else. There is no account and no sync, which is a feature of the static architecture rather than a limitation of it: what someone feeds their cat is not information we have any reason to hold. Only barcode, name, brand and the last score are stored, and opening a product recomputes the score rather than trusting the stored one.
+* A `Scan` entry in the top navigation of every page.
+* `assets/js/scanner.test.js` — 17 assertions on barcode validation. The full suite is now 147.
+* `tools/check-live.py` grew to 8 checks: the scan page, the home page, a recently-viewed round-trip across two page loads, and a decode round-trip that draws a known EAN-13 and reads it back.
+
+Changed
+* The home page Scan button is a real link. It was disabled with a "Coming soon" tooltip.
+
+Removed
+* The two invented "Recently viewed" products (Weruva and Friskies, with hardcoded scores). The section now hides itself until there is something real to show — an empty list on a home page reads as something broken.
+
+Notes
+* **UPC-E cannot be checksum-validated in place.** Its check digit is computed over the expanded UPC-A form, so validating an 8-digit UPC-E under the EAN-8 rule rejects it. That failure is silent: the scanner would keep scanning and simply never see small US packages. `expandUpcE` exists for this, and an 8-digit code is accepted if either reading checks out.
+* **`getUserMedia` needs a secure context.** `http://<LAN-IP>` is not one, so testing from a phone on the local network gives no camera at all, with no error that says why. The page distinguishes that case from a real fault.
+* QR codes are deliberately excluded from the format list. Packaging carries them, and a QR code is not the product's barcode.
+
+---
+
 ## [0.8.0] - 2026-09-05
 
 **The scoring engine, the API client, and the two pages that use them. The product is now real: enter a barcode and get a derived score with its reasoning.**

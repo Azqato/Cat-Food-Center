@@ -12,6 +12,7 @@
    ========================================================================== */
 import { fetchProduct } from './opff.js';
 import { scoreProduct, loadKnowledgeBase, toDryMatter } from './scoring.js';
+import { recordView } from './history.js';
 
 const BAND = {
   excellent: { color: 'var(--excellent)', label: 'Excellent', glyph: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
@@ -312,6 +313,16 @@ async function main() {
 
   const result = scoreProduct(product, kb);
   document.title = `${product.name} — Cat Food Center`;
+
+  // Stored on this device only — see history.js.
+  recordView({
+    barcode: product.barcode,
+    name: product.name,
+    brand: product.brand,
+    score: result.scorable ? result.score : undefined,
+    band: result.scorable ? result.band : undefined,
+    bandLabel: result.scorable ? result.bandLabel : undefined,
+  });
 
   article.innerHTML = [
     renderHeader(product, result),

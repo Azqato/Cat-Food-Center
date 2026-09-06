@@ -58,6 +58,15 @@ exceptions worth knowing:
 | `python -m http.server 8000` | Serve the site locally |
 | `python tools/learn/build.py` | Regenerate the eleven Cat Care Guide pages |
 | `python tools/check-contrast.py` | Verify both palettes against WCAG AA |
+| `python tools/run-tests.py` | Run the test suite headlessly (147 assertions) |
+| `python tools/check-live.py` | Eight end-to-end checks against the live API — needs network |
+| `python tools/probe-opff.py` | Re-measure the database behind `docs/DATA-COVERAGE.md` |
+
+## Testing
+
+There is no Node.js and no build step ([ADR-001](docs/ADR-001-static-first.md)), so the suite is a page: `tests.html` imports the `*.test.js` modules and runs them in a real browser. `tools/run-tests.py` drives it headlessly and exits non-zero on a failure, which is what makes it usable as a gate.
+
+`tools/check-live.py` is different in kind — it hits the real API, so it is not deterministic and is a smoke check rather than a gate. It renders six page states, walks a recently-viewed round-trip across two page loads, and draws a known EAN-13 to decode it back.
 
 ## Environment variables
 
@@ -124,7 +133,14 @@ modifiers (`bg-surface/50`) do not work on them. Add a token instead.
 
 ## Project status
 
-MVP live on GitHub Pages. The methodology page, the Cat Care Guide, and the light/dark theme are complete. Home, search, and product detail are fully built but still run on **mock data** — replacing that with the Open Pet Food Facts integration and a real scoring engine is the next work. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the milestone plan.
+Live on GitHub Pages, and running on real data. Search and product pages query Open Pet Food Facts and score what comes back; barcode scanning works from the camera or by typing the number. The methodology page, the Cat Care Guide and light/dark theming are complete.
+
+Two things about the data are worth knowing before reading the code:
+
+- **About a fifth of products carry enough data to score all three pillars.** Partial data is the normal path, and the engine returns no score rather than a guess when too little is known.
+- **Only about a tenth of records carry English ingredients.** Every text check is therefore a language check; where the label is in a language the aliases do not cover, the engine says so rather than reporting silence as a clean result.
+
+Both are measured, with the method, in [`docs/DATA-COVERAGE.md`](docs/DATA-COVERAGE.md). Next up is offline support. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Documentation
 

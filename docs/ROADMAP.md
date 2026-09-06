@@ -13,7 +13,7 @@ Two things learned in building them shape everything after:
 - **The database is thinner than the PRD assumed.** About a fifth of products carry enough data to score all three pillars. Partial data is the normal path, and the engine refuses to score rather than guessing. See [DATA-COVERAGE.md](./DATA-COVERAGE.md).
 - **The database is not English.** Only 9.5% of records carry English ingredients, and an English-only matcher reported the rest as clean. Any text check added from here is a language check too.
 
-Next is the barcode scanner (M8) — the feature ADR-001 was written to make sure static hosting could still support.
+The barcode scanner (M8) is done — the feature ADR-001 was written to make sure static hosting could still support, and it needed no server, as predicted. Next is offline support (M9).
 
 ---
 
@@ -30,7 +30,7 @@ Next is the barcode scanner (M8) — the feature ADR-001 was written to make sur
 | M5.5: Architecture decision + Next.js removal | 2026-09-05 | Complete |
 | M6: Data layer — Open Pet Food Facts | 2026-09-05 | Complete |
 | M7: Scoring engine | 2026-09-05 | Complete |
-| M8: Barcode scanner | 2026-11 | Planned |
+| M8: Barcode scanner | 2026-09-05 | Complete |
 | M9: Service worker / PWA offline | 2026-11 | Planned |
 | M10: Not-found / submit flow | 2026-12 | Planned |
 | M11: Compare page | 2026-12 | Planned |
@@ -98,12 +98,14 @@ Next is the barcode scanner (M8) — the feature ADR-001 was written to make sur
 
 **What was not in the plan and had to be:** the plan assumed English labels. Only 9.5% of records are. The matcher's silence on the other 90% was being reported as a clean bill of health, and a French product with unnamed meat by-products and added sugar scored 77/Excellent. Aliases now cover six languages, and a label outside that set is stated as unchecked rather than clean. See [DATA-COVERAGE.md](./DATA-COVERAGE.md) — the write-up covers three further defects that the English-only matcher had been hiding.
 
-### M8: Barcode scanner
-- Implement BarcodeDetector API with ZXing (@zxing/library) fallback
-- Live camera viewfinder with alignment guide
-- Permission request on user action with graceful fallback to search
-- Throttled frame loop for decode performance
-- `/scan` route
+### M8: Barcode scanner — Complete 2026-09-05
+- `scan.html` and `assets/js/scanner.js`: `BarcodeDetector` where the platform has it, ZXing downloaded on demand where it does not
+- Live viewfinder with a reticle; camera starts only on a click, and is released on stop, on tab-hide and on navigation
+- Every failure mode gets its own sentence — declined permission, no camera, camera busy, no HTTPS — because "could not start camera" would be accurate and useless
+- Manual barcode entry alongside, not beneath: on a desktop browser it is the primary path
+- EAN-13 / EAN-8 / UPC-A / UPC-E, checksum-validated before navigating
+
+**Two things worth recording.** UPC-E has its own checksum rule — it must be expanded to UPC-A before it can be checked — and validating it as if it were EAN-8 would have made the scanner appear to simply never see small US packages, with no error anywhere. And the secure-context requirement means `http://<LAN-IP>` has no camera at all, so testing from a phone on the local network fails in a way that looks like broken code; the page names that case explicitly rather than showing a dead viewfinder.
 
 ### M9: Service worker / PWA offline
 - Web app manifest

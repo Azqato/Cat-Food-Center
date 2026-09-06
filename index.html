@@ -36,10 +36,6 @@
     .nav-link { font-size: .875rem; color: var(--ink-soft); text-decoration: none; padding: 4px 8px; border-radius: 6px; transition: color 150ms; white-space: nowrap; }
     .nav-link:hover:not([aria-current]) { color: var(--ink); }
     .nav-link[aria-current="page"] { color: var(--accent); font-weight: 600; }
-    /* Scan tooltip */
-    .scan-wrap { display: inline-flex; flex-direction: column; align-items: center; }
-    .scan-tooltip { opacity: 0; transition: opacity 150ms; pointer-events: none; }
-    .scan-wrap:hover .scan-tooltip { opacity: 1; }
   </style>
 </head>
 <body class="bg-bg text-ink min-h-screen flex flex-col">
@@ -52,6 +48,7 @@
       </a>
       <nav class="flex items-center gap-1 min-w-0" aria-label="Main navigation" style="overflow-x:auto;scrollbar-width:none">
         <a href="./index.html" class="nav-link" aria-current="page">Home</a>
+        <a href="./scan.html" class="nav-link">Scan</a>
         <a href="./search.html" class="nav-link">Search</a>
         <a href="./learn.html" class="nav-link">Learn</a>
         <a href="./methodology.html" class="nav-link">Methodology</a>
@@ -76,16 +73,10 @@
 
       <!-- Scan button -->
       <div class="flex flex-col items-center gap-3">
-        <div class="scan-wrap">
-          <button disabled aria-disabled="true" aria-describedby="scan-tooltip"
-            class="w-32 h-32 rounded-pill bg-accent text-on-accent font-display text-h2 flex items-center justify-center shadow-md cursor-not-allowed select-none opacity-60">
-            Scan
-          </button>
-          <span id="scan-tooltip" role="tooltip"
-            class="scan-tooltip bg-ink text-white text-micro px-3 py-1 rounded-pill whitespace-nowrap mt-3">
-            Coming soon
-          </span>
-        </div>
+        <a href="./scan.html"
+          class="btn-link w-32 h-32 rounded-pill bg-accent text-on-accent font-display text-h2 flex items-center justify-center shadow-md select-none">
+          Scan
+        </a>
         <p class="text-ink-soft text-small">Point at a barcode</p>
       </div>
 
@@ -114,48 +105,21 @@
         </a>
       </section>
 
-      <!-- Recently viewed -->
-      <section class="w-full" aria-label="Recently viewed products">
-        <h2 class="font-display text-h2 text-ink mb-4">Recently viewed</h2>
-        <ul class="flex flex-col gap-3" style="list-style:none;padding:0">
-
-          <li>
-            <a href="./product.html?barcode=0000000000001"
-              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
-              <div class="bg-band-excellent w-14 h-14 rounded-card flex items-center justify-center shrink-0"
-                aria-label="Score 81, Excellent">
-                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">81</span>
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="text-ink font-medium text-small truncate">Weruva Paw Lickin' Chicken</p>
-                <p class="text-ink-soft text-micro">Weruva</p>
-                <span class="inline-block bg-band-excellent text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Excellent</span>
-              </div>
-              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-              </svg>
-            </a>
-          </li>
-
-          <li>
-            <a href="./product.html?barcode=0000000000002"
-              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
-              <div class="bg-band-poor w-14 h-14 rounded-card flex items-center justify-center shrink-0"
-                aria-label="Score 28, Poor">
-                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">28</span>
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="text-ink font-medium text-small truncate">Friskies Surfin' &amp; Turfin' Favorites</p>
-                <p class="text-ink-soft text-micro">Purina Friskies</p>
-                <span class="inline-block bg-band-poor text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Poor</span>
-              </div>
-              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-              </svg>
-            </a>
-          </li>
-
-        </ul>
+      <!-- Recently viewed — filled from this device's storage by assets/js/home-page.js,
+           and hidden entirely until there is something to show. -->
+      <section id="recent-section" class="w-full" aria-label="Recently viewed products" hidden>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-display text-h2 text-ink">Recently viewed</h2>
+          <button id="recent-clear" type="button"
+            class="text-micro text-ink-soft"
+            style="background:none;border:0;cursor:pointer;text-decoration:underline">
+            Clear
+          </button>
+        </div>
+        <ul id="recent-list" class="flex flex-col gap-3" style="list-style:none;padding:0"></ul>
+        <p class="text-ink-soft text-micro mt-3">
+          Kept on this device only. Scores are recalculated when you open a product.
+        </p>
       </section>
 
     </div>
@@ -168,6 +132,8 @@
         class="text-accent footer-link">Azqato</a>
     </p>
   </footer>
+
+  <script type="module" src="./assets/js/home-page.js"></script>
 
 </body>
 </html>

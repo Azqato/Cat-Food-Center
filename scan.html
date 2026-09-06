@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search — Cat Food Center</title>
+  <title>Scan a barcode — Cat Food Center</title>
   <link rel="icon" href="./favicon.svg">
   <!-- Blocking on purpose: applies the stored theme before first paint. -->
   <script src="./assets/cfc-theme.js"></script>
@@ -35,6 +35,20 @@
     .nav-link { font-size: .875rem; color: var(--ink-soft); text-decoration: none; padding: 4px 8px; border-radius: 6px; transition: color 150ms; white-space: nowrap; }
     .nav-link:hover:not([aria-current]) { color: var(--ink); }
     .nav-link[aria-current="page"] { color: var(--accent); font-weight: 600; }
+    /* Viewfinder. The video fills a fixed-aspect box and is cropped rather
+       than letterboxed, because a letterboxed preview makes people hold the
+       phone at the wrong distance. */
+    .viewfinder { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #000;
+                  border-radius: 12px; overflow: hidden; }
+    .viewfinder video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* A window over the middle of the frame. It is guidance, not a crop — the
+       decoder reads the whole frame — so it is drawn with a scrim rather than
+       anything that could be mistaken for a hard boundary. */
+    .reticle { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+               pointer-events: none; }
+    .reticle-box { width: 78%; height: 38%; border: 2px solid rgba(255,255,255,.9);
+                   border-radius: 8px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.35); }
+    .scan-status { min-height: 1.5rem; }
   </style>
 </head>
 <body class="bg-bg text-ink min-h-screen flex flex-col">
@@ -47,8 +61,8 @@
       </a>
       <nav class="flex items-center gap-1 min-w-0" aria-label="Main navigation" style="overflow-x:auto;scrollbar-width:none">
         <a href="./index.html" class="nav-link">Home</a>
-        <a href="./scan.html" class="nav-link">Scan</a>
-        <a href="./search.html" class="nav-link" aria-current="page">Search</a>
+        <a href="./scan.html" class="nav-link" aria-current="page">Scan</a>
+        <a href="./search.html" class="nav-link">Search</a>
         <a href="./learn.html" class="nav-link">Learn</a>
         <a href="./methodology.html" class="nav-link">Methodology</a>
       </nav>
@@ -62,24 +76,62 @@
 
   <!-- ── Main ── -->
   <main class="flex-1 w-full max-w-content mx-auto px-4 py-8">
-    <div class="flex flex-col gap-8">
+    <div class="flex flex-col gap-6" style="max-width:34rem;margin:0 auto;width:100%">
 
-      <!-- Pre-filled from ?q= by assets/js/search-page.js -->
-      <form action="./search.html" method="get" class="flex gap-2" role="search">
-        <input type="search" name="q" id="search-input" placeholder="Brand or product name…"
-          aria-label="Search cat food products"
-          class="flex-1 min-w-0 border border-hairline rounded-card px-4 py-3 text-small text-ink bg-surface" />
-        <button type="submit"
-          class="btn-link rounded-card bg-accent text-on-accent font-medium text-small px-5 py-3 shrink-0 border-0 cursor-pointer">
-          Search
+      <div>
+        <h1 class="font-display text-h1 text-ink">Scan a barcode</h1>
+        <p class="text-ink-soft text-small mt-2">
+          Point your camera at the barcode on the packaging. The picture is decoded on your
+          device and never leaves it &mdash; the only thing sent anywhere is the barcode number,
+          to look the product up.
+        </p>
+      </div>
+
+      <!-- Everything below is driven by assets/js/scan-page.js. -->
+      <div id="scan-idle">
+        <button id="scan-start" type="button"
+          class="btn-link w-full rounded-card bg-accent text-on-accent font-medium text-small px-5 py-4 border-0 cursor-pointer">
+          Start camera
         </button>
-      </form>
+        <p class="text-ink-soft text-micro mt-3">
+          Your browser will ask permission first. Nothing starts until you allow it.
+        </p>
+      </div>
 
-      <!-- Results -->
-      <section aria-label="Search results">
-        <p id="results-label" class="text-small text-ink-soft mb-4" hidden></p>
+      <div id="scan-live" hidden>
+        <div class="viewfinder">
+          <video id="scan-video" muted playsinline></video>
+          <div class="reticle" aria-hidden="true"><div class="reticle-box"></div></div>
+        </div>
+        <p id="scan-status" class="scan-status text-small text-ink-soft mt-3" role="status" aria-live="polite"></p>
+        <button id="scan-stop" type="button"
+          class="btn-link w-full rounded-card bg-surface border border-hairline text-ink font-medium text-small px-5 py-3 mt-1 cursor-pointer">
+          Stop camera
+        </button>
+      </div>
 
-        <ul id="results-list" class="flex flex-col gap-3" style="list-style:none;padding:0"></ul>
+      <div id="scan-message" hidden
+        class="bg-surface border border-hairline rounded-card p-5">
+        <p id="scan-message-title" class="font-display text-h2 text-ink mb-2"></p>
+        <p id="scan-message-body" class="text-small text-ink-soft"></p>
+      </div>
+
+      <!-- Always available, and the only path on a device with no camera. -->
+      <section class="bg-surface border border-hairline rounded-card p-5">
+        <h2 class="font-display text-h2 text-ink mb-3">Type it instead</h2>
+        <form id="manual-form" class="flex gap-2">
+          <input type="text" id="manual-input" inputmode="numeric" autocomplete="off"
+            placeholder="Barcode number" aria-label="Enter a barcode number"
+            class="flex-1 min-w-0 border border-hairline rounded-card px-4 py-3 text-small text-ink bg-surface" />
+          <button type="submit"
+            class="btn-link rounded-card bg-accent text-on-accent font-medium text-small px-5 py-3 shrink-0 border-0 cursor-pointer">
+            Look up
+          </button>
+        </form>
+        <p id="manual-error" class="text-small mt-3" style="color:var(--bad)" hidden></p>
+        <p class="text-ink-soft text-micro mt-3">
+          The number under the bars, 8 to 13 digits. Or <a href="./search.html" class="text-accent">search by name</a>.
+        </p>
       </section>
 
     </div>
@@ -93,7 +145,7 @@
     </p>
   </footer>
 
-  <script type="module" src="./assets/js/search-page.js"></script>
+  <script type="module" src="./assets/js/scan-page.js"></script>
 
 </body>
 </html>

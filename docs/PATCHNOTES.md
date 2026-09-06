@@ -4,6 +4,22 @@ All notable changes to Cat Food Center are documented here. Format follows [Keep
 
 ---
 
+## v0.7.0 — 2026-09-05
+
+### Added
+- **Barcode scanning.** Point the camera at the packaging and the product page opens. Decoding happens on the device; only the barcode number is sent anywhere. Uses the platform's `BarcodeDetector` where available and downloads ZXing only where it is not.
+- Manual barcode entry alongside the camera, always available and checksum-validated before it navigates.
+- **Recently viewed**, kept on the device in `localStorage`. No account, no sync, and a Clear button.
+- A `Scan` entry in the top navigation.
+
+### Changed
+- The home page Scan button now works. It was disabled with a "Coming soon" tooltip.
+
+### Removed
+- The two invented "Recently viewed" products. The section stays hidden until there is something real in it.
+
+---
+
 ## v0.6.0 — 2026-09-05
 
 ### Added
