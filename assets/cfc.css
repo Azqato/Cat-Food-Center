@@ -6,28 +6,13 @@
    under a fixed top bar. Below 1180px the right rail drops; below 900px the
    sidebar becomes a slide-in drawer behind a hamburger button.
 
-   Loaded after the Tailwind CDN script. The Learn pages use plain semantic
-   markup plus the classes below rather than Tailwind utilities, so nothing
-   here competes with a utility for specificity.
+   The Learn pages load cfc-tokens.css first, then this file. They use plain
+   semantic markup plus the classes below — no Tailwind — so nothing here
+   competes with a utility class for specificity.
    ========================================================================== */
 
-/* ── Tokens ── */
-:root {
-  --bg:        #FAF7F2;
-  --surface:   #FFFFFF;
-  --ink:       #1C1A17;
-  --ink-soft:  #56504A;
-  --accent:    #C2410C;
-  --accent-sub:#FBEDE6;
-  --hairline:  #E7E1D8;
-  --excellent: #1B7A4B;
-  --good:      #5FA855;
-  --poor:      #E08A1E;
-  --bad:       #C0392B;
-  --topbar-h:  56px;
-  --sidebar-w: 264px;
-  --toc-w:     240px;
-}
+/* Tokens and the theme toggle live in cfc-tokens.css, which every page in
+   the site loads — including the Tailwind pages that do not load this file. */
 
 /* ── Base ── */
 * { box-sizing: border-box; }
@@ -51,7 +36,7 @@ a { color: var(--accent); }
 }
 .skip-link {
   position: absolute; left: 8px; top: -48px; z-index: 200;
-  background: var(--accent); color: #fff; padding: 8px 14px;
+  background: var(--accent); color: var(--on-accent); padding: 8px 14px;
   border-radius: 8px; font-size: .875rem; text-decoration: none;
   transition: top 150ms;
 }
@@ -91,7 +76,7 @@ a { color: var(--accent); }
 }
 .topbar-cta {
   height: 34px; display: inline-flex; align-items: center; padding: 0 14px;
-  border-radius: 999px; background: var(--accent); color: #fff;
+  border-radius: 999px; background: var(--accent); color: var(--on-accent);
   font-size: .8125rem; font-weight: 500; text-decoration: none;
   transition: opacity 150ms; white-space: nowrap;
 }
@@ -237,7 +222,7 @@ h2[id], h3[id], section[id] { scroll-margin-top: calc(var(--topbar-h) + 20px); }
 .callout-tip     { border-left-color: var(--excellent); }
 .callout-tip     .callout-icon, .callout-tip     .callout-title { color: var(--excellent); }
 .callout-warning { border-left-color: var(--poor); }
-.callout-warning .callout-icon, .callout-warning .callout-title { color: #A9660D; }
+.callout-warning .callout-icon, .callout-warning .callout-title { color: var(--warning-ink); }
 .callout-danger  { border-left-color: var(--bad); }
 .callout-danger  .callout-icon, .callout-danger  .callout-title { color: var(--bad); }
 
@@ -284,17 +269,7 @@ table.data tr.grp td {
   letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft);
 }
 
-/* ── Chips ── */
-.chip {
-  display: inline-block; font-size: .6875rem; font-weight: 500; line-height: 1.5;
-  padding: 1px 8px; border-radius: 999px; color: #fff; white-space: nowrap;
-}
-.chip-bad       { background: var(--bad); }
-.chip-poor      { background: var(--poor); }
-.chip-good      { background: var(--good); }
-.chip-excellent { background: var(--excellent); }
-.chip-accent    { background: var(--accent); }
-.chip-neutral   { background: var(--ink-soft); }
+/* Chips are a shared component and live in cfc-tokens.css. */
 
 /* ── Entry card (additive / nutrient definitions) ── */
 .entry {
@@ -414,12 +389,12 @@ ul.sources li:last-child { border-bottom: none; }
     width: min(84vw, var(--sidebar-w)); height: calc(100vh - var(--topbar-h));
     background: var(--surface); border-right: 1px solid var(--hairline);
     padding: 24px 12px 48px; transform: translateX(-102%);
-    transition: transform 200ms ease; box-shadow: 0 8px 32px rgba(28,26,23,.08);
+    transition: transform 200ms ease; box-shadow: 0 8px 32px var(--shadow);
   }
   body.nav-open .sidebar { transform: translateX(0); }
   body.nav-open .sidebar-backdrop {
     display: block; position: fixed; inset: var(--topbar-h) 0 0 0; z-index: 80;
-    background: rgba(28,26,23,.28); border: 0;
+    background: var(--scrim); border: 0;
   }
   .article { padding-top: 22px; }
   .article h1 { font-size: 1.625rem; }

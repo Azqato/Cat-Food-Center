@@ -5,27 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search — Cat Food Center</title>
   <link rel="icon" href="./favicon.svg">
+  <!-- Blocking on purpose: applies the stored theme before first paint. -->
+  <script src="./assets/cfc-theme.js"></script>
+  <link rel="stylesheet" href="./assets/cfc-tokens.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            bg: '#FAF7F2', surface: '#FFFFFF',
-            ink: '#1C1A17', 'ink-soft': '#56504A',
-            accent: '#C2410C', hairline: '#E7E1D8',
-            'band-excellent': '#1B7A4B', 'band-good': '#5FA855',
-            'band-poor': '#E08A1E', 'band-bad': '#C0392B',
-          },
-        },
-      },
-    }
-  </script>
+  <script src="./assets/cfc-tailwind.js"></script>
   <style>
-    body { background: #FAF7F2; font-family: 'Public Sans', system-ui, sans-serif; }
+    body { background: var(--bg); font-family: 'Public Sans', system-ui, sans-serif; }
     .font-display { font-family: 'Fraunces', Georgia, serif; }
     .text-h1      { font-size: 1.75rem; line-height: 1.2; }
     .text-h2      { font-size: 1.25rem; line-height: 1.3; }
@@ -35,17 +24,17 @@
     .rounded-pill { border-radius: 999px; }
     .max-w-content { max-width: 720px; }
     .card-link { display: flex; text-decoration: none; transition: border-color 150ms; }
-    .card-link:hover { border-color: #C2410C !important; }
-    .wordmark:hover { color: #C2410C; }
+    .card-link:hover { border-color: var(--accent) !important; }
+    .wordmark:hover { color: var(--accent); }
     .btn-link { text-decoration: none; transition: opacity 150ms; }
     .btn-link:hover { opacity: .9; }
     .footer-link { text-decoration: none; }
     .footer-link:hover { text-decoration: underline; }
-    input[type=search]:focus { outline: 2px solid #C2410C; outline-offset: 0; box-shadow: none; }
+    input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: 0; box-shadow: none; }
     /* Header nav */
-    .nav-link { font-size: .875rem; color: #56504A; text-decoration: none; padding: 4px 8px; border-radius: 6px; transition: color 150ms; white-space: nowrap; }
-    .nav-link:hover:not([aria-current]) { color: #1C1A17; }
-    .nav-link[aria-current="page"] { color: #C2410C; font-weight: 600; }
+    .nav-link { font-size: .875rem; color: var(--ink-soft); text-decoration: none; padding: 4px 8px; border-radius: 6px; transition: color 150ms; white-space: nowrap; }
+    .nav-link:hover:not([aria-current]) { color: var(--ink); }
+    .nav-link[aria-current="page"] { color: var(--accent); font-weight: 600; }
   </style>
 </head>
 <body class="bg-bg text-ink min-h-screen flex flex-col">
@@ -62,8 +51,9 @@
         <a href="./learn.html" class="nav-link">Learn</a>
         <a href="./methodology.html" class="nav-link">Methodology</a>
       </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme"><svg class="i-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 14.2A8.2 8.2 0 019.8 4a8.4 8.4 0 100 20 8.2 8.2 0 0010.2-9.8z"/></svg><svg class="i-system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path stroke-linecap="round" d="M8.5 20.5h7"/></svg></button>
       <a href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer"
-        class="btn-link rounded-pill bg-accent text-white text-small font-medium px-4 py-2 shrink-0">
+        class="btn-link rounded-pill bg-accent text-on-accent text-small font-medium px-4 py-2 shrink-0">
         Support
       </a>
     </div>
@@ -79,7 +69,7 @@
           aria-label="Search cat food products"
           class="flex-1 min-w-0 border border-hairline rounded-card px-4 py-3 text-small text-ink bg-surface" />
         <button type="submit"
-          class="btn-link rounded-card bg-accent text-white font-medium text-small px-5 py-3 shrink-0 border-0 cursor-pointer">
+          class="btn-link rounded-card bg-accent text-on-accent font-medium text-small px-5 py-3 shrink-0 border-0 cursor-pointer">
           Search
         </button>
       </form>

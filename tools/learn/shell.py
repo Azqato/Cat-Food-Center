@@ -18,6 +18,18 @@ PAW = ('<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
        '<path d="M11.6 11.9c3.1 0 5.6 2.5 5.6 5 0 2-1.6 3.2-3.5 3.2-1.1 0-1.6-.45-2.1-.45'
        's-1 .45-2.1.45C7.6 20.1 6 18.9 6 16.9c0-2.5 2.5-5 5.6-5z"/></svg>')
 
+# One toggle control, shared by the generated pages and hand-copied into the
+# four Tailwind pages. Icons: sun (light), moon (dark), monitor (system).
+THEME_TOGGLE = ('<button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">'
+  '<svg class="i-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
+  '<circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4'
+  'M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'
+  '<svg class="i-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
+  '<path stroke-linecap="round" stroke-linejoin="round" d="M20 14.2A8.2 8.2 0 019.8 4a8.4 8.4 0 100 20 8.2 8.2 0 0010.2-9.8z"/></svg>'
+  '<svg class="i-system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
+  '<rect x="2.5" y="4" width="19" height="13" rx="2"/><path stroke-linecap="round" d="M8.5 20.5h7"/></svg>'
+  '</button>')
+
 # Ordered: drives prev/next.
 PAGES = [
     ("learn",                    "Overview"),
@@ -163,9 +175,12 @@ TEMPLATE = """<!DOCTYPE html>
   <title>%(title)s — Cat Food Center</title>
   <meta name="description" content="%(description)s">
   <link rel="icon" href="./favicon.svg">
+  <!-- Blocking on purpose: applies the stored theme before first paint. -->
+  <script src="./assets/cfc-theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/cfc-tokens.css">
   <link rel="stylesheet" href="./assets/cfc.css">
 </head>
 <body>
@@ -184,6 +199,7 @@ TEMPLATE = """<!DOCTYPE html>
     Search products
     <span class="kbd">/</span>
   </a>
+  %(theme)s
   <a class="topbar-cta" href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer">Support</a>
 </header>
 
@@ -227,6 +243,7 @@ def build(slug, h1, description, lede, body, crumb=None, title=None):
         "title": title or TAG_RE.sub("", h1),
         "description": description,
         "paw": PAW,
+        "theme": THEME_TOGGLE,
         "sidebar": sidebar_html(slug),
         "crumb": crumb or TITLES.get(slug, h1),
         "h1": h1,

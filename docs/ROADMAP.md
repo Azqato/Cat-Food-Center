@@ -2,11 +2,11 @@
 
 ---
 
-## Current phase: MVP — Static shell with mock data, plus the Cat Care Guide
+## Current phase: MVP — from mock data to a working product
 
-The site is live on GitHub Pages. The three core pages (home, search, product detail) are built with a complete UI but mock data, and the methodology page is written. The Cat Care Guide — an eleven-page educational resource — is complete and is the first part of the site backed by real, sourced content rather than mock data.
+The site is live on GitHub Pages. The Cat Care Guide (M4) and the theme system (M5) are done, and [ADR-001](./ADR-001-static-first.md) settled the architecture question that was blocking everything after them: the site is static HTML by decision, not by default, and the unused Next.js application has been removed.
 
-Next up is dark mode (M5), then wiring the product pages to the Open Pet Food Facts API (M6) and the scoring engine (M7).
+The three core pages still run on mock data. That is the next thing to change: the data layer (M6) and the scoring engine (M7) are what turn this from a shell into a product.
 
 ---
 
@@ -19,7 +19,8 @@ Next up is dark mode (M5), then wiring the product pages to the Open Pet Food Fa
 | M2: Documentation audit | 2026-06-08 | Complete |
 | M3: Methodology page | 2026-06-08 | Complete |
 | M4: Cat Care Guide (educational resource) | 2026-09-05 | Complete |
-| M5: Dark mode with persisted preference | 2026-09 | Planned |
+| M5: Dark mode with persisted preference | 2026-09-05 | Complete |
+| M5.5: Architecture decision + Next.js removal | 2026-09-05 | Complete |
 | M6: Data layer — Open Pet Food Facts | 2026-10 | Planned |
 | M7: Scoring engine | 2026-10 | Planned |
 | M8: Barcode scanner | 2026-11 | Planned |
@@ -60,14 +61,20 @@ Next up is dark mode (M5), then wiring the product pages to the Open Pet Food Fa
 - Shared assets in `/assets` (`cfc.css`, `cfc-docs.js`, `cfc-tailwind.js`)
 - Pages generated from `tools/learn/` so the shared chrome cannot drift between them
 
-### M5: Dark mode with persisted preference
-- Add a dark palette as a second set of values for the CSS custom properties already defined on `:root` in `assets/cfc.css` — no per-component rewrites needed
-- Theme toggle control in the top bar (and in the header of the non-Learn pages), cycling light → dark → system
-- Persist the choice in `localStorage` under a single key (e.g. `cfc-theme`) so it survives reloads and is remembered across visits
-- Honour `prefers-color-scheme` when no explicit choice has been stored
-- Apply the stored theme via a small inline script in `<head>`, before first paint, to avoid a flash of the wrong theme
-- Re-check WCAG AA contrast for both palettes, including the four score bands and the callout accents
-- Set `color-scheme` so form controls and scrollbars follow the theme
+### M5: Dark mode with persisted preference (Complete)
+- `assets/cfc-tokens.css` — the palette, extracted from `cfc.css` so that **both** page families share it: the Tailwind CDN pages and the generated Learn pages
+- Dark values supplied twice, once for `:root[data-theme="dark"]` and once under `prefers-color-scheme` for visitors who have expressed no preference; `tools/check-contrast.py` fails the build if the two lists drift apart
+- `assets/cfc-theme.js` — loaded **synchronously in `<head>`** so the stored theme applies before first paint, with no flash. Cycles system → light → dark; persists under `localStorage` key `cfc-theme`; `system` stores nothing and lets the media query take over
+- Theme toggle in the top bar of all fifteen pages; a `storage` listener keeps other open tabs in step
+- `color-scheme` set on both palettes so form controls and scrollbars follow the theme
+- Tailwind colour names now resolve to CSS variables rather than hex literals, so `bg-surface` and `text-ink` follow the theme with no `dark:` variants in the markup. **Constraint:** Tailwind opacity modifiers (`bg-surface/50`) cannot be used on these colours — add a token instead
+- WCAG AA verified across 38 foreground/background pairs in both palettes by `tools/check-contrast.py`
+- **Light-theme appearance changed as part of this:** the "good" (green) and "poor" (amber) chips previously used white text at 2.8:1 and 2.3:1. They now use dark ink. This was an accessibility defect that dark mode surfaced rather than caused
+
+### M5.5: Architecture decision and Next.js removal (Complete)
+- [ADR-001](./ADR-001-static-first.md) records static HTML as the target architecture rather than an interim state, with the reasoning for each planned feature and — importantly — the list of things static hosting genuinely cannot do, each with its escape hatch
+- Confirmed the barcode scanner (M8) is fully client-side and needs no server: `getUserMedia` + `BarcodeDetector` (ZXing WASM fallback) + a keyless CORS-enabled API. The only hard requirement is HTTPS, which GitHub Pages provides
+- Deleted the unused Next.js application (`app/`, `components/`, `next.config.ts`, `tailwind.config.ts`, `postcss.config.mjs`, `tsconfig.json`, `.eslintrc.json`, `package.json`) — it was never built and never deployed, and `README.md` described it as the stack, which was wrong about what users actually load
 
 ### M6: Data layer — Open Pet Food Facts
 - Fetch product by barcode from the Open Pet Food Facts API
@@ -129,4 +136,4 @@ Next up is dark mode (M5), then wiring the product pages to the Open Pet Food Fa
 | Backend API | Not needed until submit queue or crowd-sourced data requires it |
 | EU/FEDIAF nutrient profiles | US AAFCO first; EU localization is a separate compliance effort |
 | Treat-specific scoring rubric | Treats are not complete diets; requires a different scoring model |
-| Dark theme | No longer deferred — promoted to M5, with a toggle and a `localStorage`-persisted preference |
+| Dark theme | Shipped in M5 — no longer deferred |

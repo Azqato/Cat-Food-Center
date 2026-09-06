@@ -1,14 +1,26 @@
 /* Shared Tailwind CDN theme for Cat Food Center.
-   Must be loaded AFTER the Tailwind CDN script tag. */
+
+   Must be loaded AFTER the Tailwind CDN script tag.
+
+   The colour values are CSS variables rather than hex literals, so that
+   `bg-surface`, `text-ink` and friends follow the theme chosen in
+   cfc-theme.js without any dark: variants in the markup. The variables
+   themselves are defined in cfc-tokens.css.
+
+   One constraint this creates: Tailwind's opacity modifiers (`bg-surface/50`)
+   cannot work on these colours, because Tailwind would have to rewrite the
+   value into a colour-mix it cannot compute from a variable. Use a separate
+   token instead of an opacity modifier. */
 tailwind.config = {
   theme: {
     extend: {
       colors: {
-        bg: '#FAF7F2', surface: '#FFFFFF',
-        ink: '#1C1A17', 'ink-soft': '#56504A',
-        accent: '#C2410C', hairline: '#E7E1D8',
-        'band-excellent': '#1B7A4B', 'band-good': '#5FA855',
-        'band-poor': '#E08A1E', 'band-bad': '#C0392B',
+        bg: 'var(--bg)', surface: 'var(--surface)',
+        ink: 'var(--ink)', 'ink-soft': 'var(--ink-soft)',
+        accent: 'var(--accent)', hairline: 'var(--hairline)',
+        'band-excellent': 'var(--excellent)', 'band-good': 'var(--good)',
+        'band-poor': 'var(--poor)', 'band-bad': 'var(--bad)',
+        'on-accent': 'var(--on-accent)',
       },
     },
   },

@@ -1,0 +1,164 @@
+/* ==========================================================================
+   Cat Food Center — design tokens and the theme toggle.
+
+   Shared by BOTH page families:
+     * the Tailwind CDN pages (index, search, product, methodology), whose
+       Tailwind colour names resolve to these variables, and
+     * the generated Learn pages, which load this ahead of cfc.css.
+
+   Keeping the palette in one file is what lets a single theme choice apply
+   across a site built two different ways.
+   ========================================================================== */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Tokens
+
+   Every colour in this stylesheet comes from a custom property defined here,
+   which is what makes the theme a palette swap rather than a rewrite.
+
+   Three token groups need explanation:
+
+     * Status colours (--excellent/--good/--poor/--bad) are used as TEXT and
+       BORDER colours. They must contrast against --bg / --surface.
+     * Chip tokens are used as FILLS with text on top, so each fill carries its
+       own ink. Amber and mid-green cannot carry white text at AA, which is why
+       those two chips use dark ink in the light theme.
+     * --warning-ink is a darkened --poor for callout text, since --poor itself
+       is a fill colour and is too light to read as text on cream.
+
+   The dark values appear twice below — once for the explicit
+   [data-theme="dark"] choice and once under prefers-color-scheme for visitors
+   who have made no choice. THE TWO LISTS MUST BE KEPT IN SYNC.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root {
+  color-scheme: light;
+
+  --bg:        #FAF7F2;
+  --surface:   #FFFFFF;
+  --ink:       #1C1A17;
+  --ink-soft:  #56504A;
+  --accent:    #C2410C;
+  --accent-sub:#FBEDE6;
+  --hairline:  #E7E1D8;
+
+  --excellent: #1B7A4B;
+  --good:      #5FA855;
+  --poor:      #E08A1E;
+  --bad:       #C0392B;
+  --warning-ink: #A9660D;
+
+  --chip-excellent-bg:  #1B7A4B;  --chip-excellent-ink: #FFFFFF;
+  --chip-good-bg:       #5FA855;  --chip-good-ink:      #0E2109;
+  --chip-poor-bg:       #E08A1E;  --chip-poor-ink:      #2A1C05;
+  --chip-bad-bg:        #C0392B;  --chip-bad-ink:       #FFFFFF;
+  --chip-accent-bg:     #C2410C;  --chip-accent-ink:    #FFFFFF;
+  --chip-neutral-bg:    #56504A;  --chip-neutral-ink:   #FFFFFF;
+
+  --warn-bg:   #FEF3C7;
+  --warn-ink:  #92400E;
+
+  --on-accent: #FFFFFF;
+  --shadow:    rgba(28, 26, 23, .08);
+  --scrim:     rgba(28, 26, 23, .28);
+
+  --topbar-h:  56px;
+  --sidebar-w: 264px;
+  --toc-w:     240px;
+}
+
+/* Dark — explicit choice. Keep in sync with the prefers-color-scheme block. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg:        #14120F;
+  --surface:   #1C1916;
+  --ink:       #EFEAE2;
+  --ink-soft:  #A49B90;
+  --accent:    #FB8B4C;
+  --accent-sub:#2C1D13;
+  --hairline:  #332D26;
+
+  --excellent: #4ADE80;
+  --good:      #86C46F;
+  --poor:      #F0B45E;
+  --bad:       #F1786A;
+  --warning-ink: #F0B45E;
+
+  --chip-excellent-bg:  #4ADE80;  --chip-excellent-ink: #06240F;
+  --chip-good-bg:       #86C46F;  --chip-good-ink:      #0E2109;
+  --chip-poor-bg:       #F0B45E;  --chip-poor-ink:      #2A1C05;
+  --chip-bad-bg:        #F1786A;  --chip-bad-ink:       #2A0D0A;
+  --chip-accent-bg:     #FB8B4C;  --chip-accent-ink:    #2A1206;
+  --chip-neutral-bg:    #A49B90;  --chip-neutral-ink:   #14120F;
+
+  --warn-bg:   #2E2308;
+  --warn-ink:  #F5CB80;
+
+  --on-accent: #2A1206;
+  --shadow:    rgba(0, 0, 0, .55);
+  --scrim:     rgba(0, 0, 0, .62);
+}
+
+/* Dark — system preference, for visitors who have not chosen. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg:        #14120F;
+    --surface:   #1C1916;
+    --ink:       #EFEAE2;
+    --ink-soft:  #A49B90;
+    --accent:    #FB8B4C;
+    --accent-sub:#2C1D13;
+    --hairline:  #332D26;
+
+    --excellent: #4ADE80;
+    --good:      #86C46F;
+    --poor:      #F0B45E;
+    --bad:       #F1786A;
+    --warning-ink: #F0B45E;
+
+    --chip-excellent-bg:  #4ADE80;  --chip-excellent-ink: #06240F;
+    --chip-good-bg:       #86C46F;  --chip-good-ink:      #0E2109;
+    --chip-poor-bg:       #F0B45E;  --chip-poor-ink:      #2A1C05;
+    --chip-bad-bg:        #F1786A;  --chip-bad-ink:       #2A0D0A;
+    --chip-accent-bg:     #FB8B4C;  --chip-accent-ink:    #2A1206;
+    --chip-neutral-bg:    #A49B90;  --chip-neutral-ink:   #14120F;
+
+    --warn-bg:   #2E2308;
+    --warn-ink:  #F5CB80;
+
+    --on-accent: #2A1206;
+    --shadow:    rgba(0, 0, 0, .55);
+    --scrim:     rgba(0, 0, 0, .62);
+  }
+}
+
+/* Theme toggle. One button, three states; CSS picks which icon is visible so
+   the script only has to set an attribute. */
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; flex-shrink: 0; padding: 0;
+  background: transparent; color: var(--ink-soft);
+  border: 1px solid var(--hairline); border-radius: 8px;
+  cursor: pointer; transition: color 150ms, border-color 150ms, background 150ms;
+}
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-sub); }
+.theme-toggle svg { width: 17px; height: 17px; display: none; }
+.theme-toggle[data-theme-state="light"]  .i-light  { display: block; }
+.theme-toggle[data-theme-state="dark"]   .i-dark   { display: block; }
+.theme-toggle[data-theme-state="system"] .i-system { display: block; }
+/* Before the script sets the state, show the system icon rather than nothing. */
+.theme-toggle:not([data-theme-state]) .i-system { display: block; }
+
+/* ── Chips ── */
+.chip {
+  display: inline-block; font-size: .6875rem; font-weight: 500; line-height: 1.5;
+  padding: 1px 8px; border-radius: 999px; white-space: nowrap;
+}
+.chip-bad       { background: var(--chip-bad-bg);       color: var(--chip-bad-ink); }
+.chip-poor      { background: var(--chip-poor-bg);      color: var(--chip-poor-ink); }
+.chip-good      { background: var(--chip-good-bg);      color: var(--chip-good-ink); }
+.chip-excellent { background: var(--chip-excellent-bg); color: var(--chip-excellent-ink); }
+.chip-accent    { background: var(--chip-accent-bg);    color: var(--chip-accent-ink); }
+.chip-neutral   { background: var(--chip-neutral-bg);   color: var(--chip-neutral-ink); }
