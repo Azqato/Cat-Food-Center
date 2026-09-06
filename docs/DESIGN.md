@@ -12,7 +12,13 @@ Verdict first, editorial feel, mobile as the canvas. An owner in a store aisle s
 
 ## 2. Color palette
 
-All tokens are defined in `app/globals.css` as CSS custom properties and in `tailwind.config.ts` as Tailwind color extensions.
+All tokens are defined once, in [`assets/cfc-tokens.css`](../assets/cfc-tokens.css),
+as CSS custom properties. `assets/cfc-tailwind.js` maps the Tailwind colour names
+to those same variables, so the Tailwind pages and the plain-CSS guide pages
+resolve identical colours and follow the theme together.
+
+Hex values below are the **light** palette. Each has a dark counterpart in the
+same file; run `python tools/check-contrast.py` after changing either.
 
 | Token | Hex | Tailwind class | Use |
 |---|---|---|---|
@@ -29,11 +35,40 @@ All tokens are defined in `app/globals.css` as CSS custom properties and in `tai
 
 Band colors are reserved strictly for ratings. They do not appear in navigation, decoration, or other UI contexts. Each band is also communicated by a text label and an icon, never by color alone.
 
-A dark theme mirrors these tokens with an ink-dark background and warm off-white text at adjusted lightness values. Band colors remain perceptually distinguishable for common color-vision deficiencies.
+### Fills versus text
+
+A colour that works as text does not necessarily work as a fill with text on
+top, so the two cases use different tokens:
+
+- `--excellent` / `--good` / `--poor` / `--bad` are **text and border** colours.
+- `--chip-*-bg` paired with `--chip-*-ink` are **fills**. Each fill carries its
+  own ink because amber and mid-green cannot hold white text at AA — in the
+  light palette those two chips use dark ink.
+- `--on-accent` is the text colour for anything sitting on `--accent`. It is
+  white in light and near-black in dark, so `bg-accent text-on-accent` is
+  correct in both. Never hardcode `text-white` on an accent fill.
+- `--warning-ink` is a darkened `--poor` for callout text, since `--poor` itself
+  is tuned as a fill.
+
+### Dark theme
+
+Dark uses a warm near-black (`#14120F`) rather than a neutral grey, keeping the
+paper-and-ink character of the light palette. Band colours are lightened so they
+read as text on a dark ground, and the chip fills invert to dark ink.
+
+The palette is applied through `[data-theme="dark"]` on `<html>` when the visitor
+has chosen, and through `prefers-color-scheme` when they have not. The dark
+values are therefore written twice; `tools/check-contrast.py` fails if the two
+copies drift apart.
+
+All 38 foreground/background pairs pass WCAG AA in both palettes. Band colours
+remain perceptually distinguishable for common colour-vision deficiencies, and
+each band is also communicated by a text label and an icon, never by colour
+alone.
 
 ## 3. Typography
 
-Font families are loaded via `next/font/google` in `app/layout.tsx` and exposed as CSS variables.
+Font families are loaded from Google Fonts with a `<link>` in each page head, preceded by `preconnect` hints.
 
 | Variable | Font | Tailwind class | Role |
 |---|---|---|---|
@@ -42,7 +77,7 @@ Font families are loaded via `next/font/google` in `app/layout.tsx` and exposed 
 
 Fraunces is a variable optical-size serif that carries the editorial voice. Public Sans is a humanist sans optimized for legibility at small sizes. Tabular figures (`tabular-nums`) are used on score numbers and nutrition values.
 
-Type scale (defined in `tailwind.config.ts`):
+Type scale (defined in the per-page `<style>` block on the Tailwind pages, and in `assets/cfc.css` on the guide pages):
 
 | Token | Size | Line height | Tailwind class | Use |
 |---|---|---|---|---|

@@ -24,7 +24,9 @@ jobs:
       - uses: actions/checkout@v4
 
       # No build step — the site is plain HTML/CSS/JS served directly from the repo root.
-      # When transitioning to Next.js, add build steps here before the upload.
+      # There is deliberately no build step. See docs/ADR-001-static-first.md:
+      # the site is static HTML by decision, and the Learn pages are generated
+      # locally by tools/learn/ with their output committed.
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

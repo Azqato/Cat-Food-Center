@@ -4,6 +4,29 @@ All notable changes to Cat Food Center are documented here. Format follows [Keep
 
 ---
 
+## v0.5.0 — 2026-09-05
+
+### Added
+- **Dark mode with a persisted preference.** A three-state control — system, light, dark — in the top bar of every page. The choice is stored under the `localStorage` key `cfc-theme`; `system` stores nothing and defers to `prefers-color-scheme`. Open tabs stay in step via a `storage` listener.
+- `assets/cfc-tokens.css` — the palette extracted from `cfc.css` so that both page families share it: the Tailwind CDN pages and the generated guide pages.
+- `assets/cfc-theme.js` — theme application and persistence. Loaded synchronously in `<head>` so the stored theme applies before first paint.
+- `tools/check-contrast.py` — WCAG AA audit of every foreground/background pair in both palettes.
+- `docs/ADR-001-static-first.md` — the decision that the site is static HTML by design, what that enables (the barcode scanner needs no server), and what it forecloses.
+
+### Changed
+- Tailwind colour names map to CSS variables rather than hex literals, so utility classes follow the theme without `dark:` variants. Opacity modifiers cannot be used on those colours as a result.
+- The green and amber score chips now use dark ink instead of white. They failed AA at 2.8:1 and 2.3:1 in the light theme; this is an accessibility fix, and it changes how the light theme looks.
+- `README.md`, `TRD.md`, `RUNBOOK.md` and `DESIGN.md` now describe the static stack that actually ships rather than the Next.js application that did not.
+
+### Removed
+- The unused Next.js 14 application and its toolchain. It was never built or deployed; `deploy.yml` has always served the repository root directly.
+
+### Verified
+- All 38 token pairs pass WCAG AA in both palettes.
+- Chromium check across all fifteen pages: the theme applies, the toggle cycles, the choice survives a reload with no flash, and no console errors.
+
+---
+
 ## v0.4.0 — 2026-09-05
 
 ### Added

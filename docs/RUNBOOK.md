@@ -4,58 +4,55 @@
 
 ## Local setup
 
-Complete steps to get the project running from a fresh machine.
+The site is static HTML, CSS, and vanilla JavaScript with no dependencies. See
+[ADR-001](./ADR-001-static-first.md) for why.
 
 ### Prerequisites
 
-- **Node.js 18 or higher** — check with `node --version`. Install from https://nodejs.org or via a version manager (`nvm`, `fnm`, `volta`).
-- **npm** — bundled with Node.js. Check with `npm --version`.
 - **Git** — check with `git --version`.
+- **Python 3.8+** — check with `python --version`. Only needed to regenerate the
+  Cat Care Guide pages or to run the contrast checker; not needed to view or
+  edit the site.
 
-No other tools, accounts, or environment variables are required.
+There is no Node.js, no `npm install`, no lockfile, and no environment variables.
 
 ### Steps
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/Azqato/Cat-Food-Center.git
 cd Cat-Food-Center
-
-# 2. Install dependencies
-npm install
-
-# 3. Start the development server
-npm run dev
+python -m http.server 8000
 ```
 
-The app is now running at **http://localhost:3000**.
+The site is now at **http://localhost:8000**.
 
 Notes:
-- The dev server does not apply the `/Cat-Food-Center` basePath used in production. Routes are available at `/`, not `/Cat-Food-Center/`.
-- Hot reload is enabled — changes to `app/` and `components/` take effect immediately without restarting.
+- There is no basePath to worry about locally. Every link in the site is
+  relative (`./learn.html`), which is what lets the same files work at the
+  repository root locally and under `/Cat-Food-Center/` on GitHub Pages.
+- There is no hot reload. Refresh the browser.
+- Opening files via `file://` works for most pages but breaks two things:
+  `fetch` of local JSON is blocked by CORS, and the barcode scanner needs a
+  secure context. Use the server.
 
 ---
 
 ## Build
 
-Produces a fully static site in the `out/` directory.
+**There is no build step for deployment.** What is committed is what is served.
+
+Two generators exist, and both run on a developer machine with their output
+committed:
 
 ```bash
-npm run build
+python tools/learn/build.py      # regenerates the eleven learn*.html pages
+python tools/check-contrast.py   # audits both palettes against WCAG AA
 ```
 
-The build uses `output: 'export'` in `next.config.ts`. Output:
-- `out/` — static HTML, CSS, and JS files ready to serve
-- `basePath: /Cat-Food-Center` and `assetPrefix: /Cat-Food-Center` are applied so asset paths work on GitHub Pages
-
-To preview the production build locally:
-```bash
-# Serve out/ with any static server, e.g.:
-npx serve out
-# Then open http://localhost:3000
-```
-
-Note that `npm run start` is not used — it starts a Node server, which is incompatible with the static export.
+`build.py` overwrites every `learn*.html`. Never hand-edit those files —
+edit `tools/learn/c_<page>.py` and rerun. Run `check-contrast.py` after any
+change to `assets/cfc-tokens.css`; it fails if a pair drops below AA, or if the
+two duplicated dark-palette blocks have drifted apart.
 
 ---
 
@@ -65,10 +62,13 @@ Note that `npm run start` is not used — it starts a Node server, which is inco
 
 Every push to the `main` branch triggers `.github/workflows/deploy.yml`, which:
 1. Checks out the repo
-2. Runs `npm ci` to install dependencies
-3. Runs `npm run build` to produce `out/`
-4. Uploads `out/` as a GitHub Pages artifact
-5. Deploys to GitHub Pages
+2. Uploads the repository root as a GitHub Pages artifact
+3. Deploys to GitHub Pages
+
+There is no build. This is worth knowing during an incident: the deploy cannot
+fail from a compile error, a lockfile conflict, or a dependency change, because
+none of those exist. If a deploy fails, the cause is GitHub Pages itself or the
+workflow configuration.
 
 The live URL is: **https://azqato.github.io/Cat-Food-Center/**
 
@@ -85,8 +85,7 @@ If you need to redeploy without a code change:
 
 1. Fork or create the repository on GitHub.
 2. Go to **Settings → Pages → Source** and select **GitHub Actions**.
-3. Update `REPO` in `next.config.ts` to match the new repository name.
-4. Push to `main`.
+3. Push to `main`. Nothing needs configuring for the repository name — every path in the site is relative.
 
 ---
 
@@ -126,8 +125,11 @@ Only use this if the commit cannot be reverted cleanly and the risk of losing hi
 
 | Environment | URL | How deployed | Config differences |
 |---|---|---|---|
-| Local dev | http://localhost:3000 | `npm run dev` | No basePath applied; hot reload active; no static export |
-| Production | https://azqato.github.io/Cat-Food-Center/ | GitHub Actions on push to `main` | `basePath: /Cat-Food-Center`, `assetPrefix: /Cat-Food-Center`, `output: 'export'` |
+| Local dev | http://localhost:8000 | `python -m http.server 8000` | None — the same files, served from a different root |
+| Production | https://azqato.github.io/Cat-Food-Center/ | GitHub Actions on push to `main` | None |
+
+The two environments are configuration-identical, which is the main practical
+benefit of having no build: a page that works locally works in production.
 
 There is no staging environment. Test changes locally before pushing to `main`.
 
@@ -137,13 +139,14 @@ There is no staging environment. Test changes locally before pushing to `main`.
 
 | Error | Likely cause | Fix |
 |---|---|---|
-| `Error: Image Optimization using the default loader is not compatible with next export` | A Next.js `<Image>` component was used without `unoptimized: true` | Add `unoptimized: true` to `images` in `next.config.ts`, or use a plain `<img>` tag |
-| `useSearchParams() should be wrapped in a suspense boundary` | A component using `useSearchParams` is not inside a `<Suspense>` boundary | Wrap the component in `<Suspense>` in its parent page (see `app/search/page.tsx` for the pattern) |
-| Assets return 404 on GitHub Pages | `basePath` or `assetPrefix` misconfigured | Check that both are set to `/Cat-Food-Center` in `next.config.ts`; check that `REPO` const matches the exact GitHub repo name |
-| Fonts not loading | Google Fonts blocked or `next/font` config issue | Verify `Fraunces` and `Public_Sans` imports in `app/layout.tsx`; check browser network tab for font request errors |
-| Deploy workflow fails at `npm run build` | TypeScript error or lint error introduced | Run `npm run lint` and `tsc --noEmit` locally to identify and fix before pushing |
-| GitHub Pages shows old version | Deploy succeeded but CDN cache not cleared | Hard-refresh the browser (`Ctrl+Shift+R` / `Cmd+Shift+R`); GitHub Pages CDN typically clears within a few minutes |
-| `Module not found` after `npm install` | Lockfile out of sync or Node version mismatch | Delete `node_modules` and `package-lock.json`, then run `npm install` again |
+| A `learn*.html` edit disappeared | Those files are generated; `tools/learn/build.py` overwrote it | Make the edit in `tools/learn/c_<page>.py` and rerun the generator |
+| Assets return 404 on GitHub Pages | An absolute path (`/assets/...`) was used instead of a relative one | Use `./assets/...`. GitHub Pages serves this repo under `/Cat-Food-Center/`, so absolute paths resolve to the wrong root |
+| A page flashes light before going dark | `cfc-theme.js` was moved out of `<head>`, or given `defer`/`async` | It must be a blocking `<script>` in `<head>`. That is the whole mechanism |
+| Tailwind colour renders as transparent | An opacity modifier was used on a themed colour (`bg-surface/50`) | Tailwind cannot compute an opacity variant of a `var()`. Add a token to `cfc-tokens.css` instead |
+| Contrast checker reports "dark blocks have drifted apart" | A token was changed in `:root[data-theme="dark"]` but not in the `prefers-color-scheme` block, or vice versa | Apply the change to both. The duplication is deliberate — see the comment at the top of `cfc-tokens.css` |
+| Camera does not start on a phone | The page was opened over `http://<LAN-IP>`, which is not a secure context | Test against the deployed HTTPS URL or an HTTPS tunnel |
+| `fetch` of a local JSON file fails with a CORS error | The page was opened with `file://` | Serve over `python -m http.server` |
+| GitHub Pages shows an old version | Deploy succeeded but the CDN cache has not cleared | Hard-refresh (`Ctrl+Shift+R` / `Cmd+Shift+R`); the Pages CDN typically clears within a few minutes |
 
 ---
 
@@ -155,6 +158,6 @@ There is no staging environment. Test changes locally before pushing to `main`.
 | GitHub Pages uptime and status | https://www.githubstatus.com |
 | Core Web Vitals (Lighthouse) | Run `npx lighthouse https://azqato.github.io/Cat-Food-Center/ --view` locally, or use PageSpeed Insights |
 | JavaScript errors in production | Browser DevTools console (no error reporting service configured in v1) |
-| Dependency vulnerabilities | `npm audit` locally; Dependabot alerts on the GitHub repo |
+| Dependency vulnerabilities | Not applicable — the site has no dependencies. The only third-party code is the Tailwind CDN script on four pages, pinned to nothing; replacing it with committed CSS is tracked for M12 |
 
-There is no server-side logging, error tracking service (e.g. Sentry), or uptime monitor configured in v1. These are planned additions for M10 (public beta).
+There is no server-side logging, error tracking service (e.g. Sentry), or uptime monitor configured in v1. These are planned additions for M12 (public beta).
