@@ -6,6 +6,27 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.12.1] - 2026-09-05
+
+**Documentation brought back in line with the code, and two milestones planned.**
+
+Added
+* `docs/ROADMAP.md` M13: a documentation consolidation audit. Collapses the eleven files in `/docs` to `PRD.md`, `DESIGN.md` and `PATCHNOTES.md` plus the root README, and adds the root-only files the project has never had (`LICENSE.md`, `robots.txt`, `sitemap.xml`). The full method, the target structure, the merge-rather-than-overwrite rule, and the defaults for writing style, browser testing, verification environment, licensing and removal policy are written out in the milestone so the scope survives the session that requested it. Planned, not scheduled, not started.
+* `docs/ROADMAP.md` M14: move the whole site onto the interface built for the Cat Care Guide. The blocker is recorded as the first thing to solve rather than a detail — the guide top bar has no page navigation at all, while the app top bar has the six-link nav but neither the search affordance nor the sidebar control, so the merged bar has to carry both on a 360px phone. Four open design questions and six codebase constraints are listed. Planned, not scheduled, not started.
+
+Fixed
+* **Stale counts.** `docs/TRD.md` claimed the precached shell was 23 entries; `sw.js` has held 27 since M10 and M11 added pages. The TRD tree described `tools/check-live.py` as eight end-to-end checks; it has been twelve since M11.
+* **Stale version.** `docs/TRD.md` §0 was headed "Current implementation state (v0.7.0)" five releases after v0.7.0, and its list of what is implemented omitted the compare page, the submit page and offline support.
+* **"Four Tailwind pages" was wrong in five places** across `README.md` and `docs/TRD.md`. There are eight. The TRD's advice that a fifth would be the trigger to move them under the generator has been rewritten, since that threshold was crossed without anyone noticing and the duplication is now real debt rather than a hypothetical.
+* **A testing instruction that could not work.** `docs/TRD.md` §12 described the scoring tests as runnable "under `node --test`". There is no Node.js in this project by decision ([ADR-001](docs/ADR-001-static-first.md)), and the suite is browser-hosted only.
+* `docs/TRD.md` §8 routing table was missing `offline.html` and `tests.html`.
+
+Notes
+* Historical changelog entries were left alone. The "23 entries" in the v0.10.0 notes was accurate when written, and rewriting it would turn a record of what happened into a claim about the present. The roadmap's M9 entry now reads "23 entries at the time, 27 today" for the same reason.
+* No code changed in this release.
+
+---
+
 ## [0.12.0] - 2026-09-05
 
 **Side-by-side comparison (M11).**

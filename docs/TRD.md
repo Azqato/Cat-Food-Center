@@ -6,7 +6,7 @@
 
 ---
 
-## 0. Current implementation state (v0.7.0)
+## 0. Current implementation state (v0.12.0)
 
 The project is a **static site** — hand-written HTML, CSS custom properties, and
 vanilla JavaScript, served directly from the repository root by GitHub Pages
@@ -17,7 +17,8 @@ and has been removed.
 
 What is implemented:
 - Global layout: sticky header (wordmark, nav, theme toggle, Support button), footer
-- Home, search, product detail and scan pages, on live data
+- Home, search, product detail, scan, compare and submit pages, on live data
+- Installable as a PWA; `sw.js` precaches the shell and `offline.html` covers anything never opened
 - Open Pet Food Facts client and normaliser (`assets/js/opff.js`)
 - The scoring engine (`assets/js/scoring.js`) and its additive knowledge base
 - Barcode scanning: `BarcodeDetector` with a ZXing fallback, plus manual entry
@@ -111,7 +112,7 @@ Cat-Food-Center/
 ├── tools/
 │   ├── check-contrast.py    # WCAG AA audit of both palettes
 │   ├── run-tests.py         # Drives tests.html headlessly
-│   ├── check-live.py        # Eight end-to-end checks against the live API
+│   ├── check-live.py        # Twelve end-to-end checks against the live API
 │   ├── probe-opff.py        # Regenerates the numbers in DATA-COVERAGE.md
 │   └── learn/               # Guide generator: shell.py, bits.py, c_*.py
 ├── docs/                    # All project documentation
@@ -248,12 +249,17 @@ generator pattern already exists) but is not the MVP.
 | `scan.html` | Built | Camera barcode scanner and manual entry |
 | `compare.html` | Built | Side-by-side comparison; `?a=` and `?b=` |
 | `submit.html` | Built | Missing-product hand-off; `?barcode=` |
+| `offline.html` | Built | Fallback for a page never opened on this device |
+| `tests.html` | Built | Browser-hosted test suite; not linked from the site |
 
 There is no layout component, so the header and footer are duplicated across the
-four Tailwind pages and generated into the eleven guide pages. **This is the main
+eight Tailwind pages and generated into the eleven guide pages. **This is the main
 cost of having no framework**, and it is the reason the guide is generated at
-all. If the Tailwind pages grow a fifth sibling, move them under the generator
-too rather than hand-copying the chrome a fifth time.
+all. The advice here used to be that a fifth Tailwind page should trigger a move
+under the generator; there are now eight, so that threshold has already been
+passed and the duplication is real debt rather than a hypothetical. M14 in
+[ROADMAP.md](./ROADMAP.md) covers resolving it, in the guide's direction rather
+than the app's.
 
 - **Header:** sticky, wordmark linking to `index.html`, nav, theme toggle, Support pill.
 - **Footer:** four-column on guide pages; a single "Built by Azqato" line elsewhere.
@@ -261,7 +267,7 @@ too rather than hand-copying the chrome a fifth time.
 ## 9. Performance and offline
 
 - Target Largest Contentful Paint under 2.5 s on a mid-range phone over 4G.
-- The app shell, including the additive knowledge base, is precached by `sw.js` — 23 entries, enough to render every page with no network.
+- The app shell, including the additive knowledge base, is precached by `sw.js` — 27 entries, enough to render every page with no network. The count is asserted by `tools/check-live.py`, which also checks the cache does **not** grow per product viewed.
 - API responses are cached network-first: a saved copy is a fallback, never a preference. Anything served from cache is stamped by the worker and **labelled on the page**, because a stale score presented as current is the failure mode this whole project is built against.
 - Navigations are not cached — every product is the same document under a different query string — and a 404 is never cached, because it is how an unknown barcode is detected.
 - `offline.html` covers any page never opened on the device.
@@ -281,7 +287,7 @@ too rather than hand-copying the chrome a fifth time.
 
 ## 12. Testing strategy
 
-- **Scoring engine:** golden-file tests (runnable in the browser and under `node --test`; no build step required for either) covering each band, each hard gate, partial data, and the worked example in `PRD.md §6.7`. Suite must stay green.
+- **Scoring engine:** golden-file tests (browser-hosted only — `tests.html` imports the `*.test.js` modules and `tools/run-tests.py` drives it headlessly; there is no Node.js in this project and no `node --test` path, per [ADR-001](./ADR-001-static-first.md)) covering each band, each hard gate, partial data, and the worked example in `PRD.md §6.7`. Suite must stay green.
 - **Additive matching:** alias-resolution tests (e.g. "color added" maps to the artificial-dye record).
 - **Flows:** scan success, scan fallback to search, product not found, compare.
 
@@ -313,8 +319,8 @@ and is the most likely cause of a 404 on a working local page.
 | Product coverage | Whatever Open Pet Food Facts happens to hold; about a fifth of products can be scored on all three pillars | Curate a local catalog for common SKUs under `assets/data/` (M12) — see [DATA-COVERAGE.md](./DATA-COVERAGE.md) |
 | Alias languages | Six covered; anything else is reported as unchecked rather than scored as clean | Extend the alias lists, and extend `MATCHED_LANGUAGES` with them, never ahead of them |
 | Ingredient expand | Chevron rendered but non-interactive | Add expandable explanation panel |
-| Header / footer | Duplicated by hand across the four Tailwind pages | Bring them under `tools/` generation, as the guide pages already are |
-| Tailwind | Loaded from CDN at runtime on four pages, unpinned | Compile the used utilities into a committed stylesheet; removes a third-party runtime dependency and a render-blocking request |
+| Header / footer | Duplicated by hand across the eight Tailwind pages, and different from the guide chrome in both markup and capability | Bring the whole site onto the guide's interface and one generated chrome (M14). The guide top bar has no page navigation today, so that has to be designed before the port |
+| Tailwind | Loaded from CDN at runtime on eight pages, unpinned | Compile the used utilities into a committed stylesheet; removes a third-party runtime dependency and a render-blocking request |
 | Types | Nothing enforces them; the shapes in §4 are documentation only | Optional `tsc --checkJs --noEmit` CI job with JSDoc types — checks without changing what is served |
 
 ## 15. Future technical work

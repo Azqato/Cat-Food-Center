@@ -4,6 +4,19 @@ All notable changes to Cat Food Center are documented here. Format follows [Keep
 
 ---
 
+## v0.10.1 - 2026-09-05
+
+### Fixed
+- Documentation corrected against the code: the offline cache size, the number of end-to-end checks, the count of pages using Tailwind, and a testing instruction that referred to a runtime this project does not use.
+
+### Added
+- Two milestones written into the roadmap: a consolidation of the documentation set, and moving the whole site onto the interface built for the Cat Care Guide. Both are planned rather than started.
+
+### Notes
+- Nothing about the site itself changed in this release.
+
+---
+
 ## v0.10.0 — 2026-09-05
 
 ### Added
