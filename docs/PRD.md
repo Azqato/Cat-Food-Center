@@ -180,7 +180,6 @@ These are decisions, not gaps. Each is a thing the project has chosen not to do.
 
 | Feature | Milestone | Why not yet |
 |---|---|---|
-| Product photos on cards and compare | M15b | The data is already fetched; only the product page renders it. M14 has shipped, so the card is built once |
 | Curated top-100 SKU catalogue | M12 | The only route to meaningful coverage of common United States products |
 | Analytics | M12 | Nothing is measured today. See section 14 |
 | Lighthouse CI and Core Web Vitals gates | M12 | Unblocked: M14 removed the Tailwind CDN, so the numbers are now stable enough to gate on |
@@ -511,7 +510,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M13: Documentation consolidation audit | 2026-09-06 | Complete |
 | M15a: Search logic and brand browse | 2026-09-06 | Complete |
 | M14: One interface across the whole site | 2026-09-06 | Complete |
-| M15b: Product photos on cards | Not scheduled | Planned |
+| M15b: Product photos on cards | 2026-09-06 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -566,9 +565,34 @@ The navigation question that had blocked the milestone was answered as decided: 
 
 *The smaller lesson:* `.text-display` was defined in nine places and meant 3rem in all of them. Consolidating nine copies into one is where a value silently becomes something else, so the port was checked by diffing every rule in the old inline blocks against the new stylesheet rather than by reading the pages.
 
-### Next
+**M15b: product photos.** A picture of the tin on every result card, on each
+side of the compare page, and on recently viewed. It closes the last unanswered
+half of the owner's feedback on the live site: "There's no photo either."
 
-**M15b: product photos.** `opff.js` already requests `image_front_url` and exposes `product.imageUrl`, and 23 of 24 results in a live search carry one. Only `product-page.js` renders it. M14 has shipped, so the result card and the compare row now have one set of styles to build against.
+`opff.js` had been fetching `image_front_url` since M6 and only
+`product-page.js` rendered it, so this was rendering work rather than plumbing.
+The 200px rendition is used for the 56px boxes; the 400px one stays on the
+product page.
+
+*The decision that shaped it:* every card gets a box whether or not the product
+has a photo, and the empty box holds a paw outline. Coverage is good but not
+complete, and a list where some rows carry an image and some carry nothing is
+visibly ragged in a way that reads as a rendering fault rather than as missing
+data. The same placeholder is what a photo that fails to load is replaced with,
+through one delegated listener rather than an `onerror` attribute: there is no
+inline event handler anywhere else in this codebase, and adding the first one
+would be the only thing standing between the site and a Content-Security-Policy
+header.
+
+*Found while building it:* the service worker asked `isApi(url)` before
+`isImage(request)`, and product photos are served from
+`images.openpetfoodfacts.org`, which `isApi` matches. Every image was therefore
+taking the network-first path into the API cache: revalidated on every view
+when the bytes never change, and counted against the wrong cache. It was
+invisible while one photo existed on one page. Putting a photo on every card is
+what made the ordering matter, and the fix is one swapped block.
+
+### Next
 
 **M12: public beta.** Lighthouse CI passing Core Web Vitals targets, WCAG AA validated, top-100 SKU coverage at 80% or better, and analytics instrumented.
 
@@ -935,7 +959,8 @@ interface Product {
   name?: string;
   brand?: string;
   quantity?: string;
-  imageUrl?: string;              // Present on ~97% of records
+  imageUrl?: string;              // 400px front image. Present on ~97% of records
+  thumbUrl?: string;              // The 200px rendition of the same photo, for 56px boxes
   ingredientsText?: string;
   ingredients: string[];          // Split on commas outside brackets
   ingredientsLang: string;        // 'en' where an English text existed, else the record's lang, else 'unknown'
@@ -1055,7 +1080,7 @@ The shell precache is currently 29 entries. `tools/check-live.py` asserts it and
 | Product page rail | The product page has headings worth indexing, but they are written after the fetch, so the generator cannot see them | Build the rail client-side from `main.article h2[id]`, or leave the page at one column |
 | Search relevance | Delegated wholly to the API, which matches fields beyond name and brand | A curated catalogue, or a local index over it |
 | Scorable-only filter | Filters the current page rather than the query, because the API cannot filter on scorability | Only a local catalogue can fix this properly |
-| Product images | Fetched and normalised, rendered only on the product page | Render on cards, compare and recently viewed (M15b) |
+| Product image quality | Contributor photographs at whatever angle and lighting they had, shown as they are | Nothing to do inside this architecture. The catalogue is the source, and a photo of the real tin is worth more than a tidy one |
 | Ingredient expansion | Chevron rendered but inert | Build the explanation panel, or remove the affordance |
 | "Better alternatives" | Specified in the original PRD, never built | Needs a same-format query the API supports poorly |
 | Types | Nothing enforces the shapes in 16.5 | Optional `tsc --checkJs --noEmit` job with JSDoc types |

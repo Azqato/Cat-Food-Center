@@ -302,10 +302,13 @@ Defined in `cfc.css` and available to every page, since every page loads it. The
 | **Prev / next** | `.pagination` with `.dir` and `.label` | `.placeholder` for a missing direction |
 | **Skip link** | `.skip-link` | Off-screen until focused, then 8px from the top |
 | **Visually hidden** | `.sr-only` | |
+| **Product thumbnail** | `.thumb`, `.thumb-empty` | 56px box on every card, photo or not. `object-fit: contain` on `--bg`, never `cover`: these are contributor photographs at whatever aspect ratio their phone produced, and cropping to fill a square is how the product name ends up outside the frame |
 
 **Buttons** are `.btn` in `cfc-app.css`, with `.btn-accent` for the filled variant and `.btn-text` for the quiet one, plus `.topbar-cta` and `.footer-cta` in `cfc.css` for the two chrome pills. The chrome pills are deliberately separate: they are part of the bar and the footer, not of a page.
 
 **Lists of products** use `<ul style="list-style:none;padding:0">` with an `<a>` card per item, carrying `data-scorable` so the scorable-only filter can act on the rendered page. They are plain anchors: an earlier version of this document specified `<Link>` cards, which is a React component in a project that has no React.
+
+**The product row**, since M15b, is photo, then name and metadata, then the score tile: one image anchor on the left edge and one number anchor on the right, with the text between them. The chevron that used to close the row is gone. The score tile took its place, and two glyphs on the same edge of the same link is one more than the row needs; the whole row was always the link. The compare page is the exception, because its column is narrow and stacks below 700px: there the photo and the score tile sit together on the left, rather than putting the two halves of one product at opposite ends of a phone screen.
 
 ---
 

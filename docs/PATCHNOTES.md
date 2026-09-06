@@ -21,6 +21,58 @@ punctuation rather than content.
 
 ---
 
+## [0.15.0] - 2026-09-06
+
+**A picture of the tin, everywhere a product is listed (M15b).**
+
+Added
+* **Photos on search results, on recently viewed, and on both sides of the
+  compare page.** `opff.js` had been fetching `image_front_url` since M6 and
+  only the product page rendered it, so this is rendering work rather than
+  plumbing. It answers the last unaddressed half of the owner's feedback on the
+  live site: "There's no photo either."
+* **`assets/js/thumb.js`**, the one copy of the thumbnail. Three surfaces show
+  the same 56px box and none of them should own the rules for it.
+* **A placeholder for products with no photo**, a paw outline in the same box.
+  Coverage is good but not complete, and a list where some rows carry an image
+  and some carry nothing is visibly ragged in a way that reads as a rendering
+  fault rather than as missing data. A photo that fails to load is replaced
+  with the same placeholder.
+* **`product.thumbUrl`**, the 200px rendition. The 56px box does not need the
+  400px file; `product.imageUrl` keeps the larger one for the product page.
+* `thumbUrl` is stored with a recently-viewed entry, so a card can be redrawn
+  from this device with no network. It is a URL on the catalogue's own image
+  host, not a copy of the picture.
+
+Changed
+* **The product row is now photo, name, score.** The score tile moved to the
+  right edge and the chevron that used to sit there is gone: two glyphs on the
+  same edge of the same link is one more than the row needs, and the whole row
+  was always the link. The compare page keeps the photo and the tile together,
+  because its column is narrow and stacks below 700px.
+* `assets/js/thumb.js` joins the precached shell, so the placeholder renders
+  offline.
+
+Fixed
+* **The service worker was routing product images to the wrong cache.** It
+  asked `isApi(url)` before `isImage(request)`, and photos are served from
+  `images.openpetfoodfacts.org`, which `isApi` matches. Every image took the
+  network-first path into the API cache: revalidated on every view when the
+  bytes never change, and counted against the wrong cache. It was invisible
+  while one photo existed on one page. Putting a photo on every card is what
+  made the ordering matter.
+
+Notes
+* 23 of 24 results in a live search for "chicken" carry a photo, and none of
+  the 24 rendered a broken image.
+* The failure path is one delegated listener in the capture phase, not an
+  `onerror` attribute. There is no inline event handler anywhere else in this
+  codebase, and the first one would be the only thing standing between the site
+  and a Content-Security-Policy header.
+* 160 browser assertions, 16 of 16 live checks, contrast audit clean.
+
+---
+
 ## [0.14.0] - 2026-09-06
 
 **One interface across the whole site, and the nine application pages stop

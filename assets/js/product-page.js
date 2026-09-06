@@ -319,6 +319,7 @@ async function main() {
     barcode: product.barcode,
     name: product.name,
     brand: product.brand,
+    thumbUrl: product.thumbUrl,
     score: result.scorable ? result.score : undefined,
     band: result.scorable ? result.band : undefined,
     bandLabel: result.scorable ? result.bandLabel : undefined,

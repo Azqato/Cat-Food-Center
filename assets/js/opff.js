@@ -235,6 +235,10 @@ export function normalize(raw) {
     brand: (raw.brands || '').split(',')[0].trim() || undefined,
     quantity: (raw.quantity || '').trim() || undefined,
     imageUrl: raw.image_front_url || raw.image_front_small_url || undefined,
+    // The 200px rendition, for the 56px boxes on cards. Falling back to the
+    // 400px one costs bytes but never a missing picture; falling back the
+    // other way on `imageUrl` would put a 200px image in an 80px box.
+    thumbUrl: raw.image_front_small_url || raw.image_front_url || undefined,
     format: readFormat(tags, nutrition.moisturePct),
     lifeStage: readLifeStage(tags, labels, name),
     // Open Pet Food Facts records no AAFCO adequacy statement, so this is not

@@ -205,6 +205,35 @@
 .brand-count { color: var(--ink-soft); font-size: .75rem; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   Product thumbnail (M15b)
+
+   One box, 56px, on every card whether or not the product has a photo. The
+   placeholder is not decoration: a list where some rows carry an image and
+   some carry nothing is visibly ragged, and the ragged edge reads as a
+   rendering fault rather than as missing data.
+
+   `object-fit: contain` on a surface-coloured ground, not `cover`. These are
+   photographs of tins on whatever background the contributor had, at whatever
+   aspect ratio their phone produced. Cropping to fill a square is how the
+   product name ends up outside the frame.
+   ══════════════════════════════════════════════════════════════════════════ */
+.thumb {
+  width: 56px; height: 56px; flex-shrink: 0;
+  border-radius: 10px; border: 1px solid var(--hairline);
+  background: var(--bg); object-fit: contain;
+  /* The box is reserved before the bytes arrive, so a list does not reflow
+     line by line as photos land. */
+  display: block;
+}
+
+.thumb-empty {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-soft); opacity: .35;
+}
+
+.thumb-empty svg { width: 26px; height: 26px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
    Scanner
 
    The video fills a fixed-aspect box and is cropped rather than letterboxed,

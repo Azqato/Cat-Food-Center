@@ -51,6 +51,7 @@ const SHELL_ASSETS = [
   './assets/js/scoring.js',
   './assets/js/scanner.js',
   './assets/js/history.js',
+  './assets/js/thumb.js',
   './assets/js/product-page.js',
   './assets/js/search-page.js',
   './assets/js/brands-page.js',
@@ -84,6 +85,9 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
+/* Product photos live on images.openpetfoodfacts.org, which is inside the
+   catalogue's own domain, so this test matches them too. The fetch handler
+   therefore has to ask about images first. See the note there. */
 const isApi = (url) => url.hostname.endsWith('openpetfoodfacts.org');
 const isImage = (request) => request.destination === 'image';
 
@@ -154,13 +158,19 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  if (isApi(url)) {
-    event.respondWith(networkFirst(request, API));
+  /* Images before the API, and the order is load-bearing. Product photos are
+     served from images.openpetfoodfacts.org, so `isApi` matches them as well.
+     Asked in the other order every thumbnail would take the network-first
+     path into the API cache: revalidated on every view when the bytes never
+     change, and counted against the wrong cache. It went unnoticed while one
+     photo existed on one page; M15b put one on every card. */
+  if (isImage(request)) {
+    event.respondWith(cacheFirst(request, IMAGES).catch(() => Response.error()));
     return;
   }
 
-  if (isImage(request)) {
-    event.respondWith(cacheFirst(request, IMAGES).catch(() => Response.error()));
+  if (isApi(url)) {
+    event.respondWith(networkFirst(request, API));
     return;
   }
 

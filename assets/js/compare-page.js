@@ -23,6 +23,7 @@ import { fetchProduct } from './opff.js';
 import { scoreProduct, loadKnowledgeBase, toDryMatter, carbsByDifference } from './scoring.js';
 import { recentProducts } from './history.js';
 import { isValidBarcode } from './scanner.js';
+import { thumbHtml } from './thumb.js';
 
 const BAND_TOKEN = {
   excellent: ['var(--chip-excellent-bg)', 'var(--chip-excellent-ink)'],
@@ -103,8 +104,13 @@ function scoreTile(entry) {
   const { product, result } = entry;
   const [bg, ink] = result.scorable ? BAND_TOKEN[result.band] : ['var(--hairline)', 'var(--ink-soft)'];
   const meta = [product.brand, FORMAT_LABEL[product.format], product.quantity].filter(Boolean).join(' · ');
+  /* The photo goes first and the score tile keeps its place beside it. This
+     column is narrow and stacks below 700px, so pushing the score to the far
+     edge the way a search row does would leave the two halves of one product
+     at opposite ends of a phone screen. */
   return `<div class="cmp-cell">
     <div class="flex items-center gap-3">
+      ${thumbHtml(product.thumbUrl)}
       <div class="w-14 h-14 rounded-card flex items-center justify-center shrink-0" style="background:${bg}">
         ${result.scorable
     ? `<span class="font-display text-h2 leading-none" style="color:${ink};font-variant-numeric:tabular-nums">${result.score}</span>`

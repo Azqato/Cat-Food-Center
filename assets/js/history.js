@@ -8,7 +8,11 @@
    not information we have any reason to hold.
 
    What is stored is the minimum needed to redraw a card without a network
-   round-trip: barcode, name, brand, score, band. Not the full product: the
+   round-trip: barcode, name, brand, score, band, and since M15b the URL of
+   the thumbnail. The URL is a public address on the catalogue's own image
+   host, not a copy of the picture: it costs a few dozen bytes of quota and
+   the service worker already holds the image itself. Not the full product:
+   the
    score is derived, the engine changes, and a stale score rendered as current
    would be a quiet lie. Anything shown from here is labelled as a past view,
    and clicking through recomputes it.
@@ -47,7 +51,7 @@ export function recentProducts() {
 /**
  * Record a product view, moving it to the front if it is already there.
  *
- * @param {{barcode: string, name: string, brand?: string,
+ * @param {{barcode: string, name: string, brand?: string, thumbUrl?: string,
  *          score?: number, band?: string, bandLabel?: string}} entry
  */
 export function recordView(entry) {

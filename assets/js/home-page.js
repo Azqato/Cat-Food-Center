@@ -7,6 +7,7 @@
    broken.
    ========================================================================== */
 import { recentProducts, clearRecent } from './history.js';
+import { thumbHtml } from './thumb.js';
 
 const BAND_TOKEN = {
   excellent: ['var(--chip-excellent-bg)', 'var(--chip-excellent-ink)'],
@@ -35,19 +36,21 @@ function card(entry) {
     ? `<span class="inline-block text-micro px-2 rounded-pill mt-1" style="background:${bg};color:${ink};padding-top:2px;padding-bottom:2px">${esc(entry.bandLabel || '')}</span>`
     : '';
 
+  /* Same row as a search result, deliberately: the two lists sit one scroll
+     apart and a card that means the same thing should look the same. The photo
+     is whatever was stored at the time of the visit, so an entry saved before
+     M15b simply shows the placeholder. */
   return `<li>
     <a href="./product.html?barcode=${esc(entry.barcode)}"
        class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
-      <div class="w-14 h-14 rounded-card flex items-center justify-center shrink-0"
-           style="background:${bg}" aria-label="${scored ? `Score ${entry.score}, ${esc(entry.bandLabel || '')}` : 'Not scored'}">${tile}</div>
+      ${thumbHtml(entry.thumbUrl)}
       <div class="min-w-0 flex-1">
         <p class="text-ink font-medium text-small truncate">${esc(entry.name || entry.barcode)}</p>
         <p class="text-ink-soft text-micro">${esc(entry.brand || 'Brand not recorded')}</p>
         ${badge}
       </div>
-      <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-      </svg>
+      <div class="w-14 h-14 rounded-card flex items-center justify-center shrink-0"
+           style="background:${bg}" aria-label="${scored ? `Score ${entry.score}, ${esc(entry.bandLabel || '')}` : 'Not scored'}">${tile}</div>
     </a>
   </li>`;
 }

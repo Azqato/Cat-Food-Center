@@ -29,6 +29,7 @@
    ========================================================================== */
 import { searchProducts, brandDisplayName } from './opff.js';
 import { scoreProduct, loadKnowledgeBase } from './scoring.js';
+import { thumbHtml } from './thumb.js';
 
 const BAND_TOKEN = {
   excellent: ['var(--chip-excellent-bg)', 'var(--chip-excellent-ink)'],
@@ -69,19 +70,21 @@ function card(product, result) {
     ? `Score ${result.score}, ${result.bandLabel}`
     : 'Not scored';
 
+  /* Photo left, score right, name between. The chevron that used to close the
+     row is gone: the score tile now sits where it was, and two glyphs on the
+     same edge of the same link is one more than the row needs. The whole row
+     was always the link. */
   return `<li data-scorable="${result.scorable ? 'yes' : 'no'}">
     <a href="./product.html?barcode=${esc(product.barcode)}"
        class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
-      <div class="w-14 h-14 rounded-card flex items-center justify-center shrink-0"
-           style="background:${bg}" aria-label="${esc(ariaLabel)}">${tile}</div>
+      ${thumbHtml(product.thumbUrl)}
       <div class="min-w-0 flex-1">
         <p class="text-ink font-medium text-small truncate">${esc(product.name)}</p>
         <p class="text-ink-soft text-micro">${esc(meta || 'Brand not recorded')}</p>
         ${badge}
       </div>
-      <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-      </svg>
+      <div class="w-14 h-14 rounded-card flex items-center justify-center shrink-0"
+           style="background:${bg}" aria-label="${esc(ariaLabel)}">${tile}</div>
     </a>
   </li>`;
 }
