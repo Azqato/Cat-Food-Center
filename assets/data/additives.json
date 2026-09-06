@@ -1,0 +1,306 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-09-05",
+  "note": "Additive Knowledge Base for the CFC Score. Tiers and evidence match learn-additives.html exactly — if you change a tier here, change it there. Tier 3 = documented harm in cats, a regulatory prohibition, or a credible toxicity signal with no feline safe dose established. Tier 2 = plausible mechanism with incomplete evidence. Tier 1 = flagged by marketing rather than evidence. Tier 0 records are explicitly benign and exist so the engine can stop penalising things that merely sound synthetic.",
+  "matching": "aliases are lowercased substrings matched against each ingredient. Keep them specific enough not to fire on an unrelated word — 'bha' would match 'bhakti', so the alias is written with boundaries by the matcher, not here.",
+  "additives": [
+    {
+      "id": "propylene-glycol",
+      "name": "Propylene glycol",
+      "aliases": ["propylene glycol", "1,2-propanediol", "propane-1,2-diol"],
+      "function": "humectant",
+      "tier": 3,
+      "healthImpact": "Causes Heinz body formation and shortened red blood cell survival in cats — a haemolytic anaemia — at doses that do not affect other species. Feline haemoglobin has eight reactive sulfhydryl groups against two to four in most mammals, which is the same quirk behind onion, garlic and paracetamol toxicity in cats.",
+      "regulatory": "Prohibited in cat food by the US FDA (21 CFR 589.1001). Still legal in dog food, so it reaches cats mainly through shared dog treats.",
+      "hardGate": true,
+      "sources": [
+        { "label": "FDA 21 CFR 589.1001", "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-E/part-589" }
+      ]
+    },
+    {
+      "id": "ethoxyquin",
+      "name": "Ethoxyquin",
+      "aliases": ["ethoxyquin"],
+      "function": "synthetic antioxidant preservative",
+      "tier": 3,
+      "healthImpact": "Liver enzyme elevations and haemoglobin changes at feeding levels; no feline-specific safe dose has been established. Frequently enters food undeclared via fishmeal preserved before it reaches the pet food manufacturer.",
+      "regulatory": "EU authorisation suspended in 2017 pending further data. FDA asked manufacturers to lower the maximum voluntarily.",
+      "hardGate": false,
+      "sources": [
+        { "label": "EFSA FEEDAP opinion on ethoxyquin", "url": "https://www.efsa.europa.eu/en/efsajournal/pub/4272" }
+      ]
+    },
+    {
+      "id": "bha",
+      "name": "BHA (butylated hydroxyanisole)",
+      "aliases": ["butylated hydroxyanisole", "bha"],
+      "function": "synthetic antioxidant preservative",
+      "tier": 3,
+      "healthImpact": "Classified by IARC as possibly carcinogenic to humans (Group 2B) on the basis of forestomach tumours in rodents. EFSA concluded that a safe dose for cats could not be established from the available tolerance data.",
+      "regulatory": "Permitted in the US and EU at limited levels; the feline data gap is the concern rather than a prohibition.",
+      "hardGate": false,
+      "sources": [
+        { "label": "IARC Monograph Vol. 40", "url": "https://monographs.iarc.who.int/list-of-classifications" }
+      ]
+    },
+    {
+      "id": "bht",
+      "name": "BHT (butylated hydroxytoluene)",
+      "aliases": ["butylated hydroxytoluene", "bht"],
+      "function": "synthetic antioxidant preservative",
+      "tier": 3,
+      "healthImpact": "Liver and thyroid effects in rodent studies. As with BHA, the feline-specific tolerance data needed to set a safe dose does not exist.",
+      "regulatory": "Permitted at limited levels in the US and EU.",
+      "hardGate": false,
+      "sources": [
+        { "label": "EFSA FEEDAP opinion on BHT", "url": "https://www.efsa.europa.eu/en/efsajournal/pub/6785" }
+      ]
+    },
+    {
+      "id": "artificial-colours",
+      "name": "Artificial colours",
+      "aliases": [
+        "red 40", "allura red", "yellow 5", "tartrazine", "yellow 6", "sunset yellow",
+        "blue 2", "indigotine", "fd&c", "artificial color", "artificial colour",
+        "color added", "colour added"
+      ],
+      "function": "colourant",
+      "tier": 3,
+      "healthImpact": "No nutritional function whatsoever. Cats are dichromats and cannot see the colours these produce — they exist to influence the person buying the food. Several carry contested behavioural and allergenic signals in humans and none has feline safety data.",
+      "regulatory": "Permitted, but purely cosmetic. Their presence is a formulation-priorities signal as much as a safety one.",
+      "hardGate": false,
+      "sources": [
+        { "label": "FDA Color Additives in Foods", "url": "https://www.fda.gov/food/food-additives-petitions/color-additives-foods" }
+      ]
+    },
+    {
+      "id": "titanium-dioxide",
+      "name": "Titanium dioxide",
+      "aliases": ["titanium dioxide", "e171"],
+      "function": "whitening agent",
+      "tier": 3,
+      "healthImpact": "EFSA concluded in 2021 that titanium dioxide can no longer be considered safe as a food additive, because genotoxicity could not be ruled out. Purely cosmetic in pet food.",
+      "regulatory": "Banned as a human food additive in the EU since 2022; still permitted in feed.",
+      "hardGate": false,
+      "sources": [
+        { "label": "EFSA 2021 safety assessment of E171", "url": "https://www.efsa.europa.eu/en/efsajournal/pub/6585" }
+      ]
+    },
+    {
+      "id": "menadione",
+      "name": "Menadione (vitamin K3)",
+      "aliases": [
+        "menadione", "vitamin k3", "menadione sodium bisulfite",
+        "menadione dimethylpyrimidinol bisulfite", "msbc", "mpb"
+      ],
+      "function": "synthetic vitamin K source",
+      "tier": 3,
+      "healthImpact": "A synthetic vitamin K precursor linked to haemolysis and liver toxicity at elevated doses. Cats have no established dietary vitamin K requirement under normal conditions, so the risk is taken for little benefit.",
+      "regulatory": "Prohibited in human food supplements in the US; permitted in feed.",
+      "hardGate": false,
+      "sources": [
+        { "label": "NRC Nutrient Requirements of Dogs and Cats", "url": "https://nap.nationalacademies.org/catalog/10668/" }
+      ]
+    },
+    {
+      "id": "sodium-nitrite",
+      "name": "Sodium nitrite as a colour fixative",
+      "aliases": ["sodium nitrite", "potassium nitrite"],
+      "function": "curing agent and colour fixative",
+      "tier": 3,
+      "healthImpact": "Can form nitrosamines when reacting with amines during processing, and in excess causes methaemoglobinaemia. Used in pet food to keep meat looking red rather than for preservation.",
+      "regulatory": "Permitted at limited levels.",
+      "hardGate": false,
+      "sources": [
+        { "label": "EFSA opinion on nitrites", "url": "https://www.efsa.europa.eu/en/efsajournal/pub/4787" }
+      ]
+    },
+
+    {
+      "id": "carrageenan",
+      "name": "Carrageenan",
+      "aliases": ["carrageenan", "carageenan", "irish moss extract"],
+      "function": "thickener and gelling agent",
+      "tier": 2,
+      "healthImpact": "Degraded carrageenan (poligeenan) is an established intestinal irritant and is not what is used in food. Food-grade carrageenan is contested: animal studies show intestinal inflammation, but whether food-grade material degrades meaningfully in the gut remains unsettled. Relevant mainly for cats with existing gut disease.",
+      "regulatory": "Permitted. The dispute is scientific rather than regulatory.",
+      "hardGate": false,
+      "sources": [
+        { "label": "EFSA re-evaluation of carrageenan (E 407)", "url": "https://www.efsa.europa.eu/en/efsajournal/pub/5238" }
+      ]
+    },
+    {
+      "id": "gums",
+      "name": "Gums (guar, xanthan, cassia, locust bean)",
+      "aliases": ["guar gum", "xanthan gum", "cassia gum", "locust bean gum", "tara gum"],
+      "function": "thickener and stabiliser",
+      "tier": 2,
+      "healthImpact": "Generally well tolerated, but they are fermentable and can cause loose stools in sensitive cats. Cassia gum in particular has a thinner safety dossier than the others. A quality-of-formulation issue rather than a safety one for most cats.",
+      "regulatory": "Permitted.",
+      "hardGate": false,
+      "sources": [
+        { "label": "EFSA FEEDAP opinion on cassia gum", "url": "https://www.efsa.europa.eu/en/efsajournal/pub/5993" }
+      ]
+    },
+    {
+      "id": "hidden-glutamates",
+      "name": "MSG and hidden glutamates",
+      "aliases": [
+        "monosodium glutamate", "msg", "animal digest", "hydrolysed protein",
+        "hydrolyzed protein", "yeast extract", "autolyzed yeast", "autolysed yeast"
+      ],
+      "function": "palatant",
+      "tier": 2,
+      "healthImpact": "Palatants make a food more appealing than its composition warrants, which is a problem when it drives overconsumption or masks poor ingredient quality. 'Natural flavour' and 'animal digest' are the label terms that most often conceal them.",
+      "regulatory": "Permitted; no disclosure of the specific compound is required.",
+      "hardGate": false,
+      "sources": [
+        { "label": "AAFCO Official Publication — flavour definitions", "url": "https://www.aafco.org/" }
+      ]
+    },
+    {
+      "id": "added-sugars",
+      "name": "Added sugars and caramel colour",
+      "aliases": [
+        "corn syrup", "high fructose", "sucrose", "molasses", "caramel color",
+        "caramel colour", "cane sugar", "dextrose", "fructose"
+      ],
+      "function": "palatant, humectant, colourant",
+      "tier": 2,
+      "healthImpact": "Cats lack functional sweet taste receptors, so added sugar does not make food taste sweeter to them — it adds digestible carbohydrate to an obligate carnivore's diet and contributes to the diabetes and obesity risk that already dominate feline nutrition.",
+      "regulatory": "Permitted.",
+      "hardGate": false,
+      "sources": [
+        { "label": "Li et al., Pseudogenization of a sweet-receptor gene in cats", "url": "https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.0010003" }
+      ]
+    },
+    {
+      "id": "propyl-gallate-tbhq",
+      "name": "Propyl gallate and TBHQ",
+      "aliases": ["propyl gallate", "tbhq", "tertiary butylhydroquinone", "tert-butylhydroquinone"],
+      "function": "synthetic antioxidant preservative",
+      "tier": 2,
+      "healthImpact": "Both carry liver and, for propyl gallate, endocrine signals in rodent studies. Less studied than BHA and BHT and used at lower levels, which is why they sit a tier lower rather than being cleared.",
+      "regulatory": "Permitted at limited levels.",
+      "hardGate": false,
+      "sources": [
+        { "label": "EFSA opinion on propyl gallate (E 310)", "url": "https://www.efsa.europa.eu/en/efsajournal/pub/5170" }
+      ]
+    },
+    {
+      "id": "inorganic-phosphates",
+      "name": "Inorganic phosphates",
+      "aliases": [
+        "sodium tripolyphosphate", "phosphoric acid", "sodium hexametaphosphate",
+        "tetrasodium pyrophosphate", "stpp", "shmp"
+      ],
+      "function": "moisture retention, dental tartar control, acidifier",
+      "tier": 2,
+      "healthImpact": "Highly soluble phosphate salts are absorbed far more readily than the phosphorus bound in meat and bone. Feeding studies have shown adverse renal effects in healthy cats at levels found in commercial food. This matters disproportionately because chronic kidney disease is among the most common conditions in older cats.",
+      "regulatory": "Permitted, with no distinction made between organic and inorganic phosphorus on labels.",
+      "hardGate": false,
+      "sources": [
+        { "label": "Dobenecker et al., Effect of dietary phosphorus on renal function in cats", "url": "https://pubmed.ncbi.nlm.nih.gov/29623914/" }
+      ]
+    },
+    {
+      "id": "allium-powders",
+      "name": "Garlic and onion powder",
+      "aliases": ["garlic powder", "onion powder", "garlic", "onion", "allium", "chives", "shallot"],
+      "function": "palatant",
+      "tier": 2,
+      "healthImpact": "Allium species cause oxidative damage to feline red blood cells and Heinz body anaemia. Onion is the more potent; garlic is roughly five times less so but acts by the same mechanism. Trace amounts as a flavouring are unlikely to harm a healthy cat, but there is no reason for them to be present.",
+      "regulatory": "Permitted as a flavouring, with no quantity disclosure.",
+      "hardGate": false,
+      "sources": [
+        { "label": "ASPCA Animal Poison Control — Allium toxicity", "url": "https://www.aspca.org/pet-care/animal-poison-control" }
+      ]
+    },
+
+    {
+      "id": "named-by-products",
+      "name": "Named by-products and by-product meals",
+      "aliases": ["by-product", "byproduct", "by product"],
+      "function": "protein source",
+      "tier": 0,
+      "healthImpact": "Not a problem. Named by-products — chicken by-product meal, for instance — are organ meats: liver, spleen, kidney, lung. These are nutrient-dense and closer to what a cat eats in the wild than muscle meat alone. Liver is the practical source of preformed vitamin A, which cats cannot make from beta-carotene. Only unnamed sources ('meat by-products') are a transparency concern.",
+      "regulatory": "AAFCO-defined term with a specific meaning; excludes hair, horn, hide and manure.",
+      "hardGate": false,
+      "sources": [
+        { "label": "AAFCO — What is in pet food", "url": "https://www.aafco.org/consumers/understanding-pet-food/" }
+      ]
+    },
+    {
+      "id": "natural-preservatives",
+      "name": "Mixed tocopherols, rosemary extract, ascorbic acid, citric acid",
+      "aliases": ["mixed tocopherols", "tocopherol", "rosemary extract", "ascorbic acid", "citric acid"],
+      "function": "natural antioxidant preservative",
+      "tier": 0,
+      "healthImpact": "These are the preferable alternatives to BHA, BHT and ethoxyquin. Their presence is a positive signal about the formulation.",
+      "regulatory": "Permitted.",
+      "hardGate": false,
+      "sources": [
+        { "label": "AAFCO Official Publication", "url": "https://www.aafco.org/" }
+      ]
+    },
+    {
+      "id": "supplemental-taurine",
+      "name": "Supplemental taurine",
+      "aliases": ["taurine"],
+      "function": "essential amino acid supplement",
+      "tier": 0,
+      "healthImpact": "Cats cannot synthesise enough taurine and deficiency causes dilated cardiomyopathy and central retinal degeneration, both preventable and the latter irreversible. Taurine is degraded by heat processing, so supplementation is necessary rather than optional. Its presence on a label is a good sign.",
+      "regulatory": "Required by the AAFCO cat food nutrient profiles.",
+      "hardGate": false,
+      "sources": [
+        { "label": "AAFCO Cat Food Nutrient Profiles", "url": "https://www.aafco.org/" }
+      ]
+    },
+    {
+      "id": "functional-fibres",
+      "name": "Beet pulp, cellulose, psyllium, inulin",
+      "aliases": ["beet pulp", "cellulose", "psyllium", "inulin", "chicory root"],
+      "function": "dietary fibre",
+      "tier": 0,
+      "healthImpact": "Commonly criticised as filler, but they are functional fibres with real roles in stool quality, hairball management and satiety. Beet pulp in particular is a moderately fermentable fibre, not sugar-beet sugar.",
+      "regulatory": "Permitted.",
+      "hardGate": false,
+      "sources": [
+        { "label": "WSAVA Global Nutrition Toolkit", "url": "https://wsava.org/global-guidelines/global-nutrition-guidelines/" }
+      ]
+    },
+    {
+      "id": "synthetic-micronutrients",
+      "name": "Synthetic vitamins and chelated minerals",
+      "aliases": ["proteinate", "chelate", "amino acid complex", "thiamine mononitrate", "pyridoxine hydrochloride"],
+      "function": "micronutrient fortification",
+      "tier": 0,
+      "healthImpact": "The long chemical names near the end of an ingredient list are the vitamin and mineral premix that makes a food complete and balanced. Chelated minerals are generally better absorbed than inorganic salts. Their presence is required, not a red flag.",
+      "regulatory": "Required to meet the AAFCO nutrient profiles.",
+      "hardGate": false,
+      "sources": [
+        { "label": "AAFCO Cat Food Nutrient Profiles", "url": "https://www.aafco.org/" }
+      ]
+    }
+  ],
+  "vagueTerms": [
+    {
+      "id": "unnamed-meat",
+      "name": "Unnamed protein source",
+      "aliases": ["meat by-product", "meat and animal derivative", "meat meal", "animal fat", "poultry by-product meal", "meat and bone meal"],
+      "why": "An unnamed source cannot be traced to a species, so the buyer cannot know what the cat is eating or keep a diagnosed protein allergy out of the bowl. Named equivalents — 'chicken by-product meal', 'beef fat' — carry the same nutrition with none of the opacity."
+    },
+    {
+      "id": "unnamed-flavour",
+      "name": "Unspecified flavouring",
+      "aliases": ["natural flavor", "natural flavour", "artificial flavor", "artificial flavour", "flavouring", "flavoring"],
+      "why": "A catch-all that legally conceals the specific palatant, commonly a glutamate-bearing digest."
+    },
+    {
+      "id": "unnamed-preservative",
+      "name": "Unspecified preservative",
+      "aliases": ["preserved with mixed", "antioxidant", "preservative", "eu additives", "ec additives"],
+      "why": "European labels in particular may declare an additive category without naming the compound, so a food preserved with BHA is indistinguishable on the label from one preserved with tocopherols."
+    }
+  ]
+}
