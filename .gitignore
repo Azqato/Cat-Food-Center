@@ -7,3 +7,7 @@ out/
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+
+# Python bytecode from tools/
+__pycache__/
+*.py[cod]

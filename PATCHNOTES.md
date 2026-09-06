@@ -6,6 +6,36 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.6.0] - 2026-09-05
+
+**Added The Cat Care Guide — an eleven-page educational resource, built as a documentation site.**
+
+Added
+* `learn.html` — guide overview, the five rules that matter most, and the map of all topics.
+* `learn-nutrition.html` — obligate carnivore metabolism, the five adaptations that define feline nutrition, protein/fat/carbohydrate/fibre, and the eight nutrients cats cannot synthesise (taurine, arginine, arachidonic acid, retinol, niacin, vitamin D3, B12, thiamine).
+* `learn-daily-requirements.html` — the complete AAFCO Cat Food Nutrient Profiles table (42 nutrients, growth and adult minimums plus maximums), the RER/MER formulas with a life-stage factor table, and a full worked conversion into grams and milligrams per day for a 4.5 kg neutered indoor cat.
+* `learn-labels.html` — reading order, AAFCO adequacy statements ranked by strength, the dry-matter conversion with a worked wet-vs-dry comparison, carbohydrate by difference, ingredient splitting, the 95/25/3 naming rules, and marketing terms with no regulatory meaning.
+* `learn-food-types.html` — seven formats compared on moisture, carbohydrate, calorie density, cost and safety; includes the current FDA position on H5N1 in raw pet food and the evidence on home-prepared recipes failing nutrient analysis.
+* `learn-hydration.html` — water requirements by body weight, a diet-by-diet water balance table, dehydration checks, and eleven ranked ways to increase intake.
+* `learn-additives.html` — three-tier additive reference covering 30+ compounds (propylene glycol, ethoxyquin, BHA, BHT, artificial colours, titanium dioxide, menadione, carrageenan, gums, glutamates, inorganic phosphates and more), each with its regulatory position and evidence, plus a section on commonly criticised ingredients that are not actually a problem.
+* `learn-feeding.html` — calorie tables for seven body weights, portioning, meal timing patterns, food-based enrichment, a seven-day transition schedule, the 10% treat rule, body condition scoring, and multi-cat feeding.
+* `learn-life-stages.html` — weaning through geriatric, the kitten-vs-adult requirement table, the post-neutering weight-gain window, pregnancy and lactation energy factors, and why senior cats need more protein rather than less.
+* `learn-toxic.html` — toxic foods, plants (lilies flagged as a same-hour emergency), medications, and household hazards, with poison-line numbers and first-ten-minutes steps at the top of the page.
+* `learn-health.html` — diet in obesity, CKD, FLUTD, diabetes, hyperthyroidism, IBD, food allergy, hepatic lipidosis, dental disease and constipation.
+* `assets/cfc.css` — design tokens plus the three-column documentation shell (top bar, sidebar, article, on-this-page rail), callouts, data tables, entry cards, panels, comparison grids, pagination and site footer. Responsive: the right rail drops below 1180px, the sidebar becomes a drawer below 900px.
+* `assets/cfc-docs.js` — mobile navigation drawer (hamburger, backdrop, Escape to close) and the "on this page" scroll spy. Both are progressive enhancements; pages are fully readable without JavaScript.
+* `assets/cfc-tailwind.js` — the Tailwind CDN theme, extracted from the inline per-page configs.
+* `tools/learn/` — static generator (`build.py`, `shell.py`, `bits.py`, and one `c_*.py` content module per page) so the eleven pages share one shell and cannot drift apart. Generated HTML is committed, so deployment still needs no build step.
+* Home page: a Cat Care Guide entry card above "Recently viewed".
+
+Changed
+* All pages: **Learn** link added to the header nav between Search and Methodology, linking to `./learn.html`.
+* All pages: header nav now scrolls horizontally on narrow viewports instead of overflowing, now that it carries four items.
+* `docs/ROADMAP.md`: milestones renumbered into chronological order; the Cat Care Guide recorded complete as M4; dark mode promoted out of the deferred list to M5, specified with a header toggle and a `localStorage`-persisted preference that falls back to `prefers-color-scheme`.
+* `README.md`: documents the guide, the generator workflow, and the shared assets.
+
+---
+
 ## [0.5.3] - 2026-06-07
 
 **Removed Methodology from footers — now accessible via header nav.**

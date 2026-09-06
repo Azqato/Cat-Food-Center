@@ -4,6 +4,37 @@ All notable changes to Cat Food Center are documented here. Format follows [Keep
 
 ---
 
+## v0.4.0 — 2026-09-05
+
+### Added
+- **The Cat Care Guide** — an eleven-page educational resource at `/learn.html` and `/learn-*.html`, grounded in the AAFCO nutrient profiles, NRC research, FDA and EFSA guidance, WSAVA's nutrition toolkit, and the peer-reviewed veterinary literature. Every page carries a sources list.
+  - `learn.html` — overview, the five rules, and the guide map
+  - `learn-nutrition.html` — obligate carnivore metabolism; protein, fat, carbohydrate and fibre; the eight nutrients cats cannot synthesise
+  - `learn-daily-requirements.html` — the complete AAFCO cat food nutrient profile (all 42 nutrients with growth minimums, adult minimums and maximums), the RER/MER calorie formulas, and a worked conversion into exact grams and milligrams per day for a 4.5 kg cat
+  - `learn-labels.html` — AAFCO adequacy statements, the dry-matter conversion, carbohydrate by difference, ingredient splitting, the 95/25/3 naming rules, and the marketing terms with no regulatory meaning
+  - `learn-food-types.html` — seven formats compared, including the current FDA position on H5N1 in raw pet food
+  - `learn-hydration.html` — water requirements by body weight, dehydration checks, and eleven ways to increase intake
+  - `learn-additives.html` — a three-tier additive reference covering 30+ compounds with the regulatory position and evidence for each, plus the commonly criticised ingredients that are not actually a problem
+  - `learn-feeding.html` — calorie tables by body weight, portioning, meal timing, transitions, treats, weight management, and multi-cat feeding
+  - `learn-life-stages.html` — weaning through geriatric, including the post-neutering weight gain window and why senior cats need more protein, not less
+  - `learn-toxic.html` — toxic foods, plants (lilies flagged as a same-hour emergency), medications and household hazards, with poison-line numbers and first-ten-minutes steps
+  - `learn-health.html` — diet in obesity, CKD, FLUTD, diabetes, hyperthyroidism, IBD, food allergy, hepatic lipidosis, dental disease and constipation
+- Documentation-site layout for the guide: fixed top bar with product search, grouped sticky sidebar, article column, "on this page" scroll-spy rail, prev/next pagination, and a four-column site footer
+- Shared front-end assets in `/assets`: `cfc.css` (design tokens and the documentation shell), `cfc-docs.js` (mobile navigation drawer and scroll spy), `cfc-tailwind.js` (Tailwind CDN theme extracted from the inline page configs)
+- `tools/learn/` static generator so the eleven pages share one shell and cannot drift apart; generated output is committed, so deployment still needs no build step
+- "Learn" entry in the main navigation on the home, search, product and methodology pages
+- Cat Care Guide entry card on the home page
+
+### Changed
+- Main navigation now scrolls horizontally on narrow viewports rather than overflowing, since it carries a fourth item
+- `docs/ROADMAP.md` renumbered into true chronological order; the Cat Care Guide recorded as complete, and dark mode promoted out of the deferred list into a planned milestone (M5) with a toggle and a `localStorage`-persisted preference
+- README documents the guide, the generator workflow, and the shared assets
+
+### Notes
+- The guide is educational content and is not veterinary advice; every page says so, and the pages covering disease and toxicity say so prominently.
+
+---
+
 ## v0.3.0 — 2026-06-08
 
 ### Added
