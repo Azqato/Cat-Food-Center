@@ -21,6 +21,85 @@ punctuation rather than content.
 
 ---
 
+## [0.14.0] - 2026-09-06
+
+**One interface across the whole site, and the nine application pages stop
+being hand-written (M14).**
+
+Added
+* **`tools/site/chrome.py`**, the single copy of the head, top bar, drawer and
+  footer. `tools/learn/shell.py` imports it, so the guide pages and the
+  application pages cannot drift apart. `NAV` is one list of seven
+  destinations; adding a link is one edit rather than nine.
+* **`tools/site/build.py`**, which wraps that chrome around a body fragment
+  per page from `tools/site/content/`. The generated pages are committed, so
+  deployment still needs no build step (ADR-001). This is the pattern the
+  Cat Care Guide has used since M4.
+* **`assets/cfc-app.css`**, roughly 330 lines: the utilities the page modules
+  actually emit and the components they build. It replaces the Tailwind CDN
+  and nine per-page `<style>` blocks.
+* **`.topbar-nav`**, the inline site navigation above 900px, with
+  `aria-current="page"` on the current destination.
+* **A site menu in the drawer** below 900px, on every page. On a guide page the
+  guide's own section list is nested beneath it: one control, two levels.
+* **An "On this page" rail on `methodology.html`**, built by the generator from
+  the `<h2 id="...">` elements in the fragment.
+
+Changed
+* All nine application pages are now generated. **Do not hand-edit
+  `index.html`, `search.html`, `brands.html`, `product.html`, `scan.html`,
+  `submit.html`, `compare.html`, `methodology.html` or `offline.html`**: edit
+  the fragment in `tools/site/content/` and rerun the generator.
+* `sw.js`: `SHELL_ASSETS` picks up `cfc.css`, `cfc-app.css` and `cfc-docs.js`
+  and drops `cfc-tailwind.js`. `VERSION` is `v2`, so the new shell installs
+  over the old one rather than being merged into it.
+* `tools/check-live.py` looks the shell cache up by its `cfc-shell-` prefix
+  instead of by full name. `caches.open()` creates an empty cache when the name
+  is wrong, so the hard-coded `cfc-shell-v1` turned a version bump into a
+  silent zero rather than into a failure. It failed loudly first, which is how
+  it was found.
+* The top-bar search field is hidden on `index.html` and `search.html`, which
+  carry a search input in the body. Two routes to the same place inside one
+  viewport is a papercut. Closes PRD open question 6.
+* A page with no headings to index collapses to one column rather than showing
+  an empty rail, and the generator decides that per page by reading the
+  fragment. Closes PRD open question 5.
+
+Fixed
+* **`.article a` outranked every component that colours its own anchor.** The
+  rule is `.article a:not([class])` now, which is prose only. The visible
+  symptom was the home page's round scan button rendering as accent text on an
+  accent circle, invisible until you clicked it.
+* **The drawer took a grid column on `.shell-app-toc`** and pushed the article
+  onto the next row, which rendered `methodology.html` as a blank screen at
+  every width above 900px. Both application shells are named in the rule now.
+* **`.text-display` lost its size in the port**, so a product's score rendered
+  at body size instead of 3rem. It had been defined identically in nine files;
+  consolidating nine copies into one is exactly where a value goes missing. The
+  whole port was then re-checked by diffing every rule in the old inline blocks
+  against the new stylesheet.
+* `tools/learn/shell.py` emitted a `</nav>` with no opening tag while the
+  drawer was being rewired, so the guide pages briefly shipped an unbalanced
+  sidebar.
+
+Removed
+* `https://cdn.tailwindcss.com` and `assets/cfc-tailwind.js`, from every page
+  and from the repository. It was a render-blocking third-party script,
+  unpinned, whose content could change without a commit here. It was the
+  project's last unpinned runtime dependency and the one item that made
+  Lighthouse numbers unstable enough to be worth deferring M12's gates over.
+* The nine per-page `<style>` blocks.
+* `.footer-link`, which had one user left and duplicated `.prose-link`.
+
+Notes
+* 160 browser assertions pass, 16 of 16 live checks pass, and the contrast
+  audit passes on both palettes.
+* The product page has headings worth indexing but they are written by
+  `product-page.js` after the fetch returns, so the generator cannot see them.
+  It has no rail. Carried as PRD open question 11.
+
+---
+
 ## [0.13.0] - 2026-09-06
 
 **Search that reaches past the first page, a brand index, and a full

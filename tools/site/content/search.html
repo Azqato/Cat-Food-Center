@@ -1,0 +1,30 @@
+    <div class="flex flex-col gap-6">
+
+      <!-- Pre-filled from ?q= by assets/js/search-page.js -->
+      <form action="./search.html" method="get" class="flex gap-2" role="search">
+        <input type="search" name="q" id="search-input" placeholder="Brand or product name…"
+          aria-label="Search cat food products" class="field flex-1 min-w-0" />
+        <button type="submit" class="btn btn-accent shrink-0">Search</button>
+      </form>
+
+      <section aria-label="Search results">
+        <h1 id="results-heading" class="mb-2" hidden></h1>
+        <p id="results-label" class="text-small text-ink-soft mb-4" hidden></p>
+
+        <!-- Shown once there are results. The filter works on the page you are
+             looking at, not on the query. See assets/js/search-page.js. -->
+        <div id="results-controls" class="flex items-center justify-between gap-4 mb-4 flex-wrap" hidden>
+          <label class="flex items-center gap-2 text-small text-ink-soft" style="cursor:pointer">
+            <input type="checkbox" id="only-scorable"
+              style="accent-color:var(--accent);width:16px;height:16px;cursor:pointer">
+            Only products that can be scored
+          </label>
+          <a href="./brands.html" class="text-small text-accent">Browse by brand &rarr;</a>
+        </div>
+
+        <ul id="results-list" class="result-list"></ul>
+
+        <nav id="pager" class="pager" aria-label="Search result pages" hidden></nav>
+      </section>
+
+    </div>

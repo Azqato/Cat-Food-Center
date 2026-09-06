@@ -22,7 +22,7 @@
 
 /* Bump this to retire every old cache at once. It is the only lever that
    reliably clears a bad deploy from a device we cannot reach. */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = `cfc-shell-${VERSION}`;
 const API = `cfc-api-${VERSION}`;
 const IMAGES = `cfc-images-${VERSION}`;
@@ -44,7 +44,9 @@ const SHELL_ASSETS = [
   './favicon.svg',
   './assets/cfc-tokens.css',
   './assets/cfc-theme.js',
-  './assets/cfc-tailwind.js',
+  './assets/cfc.css',
+  './assets/cfc-app.css',
+  './assets/cfc-docs.js',
   './assets/js/opff.js',
   './assets/js/scoring.js',
   './assets/js/scanner.js',

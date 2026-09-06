@@ -91,6 +91,16 @@ def serve():
     return httpd, httpd.server_address[1]
 
 
+# Look the shell cache up by prefix rather than by full name. caches.open()
+# creates an empty cache when the name is wrong, so hard-coding the version
+# turned a version bump into a silent zero rather than a failure.
+SHELL_COUNT_JS = (
+    "caches.keys().then(ks => {"
+    "  const n = ks.find(k => k.startsWith('cfc-shell-'));"
+    "  return n ? caches.open(n).then(c => c.keys()).then(k => k.length) : 0;"
+    "})")
+
+
 async def main():
     from playwright.async_api import async_playwright
 
@@ -220,7 +230,7 @@ async def main():
             await page.goto(base + '/index.html')
             await page.wait_for_timeout(2500)
             shell_size = await page.evaluate(
-                "caches.open('cfc-shell-v1').then(c => c.keys()).then(k => k.length)")
+                SHELL_COUNT_JS)
 
             await page.goto(base + '/product.html?barcode=%s' % CASES[0][0])
             await page.wait_for_function(
@@ -229,7 +239,7 @@ async def main():
             # The shell cache must not grow per product viewed: every product is
             # the same document under a different query string.
             shell_after = await page.evaluate(
-                "caches.open('cfc-shell-v1').then(c => c.keys()).then(k => k.length)")
+                SHELL_COUNT_JS)
 
             installed = shell_size > 10 and shell_after == shell_size
             if not installed:

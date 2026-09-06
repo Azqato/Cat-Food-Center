@@ -168,8 +168,12 @@ a { color: var(--accent); }
 .article li { margin-bottom: 7px; }
 .article li > ul, .article li > ol { margin-top: 7px; }
 .article strong { font-weight: 600; }
-.article a { color: var(--accent); text-decoration: none; }
-.article a:hover { text-decoration: underline; }
+/* Prose links only. The application pages put whole components inside the
+   article - a round scan button, result rows, cards - and each carries its
+   own colour on a class selector, which a bare `.article a` would outrank.
+   That is how the scan button came to be accent text on an accent circle. */
+.article a:not([class]) { color: var(--accent); text-decoration: none; }
+.article a:not([class]):hover { text-decoration: underline; }
 .article code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: .8125em; background: var(--surface); border: 1px solid var(--hairline);
@@ -415,4 +419,48 @@ ul.sources li:last-child { border-bottom: none; }
 @media print {
   .topbar, .sidebar, .toc, .pagination, .site-footer { display: none; }
   .shell { display: block; padding: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Site navigation (M14)
+
+   The two page families used to disagree about the top bar: the guide had a
+   search field, a theme control and no page links at all, while the app pages
+   had the page links and neither of the other two. One bar now carries all
+   three.
+
+   Above 900px the links sit inline. Below it they move into the drawer that
+   already existed for the guide sidebar, which becomes a site menu with the
+   guide's own section list nested underneath it. One control, two levels,
+   rather than a hamburger next to a strip of links scrolling off the screen.
+   ══════════════════════════════════════════════════════════════════════════ */
+.topbar-nav { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.topbar-nav a {
+  font-size: .8125rem; color: var(--ink-soft); text-decoration: none;
+  padding: 6px 9px; border-radius: 7px; white-space: nowrap;
+  transition: color 150ms, background 150ms;
+}
+.topbar-nav a:hover:not([aria-current]) { color: var(--ink); background: var(--bg); }
+.topbar-nav a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+
+/* The drawer's site-menu block. On a guide page the section list follows it,
+   so the label is what keeps the two levels apart. */
+.sidebar-site { display: none; }
+
+@media (max-width: 900px) {
+  .topbar-nav { display: none; }
+  /* Every page gets the drawer control now, not only the guide pages. */
+  .nav-toggle { display: inline-flex; }
+  .sidebar-site { display: block; }
+}
+
+/* An app page has no section list, so its drawer holds the site menu alone and
+   the sidebar exists only below 900px. Both app shells are named: left in
+   the grid on a wide screen the drawer takes a column of its own and pushes
+   the article onto the next row, which is a blank page above the fold. */
+.shell-app > .sidebar,
+.shell-app-toc > .sidebar { display: none; }
+@media (max-width: 900px) {
+  .shell-app > .sidebar,
+  .shell-app-toc > .sidebar { display: block; }
 }

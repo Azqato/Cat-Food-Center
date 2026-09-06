@@ -4,7 +4,7 @@
 **Companion documents:** [PRD.md](PRD.md) for product, architecture and policy; [PATCHNOTES.md](PATCHNOTES.md) for history; [README.md](../README.md) for the general reader.
 **Last full audit:** 2026-09-06
 
-**Read this first.** The site currently runs **two different implementations of one design**. The guide pages are the reference: everything in section 4 describes what the site is converging on, and the eight application pages described in section 5 are the ones that have not converged yet. M14 is that convergence, and this document is written so that it can be carried out by reading it rather than by reading eight files.
+**Read this first.** Since M14 the site runs **one implementation of one design**. Section 4 describes the shell as the guide pages use it and section 5 describes the same shell as the application pages use it; section 6 records how the two came together and what that port broke on the way. Both families are generated, so a change to the chrome is one edit in `tools/site/chrome.py`, never nine.
 
 ---
 
@@ -14,8 +14,8 @@
 2. [Tokens](#2-tokens)
 3. [Typography](#3-typography)
 4. [The reference system: guide pages](#4-the-reference-system-guide-pages)
-5. [The other system: application pages](#5-the-other-system-application-pages)
-6. [M14: converging the two](#6-m14-converging-the-two)
+5. [The application pages](#5-the-application-pages)
+6. [M14: how the two converged](#6-m14-how-the-two-converged)
 7. [Components](#7-components)
 8. [Score presentation](#8-score-presentation)
 9. [Accessibility](#9-accessibility)
@@ -119,7 +119,7 @@ One button with three icons, `.theme-toggle`. CSS picks which icon is visible fr
 
 Both fall back to `Georgia, serif` and `system-ui, sans-serif` respectively. `.font-display` is the class that applies Fraunces in both page families.
 
-Base size is **15px** on guide pages, with the scale below. Application pages set their own equivalents in a per-page `<style>` block, which is one of the duplications M14 removes.
+Base size is **15px**, with the scale below. Application pages get the same scale from `cfc-app.css`, which replaced nine per-page copies of it in M14.
 
 | Role | Size | Line height | Notes |
 |---|---|---|---|
@@ -171,7 +171,7 @@ Contents, left to right:
 - `.theme-toggle`.
 - `.topbar-cta`: the pill-shaped Support link.
 
-**The gap that blocked M14:** this bar carries no page navigation at all. There are no links to Home, Scan, Search, Brands, Compare or Methodology in it. A reader on a guide page can reach the rest of the site only through the footer or the sidebar's own list.
+**The gap that blocked M14, closed:** this bar carried no page navigation at all, so a reader on a guide page could reach the rest of the site only through the footer. It now carries `.topbar-nav` above 900px and folds the same links into the drawer below it. See section 6.1.
 
 ### 4.3 The sidebar
 
@@ -195,82 +195,98 @@ Breadcrumbs (`.crumbs`), `h1`, `.lede`, then body. `h2` carries a short accent r
 
 ---
 
-## 5. The other system: application pages
+## 5. The application pages
 
-Nine pages: `index`, `search`, `brands`, `product`, `scan`, `submit`, `compare`, `methodology`, `offline`. Styled by **Tailwind loaded from a CDN**, themed through `assets/cfc-tailwind.js` which maps Tailwind colour names onto the same `var(--...)` tokens, plus a **per-page `<style>` block** that redefines the same handful of utilities in every file.
+Nine pages: `index`, `search`, `brands`, `product`, `scan`, `submit`, `compare`, `methodology`, `offline`. Since M14 they are **generated**, the same way the guide pages have been since M4: the body of each lives in `tools/site/content/<name>.html` and the chrome is wrapped around it by `tools/site/build.py`. The generated files at the repository root are committed, so deployment still needs no build step (ADR-001).
 
-Documented here as the current state, not as a pattern to extend.
+Do not hand-edit the nine pages. Edit the fragment and rerun `python tools/site/build.py`.
+
+They are styled by `assets/cfc.css`, which they now share with the guide, plus `assets/cfc-app.css` for the components that exist only here. Tailwind is gone.
 
 ### 5.1 Structure
 
-- `<header class="sticky top-0 z-50 bg-surface border-b border-hairline">`, 56px tall, inside a `max-w-content` (720px) container. **Sticky, not fixed**, at every width.
-- Wordmark, then a `<nav aria-label="Main navigation">` of seven `.nav-link` items (Home, Scan, Search, Brands, Compare, Learn, Methodology), then the theme toggle, then the Support pill.
-- The nav scrolls horizontally on narrow screens (`overflow-x: auto`, `scrollbar-width: none`). It is the weakest part of the current chrome: on a 360px screen most of the links are off-screen with no visible indication that they exist.
-- `<main class="flex-1 w-full max-w-content mx-auto px-4 py-8">`.
-- A single-line footer with a `Built by Azqato` credit.
+Every page is the same five parts, all emitted by `tools/site/chrome.py`:
+
+```
+chrome.head()     <head>, with cfc-theme.js blocking, then tokens, fonts, cfc.css, cfc-app.css
+chrome.topbar()   the skip link and the fixed bar
+chrome.drawer()   the site menu, hidden above 900px on an application page
+<main class="article" id="main">   the fragment
+<aside class="toc">                only where the fragment has headings to index
+chrome.footer()   the four-column footer
+chrome.scripts()  cfc-docs.js, the page module, pwa.js
+```
+
+The shell is `.shell shell-app` for a page with no rail and `.shell shell-app-toc` for one with a rail. `build.py` picks between them from the content itself rather than from a flag, so a page cannot claim a rail it has nothing to put in.
 
 ### 5.2 What these pages have that the guide does not
 
-- Page navigation in the bar.
-- A real search form on `search.html` and `index.html`, rather than a link.
-- Narrow measure by container (720px) rather than by `ch`.
+- A page module under `assets/js/`, which renders the body from live API data.
+- Real forms: the search form on `search.html` and `index.html`, the barcode field on `scan.html`, the two pickers on `compare.html`.
+- The components in `cfc-app.css`: the score header, the result list and pager, the brand index, the viewfinder, the ingredient and nutrition and additive blocks, the compare grid.
 
-### 5.3 What they lack
+### 5.3 What they still lack
 
-- The sidebar, the "On this page" column, the drawer, and the full footer.
-- Any generated chrome. **All nine headers and footers are hand-copied.** Adding one nav link is a nine-file edit, which is exactly how a link comes to be missing from one page.
-- Consistency of the type scale, which is redefined per page.
+- A section list in the drawer. On a guide page the drawer holds the site menu and the guide's sections; on an application page it holds the site menu alone.
+- An "On this page" rail anywhere but `methodology.html`, which is the only one whose headings exist before the page loads. See section 6.4.
 
-### 5.4 Tailwind rules that still apply until M14 removes it
+### 5.4 Rules that survive Tailwind
 
-- **Never use an opacity modifier on a themed colour.** `bg-surface/50` renders transparent, because Tailwind cannot compute an opacity variant of a `var()`. Add a token to `cfc-tokens.css` instead.
-- **Never write `text-white` on an accent fill.** Use `text-on-accent`. (An earlier version of this document prescribed `bg-accent text-white` in its button and badge patterns while also forbidding it three sections earlier. The prohibition is correct and the code follows it.)
-- Colour utilities resolve through `cfc-tailwind.js`, so `bg-surface`, `text-ink`, `border-hairline` and the score names are all available.
+The rules were written against Tailwind and hold against the stylesheet that replaced it.
+
+- **Never write an opacity modifier on a themed colour.** Add a token to `cfc-tokens.css` instead. The reason has changed (there is no Tailwind to fail to compute it) but the practice is the same: a colour that the theme owns should be swapped, not diluted.
+- **Never write white ink on an accent fill.** Use `.text-on-accent`, which the dark theme inverts.
+- Colour utilities resolve to tokens, so `bg-surface`, `text-ink`, `border-hairline` and the score band names are all still available and all still theme-aware.
 
 ---
 
-## 6. M14: converging the two
+## 6. M14: how the two converged
 
-**Decision, 2026-09-06: the application pages move onto the guide's system.** Two parts, both agreed.
+**Decided and shipped, 2026-09-06.** The application pages moved onto the guide's system.
 
 ### 6.1 Navigation: inline, with a drawer on mobile
 
-The blocker was that the guide bar has no page navigation and the app bar has navigation but neither a search affordance nor a drawer control. The resolution:
+The blocker was that the guide bar had no page navigation and the app bar had navigation but neither a search affordance nor a drawer control. The resolution:
 
-- **Above roughly 900px:** the page links sit inline in `.topbar`, between the brand and the spacer, styled as the current `.nav-link` (small, `--ink-soft`, accent and 600 weight for `aria-current`). The `.topbar-search` field, the theme toggle and the Support pill keep their places on the right.
-- **Below 900px:** the links move into the existing `.nav-toggle` drawer, which stops being a guide-only control and becomes the site menu. On a guide page the drawer shows the site links first and the guide's section list nested beneath them. **One control, two levels**, rather than a hamburger next to a scrolling link strip.
-- The `.topbar-search` link continues to disappear below 900px, where the search page itself is one tap away in the drawer.
+- **Above 900px:** the page links sit inline in `.topbar-nav`, between the brand and the spacer, small and `--ink-soft`, accent and 600 weight for `aria-current="page"`. The `.topbar-search` field, the theme toggle and the Support pill keep their places on the right.
+- **Below 900px:** the links move into the `.nav-toggle` drawer, which is no longer a guide-only control. On a guide page the drawer shows the site links first and the guide's section list nested beneath them. One control, two levels, rather than a hamburger beside a scrolling strip of links.
+- `.topbar-search` still disappears below 900px, where the search page is one tap away in the drawer.
 
-This is chosen over the alternatives because it keeps the desktop bar shallow (no dropdown to discover) and because the drawer already exists, is already accessible, and is already tested.
+`NAV` in `tools/site/chrome.py` is the single list. `tools/learn/shell.py` imports it, so the two families cannot drift.
 
-### 6.2 Tailwind is dropped
+### 6.2 Tailwind is gone
 
-The port moves the application pages onto `cfc.css` and removes `https://cdn.tailwindcss.com` and `cfc-tailwind.js` from all nine.
+`https://cdn.tailwindcss.com` and `assets/cfc-tailwind.js` are removed from all nine pages, and `cfc-tailwind.js` is deleted.
 
-The reason is not tidiness. It is a **render-blocking third-party script on every application page**, unpinned, whose content can change without a commit in this repository. It is the project's only real supply-chain exposure and it is the largest single item M12 will measure. Since the port rewrites the markup of those pages anyway, doing it in utility classes that are about to be deleted would be work done twice.
+The reason was not tidiness. It was a render-blocking third-party script on every application page, unpinned, whose content could change without a commit in this repository. It was the project's only real supply-chain exposure. What replaced it is `assets/cfc-app.css`, which defines the roughly fifty utilities the page modules actually emit and the components those modules build, and nothing else.
 
-The cost is real and is stated plainly: nine pages of utility-class markup rewritten by hand, and a set of app-specific components (result cards, the pager, the score header, the compare table, the scanner viewport) that currently exist only as Tailwind class strings and will need real class names in `cfc.css`.
+The nine per-page `<style>` blocks are gone with it. They defined the same type scale nine times, which is how `.text-display` came to mean one thing on eight pages.
 
-### 6.3 What the port must preserve
+### 6.3 What the port preserved
 
-- The seven navigation destinations, and `aria-current="page"` on the current one.
-- The theme toggle in the bar on every page, with `cfc-theme.js` still blocking in `<head>`.
+- The seven navigation destinations, with `aria-current="page"` on the current one.
+- The theme toggle on every page, with `cfc-theme.js` still blocking in `<head>`.
 - The search form on `search.html` and `index.html` as a real form, not a link.
-- Every `esc()` call in the page modules. The port is markup, not rendering logic.
-- `SHELL_ASSETS` in `sw.js` updated for any file added or removed.
+- Every `esc()` call in the page modules. The port was markup, not rendering logic.
+- `SHELL_ASSETS` in `sw.js`, updated for `cfc.css`, `cfc-app.css` and `cfc-docs.js` and for the removal of `cfc-tailwind.js`, with `VERSION` bumped to `v2` so the new shell installs over the old one.
 
-### 6.4 Open questions, unresolved
+### 6.4 The two open questions, answered
 
-1. **What fills the third column on a page with no headings to index?** A product page has a natural "On this page"; a scan page does not. Options are collapsing to two columns per page type, or repurposing the column (recently viewed on a product page, filters on search). Not decided.
-2. **Does the `/` search affordance stay on pages that already carry a search input in the body?** Two routes to the same place inside one viewport. Not decided.
+1. **What fills the third column on a page with no headings to index?** Nothing: the page collapses to one column. `build.py` reads the fragment for `<h2 id="...">` and emits the rail only where it finds some, so the answer is per page and cannot go stale. In practice `methodology.html` is the only application page with a rail. `product.html` would earn one, but its headings are written by `product-page.js` after the fetch returns, so there is nothing to index at build time; a client-side rail for it is not built. This closes PRD open question 5.
+2. **Does the `/` search affordance stay on pages that already carry a search input in the body?** No. `index.html` and `search.html` pass `show_search=False`. Two routes to the same place inside one viewport is a papercut. This closes PRD open question 6.
 
-Both are carried in PRD section 25.5 as open questions 5 and 6.
+### 6.5 Two defects the port exposed
+
+Both were in `cfc.css`, both invisible until an application page was put inside `.article`.
+
+- `.article a { color: var(--accent) }` outranks any component that colours its own anchor from a single class. The visible symptom was the home page's round scan button rendering as accent text on an accent circle. The rule is now `.article a:not([class])`, which is prose only. Every classed anchor in the guide pages already sets its own colour, so nothing there changed.
+- The drawer is a grid child. Hidden on an application page above 900px with `display: none` on `.shell-app > .sidebar` alone, it still took a column on `.shell-app-toc` and pushed the article onto the next grid row, which rendered `methodology.html` as a blank screen. Both shells are now named in the rule.
 
 ---
 
 ## 7. Components
 
-Defined in `cfc.css` and available to any page loading it. After M14 these are the site's whole component vocabulary.
+Defined in `cfc.css` and available to every page, since every page loads it. The application pages add the components in `cfc-app.css` on top. Together these are the site's whole component vocabulary.
 
 | Component | Class | Notes |
 |---|---|---|
@@ -287,7 +303,7 @@ Defined in `cfc.css` and available to any page loading it. After M14 these are t
 | **Skip link** | `.skip-link` | Off-screen until focused, then 8px from the top |
 | **Visually hidden** | `.sr-only` | |
 
-**Buttons** are currently expressed as Tailwind utility strings on application pages and as `.topbar-cta` / `.footer-cta` in the guide. A shared button component is part of the M14 port and does not exist yet.
+**Buttons** are `.btn` in `cfc-app.css`, with `.btn-accent` for the filled variant and `.btn-text` for the quiet one, plus `.topbar-cta` and `.footer-cta` in `cfc.css` for the two chrome pills. The chrome pills are deliberately separate: they are part of the bar and the footer, not of a page.
 
 **Lists of products** use `<ul style="list-style:none;padding:0">` with an `<a>` card per item, carrying `data-scorable` so the scorable-only filter can act on the rendered page. They are plain anchors: an earlier version of this document specified `<Link>` cards, which is a React component in a project that has no React.
 
@@ -357,7 +373,7 @@ Breakpoints, from `cfc.css`:
 | **900px** | Single column. `.nav-toggle` appears, `.topbar-search` hides, `.sidebar` becomes a drawer, `.compare` / `.card-grid` / `.pagination` go single-column, the footer drops to two columns, `h1` and `h2` step down |
 | **560px** | Top bar padding tightens, wordmark to .9375rem, footer to one column |
 
-Application pages use Tailwind's own breakpoints inside a 720px container, which is a second, differently-placed set. Unifying them is part of M14.
+Application pages use the same breakpoints as the guide, because they use the same shell. The one that matters is 900px, where the inline navigation folds into the drawer and the rail is dropped.
 
 **The hard rule:** nothing may scroll horizontally at 360px. Wide content scrolls inside its own container (`.table-wrap`), never the page. This is asserted by `tools/check-live.py` on every page it loads, at 1280px today; a 360px assertion would be a worthwhile addition.
 
@@ -388,6 +404,6 @@ Recorded so that nobody reads a specification as a description. Each of these ap
 | Skeleton loaders | Not built. Pages show a "Loading" line, which `tools/check-live.py` waits on |
 | Tier glyphs distinguishing additive tiers without colour | Not built. Tiers currently carry text labels, which satisfies the accessibility requirement, so this is a refinement rather than a gap |
 | Open Graph image | Not built |
-| Shared button component | Not built. Blocked on M14 |
+| A button that is one component across chrome and page | Not built. `.btn` in `cfc-app.css` and the two chrome pills in `cfc.css` are close but not the same rule |
 | `prefers-reduced-motion` support | Not built |
 | A disabled scan button with a tooltip | **Obsolete, not pending.** The scanner shipped in M8. There is no disabled button and no `role="tooltip"` anywhere in the codebase |

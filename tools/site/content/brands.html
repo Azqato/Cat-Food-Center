@@ -1,0 +1,30 @@
+    <div class="flex flex-col gap-6">
+
+      <div>
+        <h1>Browse by brand</h1>
+        <p class="text-small text-ink-soft mt-2" style="max-width:52ch">
+          Every brand with more than one cat food on record, biggest first. Picking a brand
+          is usually a faster route to a product than typing its name: the database records
+          brands consistently and product names badly.
+        </p>
+      </div>
+
+      <label class="flex gap-2" style="margin:0">
+        <span class="sr-only">Filter brands</span>
+        <input type="search" id="brand-filter" placeholder="Filter brands…"
+          autocomplete="off" class="field flex-1 min-w-0" />
+      </label>
+
+      <p id="brand-count" class="text-micro text-ink-soft" style="margin:0"></p>
+
+      <ul id="brand-list" class="brand-list">
+        <li class="text-small text-ink-soft py-6">Loading brands…</li>
+      </ul>
+
+      <p class="text-micro text-ink-soft" style="max-width:52ch">
+        Counts come from Open Pet Food Facts and move as people contribute. Brands that the
+        database spells more than one way (<code>purina</code> and <code>Purina</code>) are
+        merged here and searched together.
+      </p>
+
+    </div>

@@ -1,0 +1,71 @@
+    <div class="flex flex-col gap-6 narrow">
+
+      <div>
+        <h1>Add a missing product</h1>
+        <p class="text-ink-soft text-small mt-2">
+          <span id="barcode-line"></span>
+          The catalogue is community-maintained and far from complete, so a miss is common
+          and says nothing about the product.
+        </p>
+      </div>
+
+      <section class="bg-surface border border-hairline rounded-card p-5">
+        <h2 class="font-display text-h2 text-ink mb-3" style="margin-top:0">Where it goes</h2>
+        <p class="text-small text-ink-soft">
+          We do not keep a product database of our own. Every score on this site is worked out
+          from <a href="https://world.openpetfoodfacts.org" target="_blank" rel="noopener noreferrer">Open Pet Food Facts</a>,
+          an open database anyone can contribute to, so adding a product there means it works
+          here (and in every other tool built on it) rather than only for us.
+        </p>
+        <p class="text-small text-ink-soft mt-3">
+          A note so the hand-off is not a surprise: the add form is hosted on Open Food Facts,
+          the same project's main site. Choosing a cat food category on the form is what files
+          the product under pet food.
+        </p>
+        <a id="add-link" href="https://world.openpetfoodfacts.org" target="_blank" rel="noopener noreferrer"
+          class="btn btn-accent mt-4">
+          Add this product on Open Pet Food Facts
+        </a>
+      </section>
+
+      <section class="bg-surface border border-hairline rounded-card p-5">
+        <h2 class="font-display text-h2 text-ink mb-3" style="margin-top:0">What to photograph</h2>
+        <p class="text-small text-ink-soft mb-3">
+          Two panels decide whether a product can be scored here at all. Most records in the
+          database are missing one or both, which is why only about a fifth of them can be
+          scored on all three pillars.
+        </p>
+        <ol class="text-small text-ink-soft" style="line-height:1.8">
+          <li><strong class="text-ink">The ingredient list.</strong> Without it there is no score
+              at all: not a low one, none. It drives two of the three pillars.</li>
+          <li><strong class="text-ink">The guaranteed analysis panel.</strong> Protein, fat, fibre,
+              ash and moisture. Moisture especially: without it a wet food cannot be compared to a
+              dry one on any honest basis.</li>
+          <li><strong class="text-ink">The front of the pack</strong>, for the name and brand.</li>
+        </ol>
+        <p class="text-ink-soft text-micro mt-3">
+          Photograph the panels straight on and in focus. Contributors transcribe from these
+          images, and a blurred analysis panel is where a good many of the implausible numbers
+          in the database come from.
+        </p>
+      </section>
+
+      <section class="bg-surface border border-hairline rounded-card p-5">
+        <h2 class="font-display text-h2 text-ink mb-3" style="margin-top:0">Check the barcode first</h2>
+        <p class="text-small text-ink-soft mb-3">
+          A mistyped digit looks exactly like a missing product. This checks the number against
+          its own check digit before you go any further.
+        </p>
+        <form id="verify-form" class="flex gap-2">
+          <input type="text" id="verify-input" inputmode="numeric" autocomplete="off"
+            placeholder="Barcode number" aria-label="Barcode number" class="field flex-1 min-w-0" />
+          <button type="submit" class="btn shrink-0">Check</button>
+        </form>
+        <p id="verify-result" class="text-small mt-3" hidden></p>
+        <p class="text-ink-soft text-micro mt-3">
+          Or <a href="./search.html">search by name</a>: the product may
+          be in the database under a barcode different from the one on your pack.
+        </p>
+      </section>
+
+    </div>

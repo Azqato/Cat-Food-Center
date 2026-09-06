@@ -1,0 +1,50 @@
+    <div class="flex flex-col gap-6 narrow">
+
+      <div>
+        <h1>Scan a barcode</h1>
+        <p class="text-ink-soft text-small mt-2">
+          Point your camera at the barcode on the packaging. The picture is decoded on your
+          device and never leaves it: the only thing sent anywhere is the barcode number,
+          to look the product up.
+        </p>
+      </div>
+
+      <!-- Everything below is driven by assets/js/scan-page.js. -->
+      <div id="scan-idle">
+        <button id="scan-start" type="button" class="btn btn-accent w-full" style="padding:16px 20px">
+          Start camera
+        </button>
+        <p class="text-ink-soft text-micro mt-3">
+          Your browser will ask permission first. Nothing starts until you allow it.
+        </p>
+      </div>
+
+      <div id="scan-live" hidden>
+        <div class="viewfinder">
+          <video id="scan-video" muted playsinline></video>
+          <div class="reticle" aria-hidden="true"><div class="reticle-box"></div></div>
+        </div>
+        <p id="scan-status" class="scan-status text-small text-ink-soft mt-3" role="status" aria-live="polite"></p>
+        <button id="scan-stop" type="button" class="btn w-full mt-1">Stop camera</button>
+      </div>
+
+      <div id="scan-message" hidden class="bg-surface border border-hairline rounded-card p-5">
+        <p id="scan-message-title" class="font-display text-h2 text-ink mb-2"></p>
+        <p id="scan-message-body" class="text-small text-ink-soft"></p>
+      </div>
+
+      <!-- Always available, and the only path on a device with no camera. -->
+      <section class="bg-surface border border-hairline rounded-card p-5">
+        <h2 class="font-display text-h2 text-ink mb-3" style="margin-top:0">Type it instead</h2>
+        <form id="manual-form" class="flex gap-2">
+          <input type="text" id="manual-input" inputmode="numeric" autocomplete="off"
+            placeholder="Barcode number" aria-label="Enter a barcode number" class="field flex-1 min-w-0" />
+          <button type="submit" class="btn btn-accent shrink-0">Look up</button>
+        </form>
+        <p id="manual-error" class="text-small mt-3" style="color:var(--bad)" hidden></p>
+        <p class="text-ink-soft text-micro mt-3">
+          The number under the bars, 8 to 13 digits. Or <a href="./search.html">search by name</a>.
+        </p>
+      </section>
+
+    </div>

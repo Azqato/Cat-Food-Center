@@ -180,11 +180,10 @@ These are decisions, not gaps. Each is a thing the project has chosen not to do.
 
 | Feature | Milestone | Why not yet |
 |---|---|---|
-| Product photos on cards and compare | M15 | The data is already fetched; only the product page renders it. Held until M14 so the card is not built twice |
-| One chrome across the whole site | M14 | Blocked on the top-bar navigation design, now decided. See section 13 |
+| Product photos on cards and compare | M15b | The data is already fetched; only the product page renders it. M14 has shipped, so the card is built once |
 | Curated top-100 SKU catalogue | M12 | The only route to meaningful coverage of common United States products |
 | Analytics | M12 | Nothing is measured today. See section 14 |
-| Lighthouse CI and Core Web Vitals gates | M12 | Waiting on M14, which may remove the Tailwind CDN and change every number |
+| Lighthouse CI and Core Web Vitals gates | M12 | Unblocked: M14 removed the Tailwind CDN, so the numbers are now stable enough to gate on |
 | Ingredient row expansion | Backlog | The chevron is rendered but inert |
 | "Better alternatives" on a poor product | Backlog | Specified in the original PRD, never built. Needs a same-format query the API supports poorly |
 | Pre-generated per-barcode pages | Backlog | For search indexing. The generator pattern already exists |
@@ -511,8 +510,8 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M11: Compare page | 2026-09-05 | Complete |
 | M13: Documentation consolidation audit | 2026-09-06 | Complete |
 | M15a: Search logic and brand browse | 2026-09-06 | Complete |
-| M14: One interface across the whole site | Not scheduled | In progress, decided |
-| M15b: Product photos on cards | Not scheduled | Planned, follows M14 |
+| M14: One interface across the whole site | 2026-09-06 | Complete |
+| M15b: Product photos on cards | Not scheduled | Planned |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -557,17 +556,19 @@ Pagination, relevance ordering and a scorable-only filter shipped, along with `b
 
 *The useful observation about the reference site:* CatFoodDB is organised brand-first, with an A to Z of over 150 brands and curated best-of lists by food type, and its own free-text search is disabled, with a notice on the site saying so. The site the owner preferred is better *without* working search, which suggests the answer is a browse structure rather than a better ranker. Its individual product entry layout has not been verified: two attempts at brand and best-of URLs returned 404.
 
+**M14: one interface across the whole site.** The nine application pages moved onto the interface built for the Cat Care Guide, and stopped being hand-written.
+
+`tools/site/chrome.py` is now the single copy of the head, top bar, drawer and footer, and `tools/learn/shell.py` imports it, so the two page families cannot drift. `tools/site/build.py` wraps that chrome around a body fragment per page. The Tailwind CDN, `assets/cfc-tailwind.js` and the nine per-page `<style>` blocks are gone, replaced by `assets/cfc-app.css`, which defines only the utilities the page modules actually emit and the components they build.
+
+The navigation question that had blocked the milestone was answered as decided: links inline in the bar above 900px, folded into the existing drawer below it, with a guide page's section list nested beneath the site links. One control, two levels.
+
+*Learned, and it is the reason to port rather than restyle:* the defects the port exposed were not in the pages being ported, they were in the shell those pages moved into, and both were invisible while only guide pages used it. `.article a { color: var(--accent) }` outranks any component that colours its own anchor from a single class, which rendered the home page's round scan button as accent text on an accent circle. And the drawer is a grid child, so hiding it on only one of the two application shells left it holding a column on the other and pushing the article onto the next grid row, which rendered `methodology.html` as a blank screen. A shell used by one kind of page has not been tested, it has been exercised.
+
+*The smaller lesson:* `.text-display` was defined in nine places and meant 3rem in all of them. Consolidating nine copies into one is where a value silently becomes something else, so the port was checked by diffing every rule in the old inline blocks against the new stylesheet rather than by reading the pages.
+
 ### Next
 
-**M14: one interface across the whole site.** Bring the eight app pages onto the interface built for the Cat Care Guide, which is the look the project wants. The blocker was that the guide top bar carries no page navigation at all, while the app top bar carries the navigation but neither the search affordance nor the sidebar control.
-
-*Decided 2026-09-06:* inline navigation with a drawer on mobile. Desktop keeps the links inline alongside the search field; below roughly 900px they move into the existing hamburger drawer, which becomes a site menu with the guide's section list nested inside it on guide pages. One control, two levels.
-
-*Also decided:* the Tailwind CDN is dropped and everything moves onto the hand-written `cfc.css` family. That removes a render-blocking third-party script from every app page, which is what M12 measures, at the cost of rewriting eight pages of utility-class markup, which the port involves anyway.
-
-Open questions that remain: what fills the guide shell's three-column grid on a page with no sidebar and no headings to index, and whether the `/` search affordance stays on pages that already carry a search input in the body.
-
-**M15b: product photos.** `opff.js` already requests `image_front_url` and exposes `product.imageUrl`, and 23 of 24 results in a live search carry one. Only `product-page.js` renders it. Held until after M14 so the card is not built twice.
+**M15b: product photos.** `opff.js` already requests `image_front_url` and exposes `product.imageUrl`, and 23 of 24 results in a live search carry one. Only `product-page.js` renders it. M14 has shipped, so the result card and the compare row now have one set of styles to build against.
 
 **M12: public beta.** Lighthouse CI passing Core Web Vitals targets, WCAG AA validated, top-100 SKU coverage at 80% or better, and analytics instrumented.
 
@@ -690,14 +691,15 @@ Opening the files with `file://` works for most pages but breaks two things: `fe
 
 **There is no build step for deployment.** What is committed is what is served.
 
-Two generators run locally with their output committed:
+Three generators run locally with their output committed:
 
 ```bash
+python tools/site/build.py       # regenerates the nine application pages
 python tools/learn/build.py      # regenerates the eleven learn*.html pages
 python tools/check-contrast.py   # audits both palettes against WCAG AA
 ```
 
-`build.py` overwrites every `learn*.html`. Never hand-edit those files: edit `tools/learn/c_<page>.py` and rerun.
+**Every HTML page at the root except `tests.html` is generated, and hand-edits to any of them are silently undone on the next build.** For a guide page, edit `tools/learn/c_<page>.py`. For an application page, edit `tools/site/content/<name>.html`. For anything in the head, the bar, the drawer or the footer of either family, edit `tools/site/chrome.py`, which both generators import.
 
 ### 15.4 Commands
 
@@ -707,6 +709,7 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 | `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 160 assertions. Exits non-zero on failure, so it works as a gate |
 | `python tools/check-live.py` | 16 end-to-end checks against the live API. Needs network. Not deterministic, so it is a smoke check rather than a gate |
 | `python tools/check-contrast.py` | Verify 38 foreground and background pairs against WCAG AA in both palettes |
+| `python tools/site/build.py` | Regenerate the nine application pages |
 | `python tools/learn/build.py` | Regenerate the eleven Cat Care Guide pages |
 | `python tools/probe-opff.py` | Re-measure the database behind section 12 |
 
@@ -769,10 +772,10 @@ There is no staging environment.
 
 | Error | Likely cause | Fix |
 |---|---|---|
-| A `learn*.html` edit disappeared | Those files are generated and `build.py` overwrote it | Edit `tools/learn/c_<page>.py` and rerun the generator |
+| An edit to a page at the root disappeared | Every root page but `tests.html` is generated and a build overwrote it | Edit `tools/site/content/<name>.html` or `tools/learn/c_<page>.py`, or `tools/site/chrome.py` for the chrome, and rerun |
 | Assets 404 on GitHub Pages but work locally | An absolute path was used | Use `./assets/...`. Pages serves this repository under a subpath |
 | A page flashes light before going dark | `cfc-theme.js` was moved out of `<head>` or given `defer`/`async` | It must be a blocking script in `<head>`. That is the whole mechanism |
-| A Tailwind colour renders transparent | An opacity modifier on a themed colour (`bg-surface/50`) | Tailwind cannot compute an opacity variant of a `var()`. Add a token to `cfc-tokens.css` |
+| A component inside `.article` loses its own colour | `.article a:not([class])` is prose only, so a classed anchor must set its own colour | Give the component a colour on its class in `cfc-app.css`. See docs/DESIGN.md section 6.5 |
 | Contrast checker says the dark blocks drifted | A token changed in `[data-theme="dark"]` but not in the `prefers-color-scheme` block, or the reverse | Apply it to both. The duplication is deliberate |
 | The camera does not start on a phone | The page was opened over `http://<LAN-IP>`, not a secure context | Use the deployed HTTPS URL or an HTTPS tunnel |
 | `fetch` of local JSON fails with a CORS error | The page was opened with `file://` | Serve it over `python -m http.server` |
@@ -849,9 +852,9 @@ Consequences:
 
 | Layer | Tool | Version |
 |---|---|---|
-| Markup | Hand-written HTML, plus HTML generated by `tools/learn/` | n/a |
+| Markup | HTML generated by `tools/site/` and `tools/learn/`, committed to the repository | n/a |
 | Styling, guide pages | `assets/cfc.css`, hand-written | n/a |
-| Styling, app pages | Tailwind via CDN plus a per-page `<style>` block | Unpinned. To be removed in M14 |
+| Styling, app pages | `assets/cfc.css` plus `assets/cfc-app.css`, hand-written | n/a |
 | Design tokens | `assets/cfc-tokens.css`, CSS custom properties | n/a |
 | Scripting | Vanilla ES modules, no bundler | n/a |
 | Barcode decoding | `BarcodeDetector` where available, else ZXing | `@zxing/library@0.21.3`, pinned |
@@ -861,7 +864,7 @@ Consequences:
 | Hosting | GitHub Pages | n/a |
 | CI | GitHub Actions, no build step | `checkout@v4`, `upload-pages-artifact@v3`, `deploy-pages@v4` |
 
-The Tailwind CDN script is the only unpinned third-party runtime dependency, and M14 removes it.
+There is no unpinned third-party runtime dependency left. M14 removed the last one, the Tailwind CDN. ZXing is pinned to an exact version and is fetched only where `BarcodeDetector` is missing.
 
 ### 16.4 Folder structure
 
@@ -873,7 +876,7 @@ Cat-Food-Center/
 ├── LICENSE.md               # All rights reserved, plus the AI and search carve-out
 ├── robots.txt               # Fully open, deliberately
 ├── sitemap.xml              # Every public page
-├── index.html               # Home
+├── index.html               # Home. GENERATED by tools/site/build.py, as are the eight below
 ├── search.html              # Text and brand results; ?q= ?brand= ?page= ?only=
 ├── brands.html              # Brand index
 ├── product.html             # Product detail; ?barcode=
@@ -882,7 +885,7 @@ Cat-Food-Center/
 ├── compare.html             # Two products; ?a= and ?b=
 ├── methodology.html         # Public scoring explanation
 ├── offline.html             # Shown for a page never opened on this device
-├── learn.html               # The Cat Care Guide. GENERATED, do not hand-edit
+├── learn.html               # The Cat Care Guide. GENERATED by tools/learn/build.py
 ├── learn-*.html             # Ten more guide pages. GENERATED
 ├── tests.html               # Browser-hosted test suite; run by tools/run-tests.py
 ├── sw.js                    # Service worker. MUST stay at the root for scope
@@ -892,9 +895,9 @@ Cat-Food-Center/
 ├── assets/
 │   ├── cfc-tokens.css       # Palette, light and dark. Every page
 │   ├── cfc-theme.js         # Theme switching. MUST be blocking in <head>
-│   ├── cfc.css              # Documentation shell. Guide pages
-│   ├── cfc-docs.js          # Drawer and scroll spy. Guide pages
-│   ├── cfc-tailwind.js      # Tailwind CDN theme, colours mapped to var(--...)
+│   ├── cfc.css              # The shell: bar, drawer, article, rail. Every page
+│   ├── cfc-app.css          # Components only the application pages use
+│   ├── cfc-docs.js          # Drawer and scroll spy. Every page
 │   ├── icons/               # PWA icons, 192, 512, maskable
 │   ├── js/                  # 16 application ES modules
 │   │   ├── opff.js          #   API client, normaliser, brand facet
@@ -912,6 +915,7 @@ Cat-Food-Center/
 │   ├── check-live.py        # 16 end-to-end checks against the live API
 │   ├── check-contrast.py    # WCAG AA audit of both palettes
 │   ├── probe-opff.py        # Regenerates the numbers in section 12
+│   ├── site/                # Application page generator: chrome.py, build.py, content/
 │   └── learn/               # Guide generator: shell.py, bits.py, c_*.py
 ├── docs/
 │   ├── PRD.md               # This file
@@ -1032,7 +1036,6 @@ The shell precache is currently 29 entries. `tools/check-live.py` asserts it and
 |---|---|---|---|
 | Open Pet Food Facts | The entire product catalogue | None. Public and keyless | Barcode numbers, search terms, brand tags, and the visitor's IP as a normal request property |
 | Google Fonts | Fraunces and Public Sans | None | The visitor's IP and user agent |
-| Tailwind CDN | Utility CSS on eight pages | None | The visitor's IP and user agent. Removed in M14 |
 | jsDelivr | ZXing, only when a browser lacks `BarcodeDetector` and only on the scan page | None | The visitor's IP and user agent |
 | GitHub Pages | Hosting | None | The visitor's IP and user agent |
 
@@ -1049,8 +1052,7 @@ The shell precache is currently 29 entries. `tools/check-live.py` asserts it and
 |---|---|---|
 | Product coverage | Whatever the database holds; about a fifth of products score on all three pillars | Curate a local catalogue for common SKUs under `assets/data/` (M12) |
 | Alias languages | Six covered; anything else is reported as unchecked | Extend the alias lists, and `MATCHED_LANGUAGES` with them, never ahead of them |
-| Header and footer | Duplicated by hand across eight Tailwind pages, and different from the guide chrome in both markup and capability | One generated chrome for the whole site (M14) |
-| Tailwind | Loaded from an unpinned CDN at runtime on eight pages | Removed entirely in M14, in favour of the hand-written CSS |
+| Product page rail | The product page has headings worth indexing, but they are written after the fetch, so the generator cannot see them | Build the rail client-side from `main.article h2[id]`, or leave the page at one column |
 | Search relevance | Delegated wholly to the API, which matches fields beyond name and brand | A curated catalogue, or a local index over it |
 | Scorable-only filter | Filters the current page rather than the query, because the API cannot filter on scorability | Only a local catalogue can fix this properly |
 | Product images | Fetched and normalised, rendered only on the product page | Render on cards, compare and recently viewed (M15b) |
@@ -1250,11 +1252,10 @@ Every service that receives anything about a visitor:
 |---|---|---|
 | Open Pet Food Facts | Barcode numbers, search terms, brand tags, and the visitor's IP as an ordinary request property | The catalogue |
 | Google Fonts | IP and user agent | Two typefaces |
-| Tailwind CDN | IP and user agent, on eight pages | Utility CSS. Removed in M14 |
 | jsDelivr | IP and user agent, only on the scan page and only where `BarcodeDetector` is missing | The ZXing fallback |
 | GitHub Pages | IP and user agent | Hosting |
 
-No service receives user-identifying data, because none is collected. **Every one of these does see a visitor's IP**, which is unavoidable for any resource loaded from another origin, and removing the Tailwind CDN in M14 reduces that list by one.
+No service receives user-identifying data, because none is collected. **Every one of these does see a visitor's IP**, which is unavoidable for any resource loaded from another origin. M14 removed the Tailwind CDN, which shortened this list by one.
 
 Barcodes and search terms do leave the device, which is worth stating plainly: they go to Open Pet Food Facts as part of the lookup, and that request cannot be made without them.
 
@@ -1491,7 +1492,7 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | **`sw.js`** | Caching bugs are invisible locally and persist on devices that cannot be reached. `VERSION` is the only reliable lever |
 | **The duplicated dark palette** | Deliberate duplication in `cfc-tokens.css`, guarded by `check-contrast.py`. Remove the guard and the two copies drift silently |
 | **Eight hand-copied page chromes** | Every navigation change is an eight-file edit, and any one can be missed. M14 exists to end this |
-| **`tools/learn/` generation** | Editing a `learn*.html` file directly appears to work and is silently reverted on the next build |
+| **`tools/learn/` and `tools/site/` generation** | Editing a generated page directly appears to work and is silently reverted on the next build |
 | **Unpinned Tailwind CDN** | Third-party code that can change without a commit here |
 | **The `|` OR syntax in `brands_tags`** | Verified empirically against the live API, not from documentation. If the upstream changes it, brand pages silently under-report |
 
@@ -1521,12 +1522,13 @@ Numbered so they can be answered by reference. Answering one folds the answer in
 2. **Is a curated local catalogue in scope for the MVP?** Section 12.5 says it is the only route to the M12 coverage target, which makes M12 unreachable without it.
 3. **How aggressively should feeding-trial substantiation outweigh formulation?** The original PRD raised this; the engine currently does not distinguish them at all.
 4. **Should the scorable-only filter page-hunt?** It filters the current page, which can show three results out of twenty-four. Fetching further pages until a target count is reached would be friendlier and would make the result count harder to state honestly.
-5. **What fills the guide shell's third column on a page with no headings?** M14 cannot be built without an answer.
-6. **Does the `/` search affordance stay on pages that already have a search input?** Two routes to the same place in one viewport.
+5. ~~**What fills the guide shell's third column on a page with no headings?**~~ **Answered in M14:** nothing. The page collapses to one column, and `tools/site/build.py` decides per page by reading the fragment for headings rather than from a flag. See docs/DESIGN.md section 6.4.
+6. ~~**Does the `/` search affordance stay on pages that already have a search input?**~~ **Answered in M14:** no. `index.html` and `search.html` are built with `show_search=False`.
 7. **Should Safari and Firefox be driven by any automated check?** Section 19 targets one engine. Real visitors on iOS run WebKit, where `BarcodeDetector` support differs, and nothing tests that path.
 8. **Should the tombstone mechanism in 23.3 be built before it is needed, or written when first used?** It is currently a policy with no implementation.
 9. **Is the six-language alias list the right stopping point?** It covers most of the database, but the honest-refusal path means every uncovered language is a product that cannot be fully scored.
 10. **Should `tests.html` be excluded from the sitemap and from crawling?** It is public and unlinked. It is currently omitted from `sitemap.xml` but not disallowed in `robots.txt`, since that file is deliberately fully open.
+11. **Should the product page build its own "On this page" rail?** Its headings exist only after the fetch returns, so the generator cannot index them. A client-side rail is a dozen lines in `cfc-docs.js`, and it is the only place in the site where chrome would be assembled in the browser.
 
 ---
 
@@ -1537,7 +1539,7 @@ Concrete instructions for whoever works on this next, human or model.
 ### 26.1 Before editing anything
 
 1. **Read this document's section 24** if you are about to change something the documentation describes. A discrepancy may already be recorded.
-2. **Check whether the file is generated.** `learn*.html` is written by `tools/learn/build.py`. Editing it directly is silently undone.
+2. **Check whether the file is generated.** Every HTML page at the root except `tests.html` is: the guide pages by `tools/learn/build.py`, the other nine by `tools/site/build.py`. Editing one directly is silently undone.
 3. **Check whether the change is public-facing** by the definition in section 23.1, because that decides whether a removal needs a tombstone.
 4. **Never assume a documented behaviour exists.** This project has a history of documented features that were never built; section 24.1 lists them.
 
@@ -1546,7 +1548,7 @@ Concrete instructions for whoever works on this next, human or model.
 | Never | Because |
 |---|---|
 | Use an absolute path (`/assets/...`) | The site is served from a repository subpath. It works locally and 404s in production |
-| Hand-edit `learn*.html` | Generated. Your change disappears on the next build |
+| Hand-edit any root page but `tests.html` | All generated. Your change disappears on the next build |
 | Move `cfc-theme.js` out of `<head>`, or add `defer`/`async` | The blocking position is what prevents a flash of the wrong palette |
 | Move `sw.js` out of the root | Scope is derived from path. Offline support silently narrows |
 | Add a Tailwind opacity modifier to a themed colour | It renders transparent. Add a token instead |
@@ -1587,7 +1589,7 @@ python tools/check-live.py       # 16 end-to-end checks. Needs network. A smoke 
 
 Then look at the page in a browser at `http://localhost:8000`. Two of the four defects in section 12.4 were found by rendering a real product, not by a test.
 
-If you changed the guide, run `python tools/learn/build.py` and commit the regenerated HTML.
+If you changed the guide, run `python tools/learn/build.py`. If you changed an application page or the shared chrome, run `python tools/site/build.py` as well, because the chrome is in both. Commit the regenerated HTML.
 
 If you added, renamed or removed any file the site loads, update `SHELL_ASSETS` in `sw.js`.
 

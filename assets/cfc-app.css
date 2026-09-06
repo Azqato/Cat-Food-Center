@@ -1,0 +1,328 @@
+/* ==========================================================================
+   Cat Food Center - application page styles (M14).
+
+   Loaded by the nine application pages on top of cfc-tokens.css and cfc.css.
+   It replaces two things at once:
+
+     * the Tailwind CDN build those pages downloaded at runtime, which was a
+       render-blocking third-party script, unpinned, whose contents could
+       change without a commit here, and
+     * the per-page <style> block each of the nine carried, which redefined the
+       same eighteen lines nine times over.
+
+   It is deliberately not a framework. The utility layer below covers exactly
+   the classes the pages and the page modules actually use and nothing else. If
+   a new one is needed, add it here rather than reaching for a CDN.
+
+   The component classes were moved here from those per-page blocks with their
+   names unchanged, because assets/js/*-page.js emits markup using them. The
+   guide pages do not load this file: everything genuinely shared lives in
+   cfc.css and cfc-tokens.css.
+   ========================================================================== */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Layout shell
+
+   An application page is a single column. The two that index their own
+   headings (product, methodology) add .shell-app-toc and keep the guide's
+   third column; the rest collapse to one, because a rail with nothing in it is
+   worse than no rail at all. See docs/DESIGN.md section 6.
+   ══════════════════════════════════════════════════════════════════════════ */
+.shell-app     { grid-template-columns: minmax(0, 1fr); }
+.shell-app-toc { grid-template-columns: minmax(0, 1fr) var(--toc-w); }
+.shell-app > .article, .shell-app-toc > .article { grid-column: 1; }
+.shell-app-toc > .toc { grid-column: 2; }
+
+/* The application pages are read straight down rather than scanned like
+   reference material, so they hold a narrower measure than the guide. */
+.shell-app > .article { max-width: 760px; margin: 0 auto; width: 100%; }
+.narrow { max-width: 34rem; margin: 0 auto; width: 100%; }
+
+@media (max-width: 1180px) {
+  .shell-app-toc { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Type scale
+
+   Was redefined identically in all nine pages. One copy now.
+   ══════════════════════════════════════════════════════════════════════════ */
+.font-display  { font-family: 'Fraunces', Georgia, serif; }
+.text-display  { font-size: 3rem;    line-height: 1.1; }
+.text-h1       { font-size: 1.75rem; line-height: 1.2; }
+.text-h2       { font-size: 1.25rem; line-height: 1.3; }
+.text-small    { font-size: .875rem; line-height: 1.5; }
+.text-micro    { font-size: .75rem;  line-height: 1.4; }
+.font-medium   { font-weight: 500; }
+.leading-none  { line-height: 1; }
+.leading-tight { line-height: 1.25; }
+.truncate      { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.text-center   { text-align: center; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Colour utilities
+
+   Every one resolves to a token, so a theme change is a palette swap here as
+   everywhere else. text-on-accent exists so that nothing hardcodes white ink
+   on an accent fill, which the dark theme inverts.
+   ══════════════════════════════════════════════════════════════════════════ */
+.text-ink        { color: var(--ink); }
+.text-ink-soft   { color: var(--ink-soft); }
+.text-accent     { color: var(--accent); }
+.text-on-accent  { color: var(--on-accent); }
+.bg-surface      { background: var(--surface); }
+.bg-accent       { background: var(--accent); }
+.bg-hairline     { background: var(--hairline); }
+.border          { border: 1px solid transparent; }
+.border-t        { border-top: 1px solid var(--hairline); }
+.border-hairline { border-color: var(--hairline); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Box utilities
+   ══════════════════════════════════════════════════════════════════════════ */
+.flex            { display: flex; }
+.inline-block    { display: inline-block; }
+.flex-col        { flex-direction: column; }
+.flex-wrap       { flex-wrap: wrap; }
+.flex-1          { flex: 1; }
+.shrink-0        { flex-shrink: 0; }
+.min-w-0         { min-width: 0; }
+.items-center    { align-items: center; }
+.items-start     { align-items: flex-start; }
+.items-end       { align-items: flex-end; }
+.justify-center  { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.overflow-hidden { overflow: hidden; }
+
+.gap-1\.5 { gap: 6px; }
+.gap-2    { gap: 8px; }
+.gap-3    { gap: 12px; }
+.gap-4    { gap: 16px; }
+.gap-6    { gap: 24px; }
+.gap-x-3  { column-gap: 12px; }
+.gap-y-1  { row-gap: 4px; }
+
+.w-full { width: 100%; }
+.w-5    { width: 20px; }
+.w-14   { width: 56px; }
+.w-20   { width: 80px; }
+.h-5    { height: 20px; }
+.h-14   { height: 56px; }
+.h-20   { height: 80px; }
+
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.mt-4 { margin-top: 16px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-3 { margin-bottom: 12px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-6 { margin-bottom: 24px; }
+.pt-4 { padding-top: 16px; }
+.pb-1 { padding-bottom: 4px; }
+.px-1 { padding-left: 4px;  padding-right: 4px; }
+.px-2 { padding-left: 8px;  padding-right: 8px; }
+.px-3 { padding-left: 12px; padding-right: 12px; }
+.px-4 { padding-left: 16px; padding-right: 16px; }
+.px-5 { padding-left: 20px; padding-right: 20px; }
+.px-6 { padding-left: 24px; padding-right: 24px; }
+.py-3  { padding-top: 12px; padding-bottom: 12px; }
+.py-4  { padding-top: 16px; padding-bottom: 16px; }
+.py-6  { padding-top: 24px; padding-bottom: 24px; }
+.py-10 { padding-top: 40px; padding-bottom: 40px; }
+.py-12 { padding-top: 48px; padding-bottom: 48px; }
+.py-16 { padding-top: 64px; padding-bottom: 64px; }
+.p-4  { padding: 16px; }
+.p-5  { padding: 20px; }
+
+.rounded-card { border-radius: 12px; }
+.rounded-pill { border-radius: 999px; }
+.shadow-sm    { box-shadow: 0 1px 3px var(--shadow); }
+.shadow-md    { box-shadow: 0 6px 20px var(--shadow); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Links and controls
+   ══════════════════════════════════════════════════════════════════════════ */
+.card-link { display: flex; text-decoration: none; transition: border-color 150ms; }
+.card-link:hover { border-color: var(--accent) !important; text-decoration: none; }
+.btn-link { text-decoration: none; transition: opacity 150ms; }
+.btn-link:hover { opacity: .9; text-decoration: none; }
+.source-link { color: var(--accent); text-decoration: none; }
+.source-link:hover { text-decoration: underline; }
+
+.field, input[type="search"].field, input[type="text"].field {
+  border: 1px solid var(--hairline); border-radius: 12px;
+  padding: 12px 16px; background: var(--surface); color: var(--ink);
+  font-family: inherit; font-size: .875rem; line-height: 1.5;
+}
+.field::placeholder { color: var(--ink-soft); }
+.field:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid var(--hairline); border-radius: 12px; padding: 12px 20px;
+  background: var(--surface); color: var(--ink);
+  font-family: inherit; font-size: .875rem; font-weight: 500; line-height: 1.4;
+  text-decoration: none; cursor: pointer; transition: border-color 150ms, opacity 150ms;
+}
+.btn:hover { border-color: var(--accent); text-decoration: none; }
+.btn-accent { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn-accent:hover { opacity: .9; border-color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* A control that acts on the page rather than navigating. */
+.btn-text {
+  background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+  font-size: .75rem; color: var(--ink-soft); text-decoration: underline;
+}
+.btn-text:hover { color: var(--accent); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Home
+   ══════════════════════════════════════════════════════════════════════════ */
+.hero { display: flex; flex-direction: column; align-items: center; gap: 44px; padding-top: 20px; }
+.scan-cta {
+  display: flex; align-items: center; justify-content: center;
+  width: 128px; height: 128px; border-radius: 999px;
+  background: var(--accent); color: var(--on-accent);
+  font-family: 'Fraunces', Georgia, serif; font-size: 1.25rem; font-weight: 600;
+  text-decoration: none; user-select: none; box-shadow: 0 6px 20px var(--shadow);
+  transition: opacity 150ms;
+}
+.scan-cta:hover { opacity: .92; text-decoration: none; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Search results and pagination
+   ══════════════════════════════════════════════════════════════════════════ */
+.result-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; }
+.pager-status { font-size: .8125rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Brands
+   ══════════════════════════════════════════════════════════════════════════ */
+.brand-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.brand-count { color: var(--ink-soft); font-size: .75rem; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Scanner
+
+   The video fills a fixed-aspect box and is cropped rather than letterboxed,
+   because a letterboxed preview makes people hold the phone at the wrong
+   distance.
+   ══════════════════════════════════════════════════════════════════════════ */
+.viewfinder {
+  position: relative; width: 100%; aspect-ratio: 4 / 3; background: #000;
+  border-radius: 12px; overflow: hidden;
+}
+.viewfinder video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* A window over the middle of the frame. It is guidance, not a crop: the
+   decoder reads the whole frame, so it is drawn with a scrim rather than
+   anything that could be mistaken for a hard boundary. */
+.reticle {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; pointer-events: none;
+}
+.reticle-box {
+  width: 78%; height: 38%; border: 2px solid rgba(255, 255, 255, .9);
+  border-radius: 8px; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .35);
+}
+.scan-status { min-height: 1.5rem; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Product detail
+   ══════════════════════════════════════════════════════════════════════════ */
+.ingredient-list {
+  border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden;
+  list-style: none; padding: 0; margin: 0;
+}
+.ingredient-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+  background: var(--surface); border-bottom: 1px solid var(--hairline);
+}
+.ingredient-row:last-child { border-bottom: none; }
+.ingredient-num {
+  font-variant-numeric: tabular-nums; color: var(--ink-soft); width: 1.5rem;
+  text-align: right; flex-shrink: 0; font-size: .875rem;
+}
+.ingredient-name { font-size: .875rem; color: var(--ink); flex: 1; }
+
+.nutrition-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.nutrition-card  { background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; padding: 16px; }
+.nutrition-label { font-size: .75rem; color: var(--ink-soft); margin-bottom: 4px; }
+.nutrition-value {
+  font-family: 'Fraunces', Georgia, serif; font-size: 1.75rem; line-height: 1.2;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.nutrition-unit  { font-size: 1.25rem; }
+
+.additive-card {
+  background: var(--surface); border: 1px solid var(--hairline);
+  border-radius: 12px; padding: 16px; margin-bottom: 12px;
+}
+.additive-card:last-of-type { margin-bottom: 0; }
+.additive-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.additive-name   { font-weight: 600; font-size: 1rem; color: var(--ink); }
+.additive-fn {
+  font-size: .75rem; color: var(--ink-soft); background: var(--hairline);
+  border-radius: 999px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0;
+}
+.additive-impact { font-size: .875rem; color: var(--ink-soft); margin-bottom: 10px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Compare
+
+   Two columns side by side on anything wider than a phone, stacked below,
+   where a two-column table of numbers is unreadable.
+   ══════════════════════════════════════════════════════════════════════════ */
+.cmp-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 620px) { .cmp-grid { grid-template-columns: 1fr 1fr; } }
+.cmp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.cmp-label {
+  font-size: .75rem; color: var(--ink-soft); text-transform: uppercase;
+  letter-spacing: .05em; margin: 18px 0 6px;
+}
+.cmp-cell { background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; padding: 12px 14px; }
+/* Highlighted only where both products publish a figure. Where one is missing,
+   neither is marked: that would be a comment on the database, not on the food. */
+.cmp-better { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+@media (max-width: 620px) {
+  .nutrition-grid { grid-template-columns: 1fr; }
+  .hero { gap: 34px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Methodology
+
+   Long-form prose plus the three explanatory components the page uses to show
+   the score's own structure: the band list, the pillar weight bars, and the
+   additive tier rows.
+   ══════════════════════════════════════════════════════════════════════════ */
+.prose p     { color: var(--ink); font-size: .9375rem; line-height: 1.7; margin-bottom: 1rem; }
+.prose ul    { padding-left: 1.25rem; margin-bottom: 1rem; }
+.prose ul li { color: var(--ink); font-size: .9375rem; line-height: 1.7; margin-bottom: .375rem; }
+.prose h3    { font-family: 'Fraunces', Georgia, serif; font-size: 1.1rem; font-weight: 600; color: var(--ink); margin: 2rem 0 .75rem; }
+.prose-link  { color: var(--accent); text-decoration: none; }
+.prose-link:hover { text-decoration: underline; }
+
+.band-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--hairline); }
+.band-row:last-child { border-bottom: none; }
+.band-swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+.pillar-bar { height: 6px; border-radius: 999px; margin-top: 4px; }
+
+.tier-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--hairline); }
+.tier-row:last-child { border-bottom: none; }
+.tier-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+/* Remaining utilities used only by the methodology page. */
+.max-w-content { max-width: 720px; }
+.mx-auto  { margin-left: auto; margin-right: auto; }
+.border-b { border-bottom: 1px solid var(--hairline); }
+.font-normal { font-weight: 400; }
+.gap-1  { gap: 4px; }
+.mb-1   { margin-bottom: 4px; }
+.mb-8   { margin-bottom: 32px; }
+.mb-10  { margin-bottom: 40px; }

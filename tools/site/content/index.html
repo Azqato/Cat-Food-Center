@@ -1,0 +1,45 @@
+    <div class="hero">
+
+      <div class="text-center">
+        <h1>Cat Food Center</h1>
+        <p class="text-ink-soft text-small mt-2">Trustworthy reviews for your purrfect companion!</p>
+      </div>
+
+      <div class="flex flex-col items-center gap-3">
+        <a href="./scan.html" class="scan-cta">Scan</a>
+        <p class="text-ink-soft text-small">Point at a barcode</p>
+      </div>
+
+      <form action="./search.html" method="get" class="w-full flex gap-2" style="max-width:24rem" role="search">
+        <input type="search" name="q" placeholder="Brand or product name…"
+          aria-label="Search cat food products" class="field flex-1 min-w-0" />
+        <button type="submit" class="btn btn-accent shrink-0">Search</button>
+      </form>
+
+      <section class="w-full" aria-label="The Cat Care Guide">
+        <a href="./learn.html" class="card-link flex-col gap-2 bg-surface border border-hairline rounded-card p-5">
+          <span class="text-micro text-ink-soft" style="text-transform:uppercase;letter-spacing:.05em">Free guide</span>
+          <span class="font-display text-h2 text-ink">The Cat Care Guide</span>
+          <span class="text-small text-ink-soft">
+            Everything you need to feed and raise a cat well, the exact daily nutrient requirements,
+            additives to avoid, hydration, food types, life stages, and diet in disease.
+          </span>
+          <span class="text-small text-accent" style="margin-top:2px">Start reading &rarr;</span>
+        </a>
+      </section>
+
+      <!-- Recently viewed: filled from this device's storage by
+           assets/js/home-page.js, and hidden entirely until there is
+           something to show. -->
+      <section id="recent-section" class="w-full" aria-label="Recently viewed products" hidden>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-display text-h2 text-ink" style="margin:0">Recently viewed</h2>
+          <button id="recent-clear" type="button" class="btn-text">Clear</button>
+        </div>
+        <ul id="recent-list" class="result-list"></ul>
+        <p class="text-ink-soft text-micro mt-3">
+          Kept on this device only. Scores are recalculated when you open a product.
+        </p>
+      </section>
+
+    </div>

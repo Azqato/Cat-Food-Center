@@ -8,6 +8,13 @@ rail, prev/next, and site footer.
 import io
 import os
 import re
+import sys
+
+# The site chrome is shared with the application pages so the two families
+# cannot drift apart: one navigation list, one footer, one top bar (M14).
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), 'site'))
+import chrome  # noqa: E402
 
 # Repository root, two levels up from tools/learn/.
 OUT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -71,7 +78,10 @@ TITLES = dict(PAGES)
 
 
 def sidebar_html(slug):
-    out = ['<nav class="sidebar" id="sidebar" aria-label="Guide sections">']
+    """The guide's own section list, emitted as the second level of the shared
+    drawer. The site links sit above it, so a reader on a guide page can reach
+    the rest of the site from the same control (M14)."""
+    out = []
     for label, items in SIDEBAR:
         out.append('  <div class="sidebar-group">')
         out.append('    <p class="sidebar-label">%s</p>' % label)
@@ -81,8 +91,7 @@ def sidebar_html(slug):
             out.append('      <li><a href="./%s.html"%s>%s</a></li>' % (s, cur, name))
         out.append('    </ul>')
         out.append('  </div>')
-    out.append('</nav>')
-    return "\n".join(out)
+    return chrome.drawer('./learn.html', sections="\n".join(out) + "\n")
 
 
 HEADING_RE = re.compile(r'<h2 id="([^"]+)"[^>]*>(.*?)</h2>', re.S)
@@ -185,29 +194,10 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 
-<a class="skip-link" href="#main">Skip to content</a>
-
-<!-- ── Top bar ── -->
-<header class="topbar">
-  <button class="nav-toggle" type="button" aria-label="Open guide navigation" aria-controls="sidebar" aria-expanded="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
-  </button>
-  <a class="topbar-brand" href="./index.html">%(paw)s Cat Food Center</a>
-  <span class="topbar-spacer"></span>
-  <a class="topbar-search" href="./search.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M20 20l-3.5-3.5"/></svg>
-    Search products
-    <span class="kbd">/</span>
-  </a>
-  %(theme)s
-  <a class="topbar-cta" href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer">Support</a>
-</header>
-
+%(topbar)s
 <div class="shell">
 
 %(sidebar)s
-  <button class="sidebar-backdrop" type="button" tabindex="-1" aria-hidden="true"></button>
-
   <!-- ── Article ── -->
   <main class="article" id="main">
 
@@ -244,6 +234,7 @@ def build(slug, h1, description, lede, body, crumb=None, title=None):
         "description": description,
         "paw": PAW,
         "theme": THEME_TOGGLE,
+        "topbar": chrome.topbar('./learn.html'),
         "sidebar": sidebar_html(slug),
         "crumb": crumb or TITLES.get(slug, h1),
         "h1": h1,
@@ -251,7 +242,7 @@ def build(slug, h1, description, lede, body, crumb=None, title=None):
         "body": body.rstrip() + "\n",
         "pagination": pagination_html(slug),
         "toc": toc_html(body),
-        "footer": FOOTER,
+        "footer": chrome.footer(),
     }
     path = os.path.join(OUT, slug + ".html")
     with io.open(path, "w", encoding="utf-8", newline="\n") as f:
