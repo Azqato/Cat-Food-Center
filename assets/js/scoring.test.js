@@ -230,3 +230,114 @@ suite('determinism', (t) => {
   t.equal(a.score, b.score, 'the same input yields the same score');
   t.equal(a.reasons, b.reasons, 'and the same reasons, in the same order');
 });
+
+/* The bug this guards against was found by rendering a real product, not by a
+   test: barcode 3596710487455 has a French label reading "Viandes et
+   sous-produits animaux" and "sucres" — unnamed meat by-products and added
+   sugar — and the English-only matcher scored it 77/Excellent with a perfect
+   transparency pillar and the reason "Ingredient sources are named rather than
+   generic". Silence from a matcher that cannot read the label must never be
+   reported as a clean result. */
+suite('language guard', (t) => {
+  const unreadable = product({
+    ingredientsLang: 'pl',
+    ingredients: ['Mieso i produkty pochodzenia zwierzecego', 'zboza', 'cukry'],
+  });
+  const english = product({
+    ingredientsLang: 'en',
+    ingredients: ['Meat and animal derivatives', 'cereals', 'sugars'],
+  });
+
+  const r = scoreProduct(unreadable, KB);
+  t.ok(r.pillars.transparency.reasons.some((x) => /language this checker does not cover/.test(x)),
+    'an unreadable label is stated as unchecked, not as clean');
+  t.ok(!r.pillars.transparency.reasons.some((x) => /named rather than generic/.test(x)),
+    'and is never told its sources are named');
+  t.ok(!r.pillars.additives.reasons.some((x) => /^No flagged additives found/.test(x)),
+    'nor that no flagged additives were found');
+  t.equal(r.confidence, 'low', 'confidence is capped at low');
+  t.ok(r.warnings.some((x) => /does not fully cover/.test(x)),
+    'and a warning says so in plain words');
+
+  t.ok(r.score < scoreProduct(product({ ingredientsLang: 'en' }), KB).score,
+    'an unreadable clean-looking label scores below a readable clean one');
+
+  const eng = scoreProduct(english, KB);
+  t.ok(eng.pillars.transparency.reasons.some((x) => /Unnamed or catch-all/.test(x)),
+    'the English equivalent has its catch-all term named outright');
+  t.ok(eng.pillars.transparency.score < 100,
+    'and is penalised on merit rather than for its language');
+
+  const fr = scoreProduct(product({ ingredientsLang: 'fr' }), KB);
+  t.ok(fr.confidence !== 'low', 'a language the aliases cover is not confidence-capped');
+  t.equal(fr.score, scoreProduct(product({ ingredientsLang: 'en' }), KB).score,
+    'French, which the aliases cover, scores identically to English');
+
+  const missing = scoreProduct(product(), KB);
+  t.equal(missing.score, scoreProduct(product({ ingredientsLang: 'en' }), KB).score,
+    'an absent language field is treated as English rather than as unreadable');
+});
+
+suite('beneficial credit is not awarded to unnamed sources', (t) => {
+  const KB2 = {
+    ...KB,
+    additives: [...KB.additives, {
+      id: 'named-by-products', name: 'Named by-products and by-product meals',
+      tier: 0, hardGate: false, aliases: ['by-product', 'sous-produits'], sources: [],
+    }],
+  };
+  // Both lists carry carrageenan so the pillar sits below its ceiling, where a
+  // difference in the beneficial bonus is actually visible.
+  const unnamed = scoreProduct(product({
+    ingredients: ['Meat by-products', 'cereals', 'carrageenan', 'minerals'],
+  }), KB2);
+  t.ok(!unnamed.pillars.additives.reasons.some((x) => /Named by-products/i.test(x)),
+    'an unnamed by-product earns no credit for being a named one');
+  t.ok(unnamed.pillars.transparency.reasons.some((x) => /Unnamed or catch-all/.test(x)),
+    'and is still penalised as unnamed — a product cannot be both');
+
+  const named = scoreProduct(product({
+    ingredients: ['Chicken by-product meal', 'chicken broth', 'carrageenan', 'minerals'],
+  }), KB2);
+  t.ok(named.pillars.additives.reasons.some((x) => /named by-products/i.test(x)),
+    'a named by-product still earns the credit it deserves');
+  t.ok(named.pillars.additives.score > unnamed.pillars.additives.score,
+    'so naming the species is worth more than not naming it');
+});
+
+suite('a parenthetical does not rename an unnamed source', (t) => {
+  const annotated = scoreProduct(product({
+    ingredients: [
+      'Viandes et sous-produits animaux (dont boeuf 4% et foie 4%)',
+      'cereales', 'substances minerales', 'sucres',
+    ],
+    ingredientsLang: 'fr',
+  }), {
+    ...KB,
+    vagueTerms: [{ id: 'unnamed-meat', name: 'Unnamed protein source',
+      aliases: ['sous-produits animaux', 'meat by-product'], why: '' }],
+  });
+  t.ok(!annotated.pillars.nutrition.reasons.some((x) => /named animal protein is the first/.test(x)),
+    'a 4% beef parenthetical does not make unnamed meat a named first ingredient');
+  t.ok(!annotated.pillars.nutrition.reasons.some((x) => /first three ingredients/.test(x)),
+    'and does not score one branch lower as "appears in the first three" either');
+
+  const genuine = scoreProduct(product({
+    ingredients: ['Boeuf (65%)', 'bouillon', 'foie', 'substances minerales'],
+    ingredientsLang: 'fr',
+  }), KB);
+  t.ok(genuine.pillars.nutrition.reasons.some((x) => /named animal protein is the first/.test(x)),
+    'while a genuinely named French protein is recognised as one');
+  t.ok(genuine.pillars.nutrition.score > annotated.pillars.nutrition.score,
+    'so naming the species outscores hiding it behind a percentage');
+});
+
+suite('an unnamed leading protein is reported as such', (t) => {
+  const r = scoreProduct(product({
+    ingredients: ['Meat and animal derivatives (including beef 4%)', 'cereals', 'minerals'],
+  }), KB);
+  t.ok(r.pillars.nutrition.reasons.some((x) => /species is not stated/.test(x)),
+    'the nutrition pillar names the actual problem with the first ingredient');
+  t.ok(!r.pillars.nutrition.reasons.some((x) => /starch source/.test(x)),
+    'rather than reporting whatever happened to appear second');
+});

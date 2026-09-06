@@ -37,7 +37,7 @@ const FIELDS = [
   'code', 'product_name', 'product_name_en', 'brands', 'quantity',
   'image_front_url', 'image_front_small_url',
   'ingredients_text', 'ingredients_text_en',
-  'nutriments', 'categories_tags', 'labels_tags', 'last_modified_t',
+  'nutriments', 'categories_tags', 'labels_tags', 'last_modified_t', 'lang',
 ].join(',');
 
 /* A cat food as fed. A value outside its band is a data-entry error rather
@@ -189,8 +189,13 @@ export function normalize(raw) {
   const energy = readEnergy(nutriments);
   const taurine = readNutriment(nutriments, ['taurine']);
 
-  const ingredientsText = (raw.ingredients_text_en || raw.ingredients_text || '').trim();
+  const englishText = (raw.ingredients_text_en || '').trim();
+  const ingredientsText = englishText || (raw.ingredients_text || '').trim();
   const ingredients = splitIngredients(ingredientsText);
+  // Which language the ingredient list is actually in. The additive matcher
+  // only covers a handful of languages, so a score computed against a label it
+  // cannot read must not be presented as a clean bill of health.
+  const ingredientsLang = englishText ? 'en' : (raw.lang || 'unknown');
 
   // A guaranteed-analysis figure came off the packaging panel; a human-schema
   // one was entered against a field meant for human food. The distinction
@@ -238,6 +243,7 @@ export function normalize(raw) {
     substantiation: 'unknown',
     ingredients,
     ingredientsText,
+    ingredientsLang,
     nutrition,
     dataCompleteness,
     lastModified: raw.last_modified_t

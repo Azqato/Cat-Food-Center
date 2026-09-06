@@ -50,6 +50,23 @@ const ANIMAL_PROTEINS = [
   'whitefish', 'herring', 'mackerel', 'sardine', 'anchovy', 'cod', 'beef',
   'lamb', 'pork', 'rabbit', 'venison', 'bison', 'liver', 'heart', 'kidney',
   'gizzard', 'egg', 'chicken meal', 'turkey meal', 'salmon meal', 'lamb meal',
+  /* The same species in the other languages the database carries. A named
+     species is the signal, and the signal does not stop at the Channel: an
+     English-only list reported a French beef pate as having no identifiable
+     protein source at all. Generic words for meat — viande, Fleisch, carne —
+     are deliberately absent, because "meat" unnamed is exactly what this
+     check is meant not to reward. */
+  'poulet', 'dinde', 'canard', 'saumon', 'thon', 'boeuf', 'bœuf', 'agneau',
+  'porc', 'lapin', 'foie', 'coeur', 'cœur', 'oeuf', 'œuf', 'poisson',
+  'huhn', 'hahnchen', 'hähnchen', 'pute', 'truthahn', 'ente', 'lachs',
+  'thunfisch', 'rind', 'rindfleisch', 'lamm', 'schwein', 'kaninchen', 'leber',
+  'herz', 'ei',
+  'pollo', 'pavo', 'pato', 'salmon', 'salmón', 'atun', 'atún', 'vacuno',
+  'cordero', 'cerdo', 'conejo', 'higado', 'hígado', 'huevo',
+  'tacchino', 'anatra', 'salmone', 'tonno', 'manzo', 'agnello', 'maiale',
+  'coniglio', 'fegato', 'uovo',
+  'kip', 'kalkoen', 'eend', 'zalm', 'tonijn', 'rundvlees', 'lam', 'varken',
+  'konijn', 'lever',
 ];
 
 /* Plant proteins inflate the crude-protein figure without supplying taurine or
@@ -57,13 +74,31 @@ const ANIMAL_PROTEINS = [
 const PLANT_PROTEINS = [
   'pea protein', 'corn gluten', 'wheat gluten', 'soy protein', 'soybean meal',
   'potato protein', 'rice protein', 'pea flour', 'lentil', 'chickpea',
+  'proteine de pois', 'protéine de pois', 'gluten de mais', 'gluten de maïs',
+  'gluten de ble', 'gluten de blé', 'proteine de soja', 'protéine de soja',
+  'erbsenprotein', 'maiskleber', 'weizengluten', 'sojaprotein',
+  'proteina de guisante', 'proteína de guisante', 'gluten de trigo',
+  'proteine di pisello', 'glutine di mais', 'erwteneiwit',
 ];
 
 /* High-glycaemic starch sources. */
 const STARCH_FILLERS = [
   'corn', 'maize', 'wheat', 'rice', 'potato', 'tapioca', 'sorghum', 'barley',
   'oat', 'soybean', 'cereal',
+  'cereale', 'céréale', 'cereales', 'céréales', 'mais', 'maïs', 'ble', 'blé',
+  'riz', 'pomme de terre', 'orge', 'avoine', 'soja',
+  'getreide', 'weizen', 'reis', 'kartoffel', 'gerste', 'hafer',
+  'trigo', 'arroz', 'patata', 'cebada', 'avena',
+  'cereali', 'grano', 'riso', 'patate', 'orzo',
+  'granen', 'tarwe', 'rijst', 'aardappel', 'gerst', 'haver',
 ];
+
+/* Languages the additive aliases cover. Only about a tenth of records carry
+   English ingredients (docs/DATA-COVERAGE.md), and the database is
+   Europe-weighted, so an English-only matcher would silently report the other
+   nine tenths as free of flagged additives — a false clean bill of health, and
+   the worst direction for a trust product to be wrong in. */
+export const MATCHED_LANGUAGES = ['en', 'fr', 'de', 'es', 'it', 'nl'];
 
 /* ── Text matching ── */
 
@@ -125,7 +160,7 @@ export function carbsByDifference({ proteinDM, fatDM, fibreDM, ashDM }) {
  * points earned as a fraction of the points that were actually assessable, so
  * a product is never penalised for a figure nobody entered.
  */
-function scoreNutrition(product) {
+function scoreNutrition(product, kb) {
   const n = product.nutrition || {};
   const reasons = [];
   let earned = 0;
@@ -141,8 +176,23 @@ function scoreNutrition(product) {
   const carbsDM = carbsByDifference({ proteinDM, fatDM, fibreDM, ashDM });
 
   const ingredients = product.ingredients || [];
-  const firstThree = ingredients.slice(0, 3).join(' ').toLowerCase();
-  const first = (ingredients[0] || '').toLowerCase();
+  /* An unnamed source stays unnamed however it is annotated. "Viandes et
+     sous-produits animaux (dont boeuf 4% et foie 4%)" names beef in a
+     parenthetical, but the entry is still overwhelmingly unspecified meat, and
+     reading that 4% as a named animal protein would award marks for the
+     opposite of what the label shows. So any entry matching an unnamed-source
+     term is judged on the part before its parenthesis — and this must apply to
+     the whole leading window, not just the first entry: masking only the first
+     one simply moved the same 4% down to the "appears in the first three"
+     branch and scored it there instead. */
+  const vagueAliases = (kb.vagueTerms || []).flatMap((v) => v.aliases);
+  const named = ingredients.map((entry) => {
+    const lower = entry.toLowerCase();
+    return anyMatch(lower, vagueAliases) ? lower.replace(/[([].*/, '').trim() : lower;
+  });
+  const firstThree = named.slice(0, 3).join(' ');
+  const first = named[0] || '';
+  const firstIsUnnamed = anyMatch((ingredients[0] || '').toLowerCase(), vagueAliases);
 
   /* Animal-protein dominance — 35 points. */
   if (ingredients.length) {
@@ -156,6 +206,14 @@ function scoreNutrition(product) {
     } else if (anyMatch(first, STARCH_FILLERS)) {
       earned += 4;
       reasons.push('A starch source is the first ingredient rather than an animal protein.');
+    } else if (firstIsUnnamed) {
+      /* Stated before the first-three branches, because "the main ingredient
+         is meat of an unstated species" is the most important thing the list
+         says, and it would otherwise be reported as whatever happened to
+         appear second. It scores like a starch: the protein may well be fine,
+         but nothing on the label lets anyone check. */
+      earned += 6;
+      reasons.push('The first ingredient is an animal protein whose species is not stated, so its quality cannot be assessed from the label.');
     } else if (anyMatch(firstThree, ANIMAL_PROTEINS)) {
       earned += 22;
       reasons.push('A named animal protein appears in the first three ingredients, but is not first.');
@@ -230,6 +288,7 @@ function scoreNutrition(product) {
 function scoreAdditives(product, kb) {
   const ingredients = product.ingredients || [];
   if (!ingredients.length) return { available: false, flagged: [], reasons: [] };
+  const readable = MATCHED_LANGUAGES.includes(product.ingredientsLang || 'en');
 
   const text = ingredients.join(' , ').toLowerCase();
   const flagged = [];
@@ -239,8 +298,21 @@ function scoreAdditives(product, kb) {
     const alias = additive.aliases.find((a) => matchesTerm(text, a));
     if (alias) flagged.push({ ...additive, matchedOn: alias });
   }
-  const beneficial = kb.additives.filter(
-    (a) => a.tier === 0 && a.aliases.some((alias) => matchesTerm(text, alias)));
+  /* Beneficial (Tier 0) credit is awarded per ingredient entry, not against the
+     whole list, and is withheld when that same entry is itself an unnamed
+     source. "Named by-products" is the case that forced this: its aliases are
+     bare stems — "by-product", "sous-produits" — so "meat by-products" matched
+     it and earned a bonus for being a named source while the transparency
+     pillar was penalising the very same words for being unnamed. One product
+     cannot be both. The knowledge base entry says as much itself: only named
+     by-products are the nutrient-dense organ meats it describes. */
+  const vagueAliases = (kb.vagueTerms || []).flatMap((v) => v.aliases);
+  const isUnnamed = (entry) => anyMatch(entry, vagueAliases);
+  const beneficial = kb.additives.filter((a) => a.tier === 0 && ingredients.some(
+    (entry) => {
+      const lower = entry.toLowerCase();
+      return a.aliases.some((alias) => matchesTerm(lower, alias)) && !isUnnamed(lower);
+    }));
 
   /* Penalties are per occurrence, so three Tier 3 additives cost more than
      one. The floor is zero — the pillar cannot go negative and drag an
@@ -251,7 +323,7 @@ function scoreAdditives(product, kb) {
 
   /* Natural preservatives and declared taurine are a positive formulation
      signal (PRD §6.3), worth a little but never enough to offset a flag. */
-  const bonus = Math.min(beneficial.length * 3, 9);
+  const bonus = readable ? Math.min(beneficial.length * 3, 9) : 0;
   score = Math.max(0, Math.min(100, score + bonus));
 
   const reasons = [];
@@ -263,12 +335,16 @@ function scoreAdditives(product, kb) {
   if (tier2.length) {
     reasons.push(`${tier2.length} moderate-risk (Tier 2) additive${tier2.length > 1 ? 's' : ''}: ${tier2.map((f) => f.name).join(', ')}.`);
   }
-  if (!flagged.length) reasons.push('No flagged additives found in the ingredient list.');
+  if (!flagged.length) {
+    reasons.push(readable
+      ? 'No flagged additives found in the ingredient list.'
+      : 'No flagged additives were matched, but the ingredient list is in a language this checker does not cover, so nothing can be concluded from that.');
+  }
   if (beneficial.length) {
     reasons.push(`Includes ${beneficial.map((b) => b.name.toLowerCase()).join(', ')}.`);
   }
 
-  return { available: true, score, flagged, beneficial, reasons };
+  return { available: true, score, flagged, beneficial, reasons, readable };
 }
 
 /* ── Pillar C: ingredient quality and transparency (10%) ── */
@@ -276,6 +352,7 @@ function scoreAdditives(product, kb) {
 function scoreTransparency(product, kb) {
   const ingredients = product.ingredients || [];
   if (!ingredients.length) return { available: false, reasons: [], vague: [] };
+  const readable = MATCHED_LANGUAGES.includes(product.ingredientsLang || 'en');
 
   const text = ingredients.join(' , ').toLowerCase();
   const vague = kb.vagueTerms
@@ -292,13 +369,17 @@ function scoreTransparency(product, kb) {
   // rather than that the food has four ingredients.
   if (ingredients.length < 4) score -= 15;
 
+  // A label we cannot read cannot earn full marks for naming its sources.
+  if (!readable && !vague.length) score -= 25;
   score = Math.max(0, Math.min(100, score));
 
   const reasons = [];
   if (vague.length) {
     reasons.push(`Unnamed or catch-all label terms: ${vague.map((v) => v.name.toLowerCase()).join(', ')}.`);
-  } else {
+  } else if (readable) {
     reasons.push('Ingredient sources are named rather than generic.');
+  } else {
+    reasons.push('Whether the ingredient sources are named could not be checked: the label is in a language this checker does not cover.');
   }
   if (ingredients.length < 4) {
     reasons.push('The ingredient list is unusually short, which often means the label was only partly recorded.');
@@ -322,7 +403,7 @@ export function bandFor(score) {
  * @returns {object} ScoreResult
  */
 export function scoreProduct(product, kb) {
-  const nutrition = scoreNutrition(product);
+  const nutrition = scoreNutrition(product, kb);
   const additives = scoreAdditives(product, kb);
   const transparency = scoreTransparency(product, kb);
 
@@ -371,7 +452,8 @@ export function scoreProduct(product, kb) {
      half the model, is not the same claim as one built on a full label. */
   const nutritionConfidence = (product.nutrition || {}).confidence || 'none';
   const confidence =
-    !nutrition.analysisAvailable ? 'low'
+    additives.readable === false ? 'low'
+      : !nutrition.analysisAvailable ? 'low'
       : nutritionConfidence === 'high' && available.length === 3 ? 'high'
         : 'medium';
 
@@ -382,6 +464,9 @@ export function scoreProduct(product, kb) {
   }
   if ((product.nutrition || {}).energyCorrected) {
     warnings.push('The published energy figure was implausible per 100 g and has been read as a per-kilogram value.');
+  }
+  if (additives.readable === false) {
+    warnings.push(`The ingredient list is in ${product.ingredientsLang === 'unknown' ? 'an unrecognised language' : `'${product.ingredientsLang}'`}, which this additive checker does not fully cover. Flagged additives may have been missed, so treat the additive and transparency pillars as incomplete rather than clean.`);
   }
   if (product.aafcoComplete === undefined) {
     warnings.push('No AAFCO complete-and-balanced statement is on record. Check the packaging — this database does not capture it.');

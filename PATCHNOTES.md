@@ -6,6 +6,36 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.8.0] - 2026-09-05
+
+**The scoring engine, the API client, and the two pages that use them. The product is now real: enter a barcode and get a derived score with its reasoning.**
+
+Added
+* `assets/js/opff.js` — Open Pet Food Facts client and normaliser. Reads both nutriment schemas (preferring the pet-food guaranteed analysis over Open Food Facts' human-food keys) and records which was used; gates every figure against a plausible range for cat food; infers per-kilogram energy values and corrects them; splits ingredient strings on depth-aware commas so a parenthetical stays with its parent ingredient.
+* `assets/js/scoring.js` — the CFC Score. Pure and deterministic: no network, no DOM, runs in the visitor's browser so a sceptical reader can watch a score being derived. Renormalises pillar weights across the pillars that could be computed, applies the two hard gates, and returns `scorable: false` rather than a number when too little is known.
+* `assets/js/product-page.js`, `assets/js/search-page.js` — replace the mock render blocks. `product.html` went 475 → 102 lines, `search.html` 166 → 99.
+* `assets/data/additives.json` — 20 additives across three tiers plus three catch-all label terms, each with function, tier, plain-language health impact, regulatory note and sources. Tiers mirror the guide.
+* `tests.html`, `assets/js/test-runner.js`, `tools/run-tests.py` — 130 assertions run headlessly in a real browser. No Node, no build step, consistent with ADR-001.
+* `tools/probe-opff.py`, `tools/check-live.py` — the measurement script behind `docs/DATA-COVERAGE.md`, and an end-to-end check of four page states against the live API.
+* `docs/DATA-COVERAGE.md` — what the database actually contains, measured across 600 products.
+* **methodology.html: "What the score cannot see."** The limits are now published alongside the method, because a score that does not state what it could not check is overclaiming.
+
+Fixed
+* **A French product scored 77 / Excellent with a perfect transparency pillar and the reason "Ingredient sources are named rather than generic." Its first ingredient was unnamed meat by-products and its last was sugar.** Only 9.5% of records carry English ingredients, and the alias matcher was English-only — so on ~90% of labels it matched nothing, and nothing matched was being reported as clean. Four distinct defects sat behind that single score, and three of them were live in English too; they had simply never fired, because the test fixtures were written in the same language as the matcher. Full write-up in `docs/DATA-COVERAGE.md`.
+  * Aliases extended to French, German, Spanish, Italian and Dutch — in `additives.json` and in the animal-protein, plant-protein and starch lists.
+  * `MATCHED_LANGUAGES` guard: where the label is in a language the aliases do not cover, the engine says the list could not be read, withholds the clean-formulation bonus and the "no flagged additives" finding, caps confidence at low, and warns. **Silence is not evidence.**
+  * The Tier 0 "named by-products" credit had bare stems as aliases, so *"meat by-products"* earned a bonus for being a named source while the transparency pillar penalised the identical words for being unnamed. Tier 0 credit is now matched per ingredient entry and withheld where that entry is itself an unnamed source.
+  * A parenthetical could rename an unnamed source: `(dont boeuf 4%)` made "viandes et sous-produits animaux" read as a named beef first ingredient, worth full marks. Such entries are now judged on the text before the parenthesis, across the whole first-three window.
+  * The nutrition pillar now has an explicit branch for an unnamed leading protein, so the most important thing the list says is what gets reported, rather than whatever happened to appear second.
+* Alias matching missed plurals — aliases are written singular, labels are plural — so the unnamed-source penalty never fired on a real label.
+* The animal-protein check ran on the first three ingredients before the plant-protein check ran on the first, so a list led by pea protein scored as animal-protein-first the moment chicken fat appeared third.
+
+Notes
+* `docs/DATA-COVERAGE.md` overturned the M6/M7 assumption that most products carry a full guaranteed analysis. About a fifth are scoreable on all three pillars, and a quarter of the products carrying a protein figure carry an implausible one. Partial data is the normal path, not an error path, and both modules are built around that.
+* The unit suite was 109 green while all four scoring defects above were live. Rendering one real product page found what the whole suite could not.
+
+---
+
 ## [0.7.0] - 2026-09-05
 
 **Light/dark theming across the whole site, and the end of the Next.js fork in the repository.**

@@ -124,6 +124,65 @@ fallback that must pass a plausibility gate before use.**
    ([ADR-001](./ADR-001-static-first.md)) — committed data under `assets/data/`,
    with the API as the fallback for everything outside the catalog.
 
+## Language is a correctness problem, not a translation problem
+
+Added 2026-09-05, after rendering real product pages.
+
+Only **9.5%** of records carry `ingredients_text_en`. The database is
+Europe-weighted, so the ingredient list you actually get is usually French,
+German, Spanish, Italian or Dutch.
+
+Every text check in the scoring engine — flagged additives, catch-all terms,
+whether the first ingredient is a named animal protein — is alias matching
+against an ingredient string. An English-only alias list does not *fail* on a
+French label. It matches nothing, and matching nothing is indistinguishable, to
+the code, from a clean label.
+
+The product that exposed this was barcode `3596710487455` (Auchan, French):
+
+```
+Viandes et sous-produits animaux (dont boeuf 4% et foie 4%), céréales,
+légumes (3% de carottes et 2% de haricots verts), substances minérales, sucres
+```
+
+That is unnamed meat by-products as the main ingredient and added sugar at the
+end. It scored **77 / Excellent**, with a transparency pillar of 100 and the
+reason *"Ingredient sources are named rather than generic."* Every word of that
+was wrong, and it was wrong in the most damaging possible direction: a trust
+product telling someone that a food it could not read is a good one.
+
+It now scores **70 / Good**, flags the sugar, flags the unnamed source, and says
+the species of the first ingredient is not stated.
+
+**Four separate defects sat behind that one score. Three were not about
+language at all — the English-only matcher was hiding them.**
+
+| Defect | Fix |
+| --- | --- |
+| Aliases were English-only, so ~90% of labels silently matched nothing | French, German, Spanish, Italian and Dutch aliases in `additives.json`, and in the animal-protein, plant-protein and starch lists in `scoring.js` |
+| A label in a language the aliases do not cover was still reported as clean | `MATCHED_LANGUAGES` guard: silence from an unreadable label is stated as unchecked, the clean-formulation bonus is withheld, confidence is capped at low, and a warning says so |
+| `named-by-products` (a Tier 0 *beneficial* entry) has bare stems as aliases — `by-product`, `sous-produits` — so **"meat by-products" earned a bonus for being a named source while the transparency pillar penalised the very same words for being unnamed** | Tier 0 credit is matched per ingredient entry and withheld when that entry is itself an unnamed source |
+| A parenthetical renamed an unnamed source: `(dont boeuf 4%)` made "viandes et sous-produits animaux" read as a named beef first ingredient, worth full marks | Entries matching an unnamed-source term are judged on the text before the parenthesis, across the whole first-three window |
+
+The third and fourth were live in English too. They had simply never fired,
+because no English product had reached the renderer.
+
+### Consequences
+
+8. **Any text check is a language check.** A new alias list is not complete
+   when it is complete in English. `MATCHED_LANGUAGES` in `scoring.js` is the
+   record of which languages the aliases actually cover, and it must be updated
+   with them, not ahead of them.
+
+9. **Silence is not evidence.** Where the engine cannot read a label it says so,
+   rather than reporting the absence of a match as the absence of a problem.
+   This is the single most important rule in the scoring module.
+
+10. **Render real products early.** The unit suite was 109 green while all four
+    of these defects were live, because every fixture was English and written by
+    the same person who wrote the matcher. One real page found what the whole
+    suite could not.
+
 ## Open questions for the PRD
 
 - Should a product with no nutrition data receive a partial score, or no score

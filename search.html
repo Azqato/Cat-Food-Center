@@ -63,7 +63,7 @@
   <main class="flex-1 w-full max-w-content mx-auto px-4 py-8">
     <div class="flex flex-col gap-8">
 
-      <!-- Search bar (pre-filled by JS below) -->
+      <!-- Pre-filled from ?q= by assets/js/search-page.js -->
       <form action="./search.html" method="get" class="flex gap-2" role="search">
         <input type="search" name="q" id="search-input" placeholder="Brand or product name…"
           aria-label="Search cat food products"
@@ -78,64 +78,7 @@
       <section aria-label="Search results">
         <p id="results-label" class="text-small text-ink-soft mb-4" hidden></p>
 
-        <!-- TODO: replace with real Open Pet Food Facts text-search API results -->
-        <ul class="flex flex-col gap-3" style="list-style:none;padding:0">
-
-          <li>
-            <a href="./product.html?barcode=0000000000000"
-              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
-              <div class="bg-band-good w-14 h-14 rounded-card flex items-center justify-center shrink-0"
-                aria-label="Score 61, Good">
-                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">61</span>
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="text-ink font-medium text-small truncate">Instinct Original Grain-Free Recipe with Real Chicken</p>
-                <p class="text-ink-soft text-micro">Nature's Variety</p>
-                <span class="inline-block bg-band-good text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Good</span>
-              </div>
-              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-              </svg>
-            </a>
-          </li>
-
-          <li>
-            <a href="./product.html?barcode=0000000000001"
-              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
-              <div class="bg-band-excellent w-14 h-14 rounded-card flex items-center justify-center shrink-0"
-                aria-label="Score 81, Excellent">
-                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">81</span>
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="text-ink font-medium text-small truncate">Weruva Paw Lickin' Chicken</p>
-                <p class="text-ink-soft text-micro">Weruva</p>
-                <span class="inline-block bg-band-excellent text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Excellent</span>
-              </div>
-              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-              </svg>
-            </a>
-          </li>
-
-          <li>
-            <a href="./product.html?barcode=0000000000002"
-              class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
-              <div class="bg-band-poor w-14 h-14 rounded-card flex items-center justify-center shrink-0"
-                aria-label="Score 28, Poor">
-                <span class="text-white font-display text-h2 leading-none" style="font-variant-numeric:tabular-nums">28</span>
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="text-ink font-medium text-small truncate">Friskies Surfin' &amp; Turfin' Favorites</p>
-                <p class="text-ink-soft text-micro">Purina Friskies</p>
-                <span class="inline-block bg-band-poor text-white text-micro px-2 rounded-pill mt-1" style="padding-top:2px;padding-bottom:2px">Poor</span>
-              </div>
-              <svg aria-hidden="true" class="w-5 h-5 text-ink-soft shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-              </svg>
-            </a>
-          </li>
-
-        </ul>
+        <ul id="results-list" class="flex flex-col gap-3" style="list-style:none;padding:0"></ul>
       </section>
 
     </div>
@@ -149,18 +92,7 @@
     </p>
   </footer>
 
-  <script>
-    // Pre-fill search input and show result label from ?q= URL param
-    const params = new URLSearchParams(window.location.search)
-    const q = params.get('q') || ''
-    const input = document.getElementById('search-input')
-    const label = document.getElementById('results-label')
-    if (input) input.value = q
-    if (q && label) {
-      label.textContent = 'Showing results for “' + q + '”'
-      label.hidden = false
-    }
-  </script>
+  <script type="module" src="./assets/js/search-page.js"></script>
 
 </body>
 </html>

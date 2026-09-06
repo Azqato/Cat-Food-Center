@@ -4,6 +4,23 @@ All notable changes to Cat Food Center are documented here. Format follows [Keep
 
 ---
 
+## v0.6.0 — 2026-09-05
+
+### Added
+- **Live product scoring.** `assets/js/opff.js` fetches and normalises Open Pet Food Facts records; `assets/js/scoring.js` derives the CFC Score from them. Both run in the browser, with no build step and no server.
+- `assets/data/additives.json` — the additive knowledge base: 20 entries across three risk tiers, plus three catch-all label terms, each with sources.
+- Real `product.html` and `search.html`, replacing the mock markup.
+- A 130-assertion test suite (`tests.html`), run headlessly by `tools/run-tests.py`.
+- `docs/DATA-COVERAGE.md` — a measured survey of what the database actually holds.
+- A "What the score cannot see" section on the methodology page.
+
+### Fixed
+- **Non-English labels were scored as clean.** The alias matcher was English-only, and only 9.5% of records carry English ingredients, so on most labels it matched nothing — and reported that silence as an absence of problems. A French product with unnamed meat by-products and added sugar scored 77 / Excellent. Aliases now cover six languages, and a label outside that set is explicitly reported as unchecked rather than clean, with confidence capped. See `docs/DATA-COVERAGE.md`.
+- The Tier 0 "named by-products" credit was awarded to *unnamed* by-products, contradicting the transparency pillar on the same words.
+- A parenthetical naming 4% beef could make an unnamed meat entry score as a named animal protein.
+
+---
+
 ## v0.5.0 — 2026-09-05
 
 ### Added

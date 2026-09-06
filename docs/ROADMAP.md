@@ -6,7 +6,14 @@
 
 The site is live on GitHub Pages. The Cat Care Guide (M4) and the theme system (M5) are done, and [ADR-001](./ADR-001-static-first.md) settled the architecture question that was blocking everything after them: the site is static HTML by decision, not by default, and the unused Next.js application has been removed.
 
-The three core pages still run on mock data. That is the next thing to change: the data layer (M6) and the scoring engine (M7) are what turn this from a shell into a product.
+The mock data is gone. `search.html` and `product.html` now run on live Open Pet Food Facts records scored by a real engine (M6, M7), which is the point at which this stopped being a shell and became a product.
+
+Two things learned in building them shape everything after:
+
+- **The database is thinner than the PRD assumed.** About a fifth of products carry enough data to score all three pillars. Partial data is the normal path, and the engine refuses to score rather than guessing. See [DATA-COVERAGE.md](./DATA-COVERAGE.md).
+- **The database is not English.** Only 9.5% of records carry English ingredients, and an English-only matcher reported the rest as clean. Any text check added from here is a language check too.
+
+Next is the barcode scanner (M8) — the feature ADR-001 was written to make sure static hosting could still support.
 
 ---
 
@@ -21,8 +28,8 @@ The three core pages still run on mock data. That is the next thing to change: t
 | M4: Cat Care Guide (educational resource) | 2026-09-05 | Complete |
 | M5: Dark mode with persisted preference | 2026-09-05 | Complete |
 | M5.5: Architecture decision + Next.js removal | 2026-09-05 | Complete |
-| M6: Data layer — Open Pet Food Facts | 2026-10 | Planned |
-| M7: Scoring engine | 2026-10 | Planned |
+| M6: Data layer — Open Pet Food Facts | 2026-09-05 | Complete |
+| M7: Scoring engine | 2026-09-05 | Complete |
 | M8: Barcode scanner | 2026-11 | Planned |
 | M9: Service worker / PWA offline | 2026-11 | Planned |
 | M10: Not-found / submit flow | 2026-12 | Planned |
@@ -76,21 +83,20 @@ The three core pages still run on mock data. That is the next thing to change: t
 - Confirmed the barcode scanner (M8) is fully client-side and needs no server: `getUserMedia` + `BarcodeDetector` (ZXing WASM fallback) + a keyless CORS-enabled API. The only hard requirement is HTTPS, which GitHub Pages provides
 - Deleted the unused Next.js application (`app/`, `components/`, `next.config.ts`, `tailwind.config.ts`, `postcss.config.mjs`, `tsconfig.json`, `.eslintrc.json`, `package.json`) — it was never built and never deployed, and `README.md` described it as the stack, which was wrong about what users actually load
 
-### M6: Data layer — Open Pet Food Facts
-- Fetch product by barcode from the Open Pet Food Facts API
-- Text search via the Open Pet Food Facts search endpoint
-- Parse and normalize API response into the `Product` TypeScript shape
-- Graceful degradation for missing fields (partial-data indicator)
-- Replace all mock data in `product/[barcode]/page.tsx` and `SearchView.tsx`
+### M6: Data layer — Open Pet Food Facts — Complete 2026-09-05
+- Barcode lookup and text search against the v2 API, keyless and CORS-enabled, straight from the browser
+- `assets/js/opff.js` normalises a raw record into the `Product` shape in TRD §4
+- Reads both nutriment schemas and records which was used; rejects implausible figures; corrects per-kilogram energy values
+- Partial data handled as the normal case rather than an error — `normalize` never throws for missing fields
+- Mock data removed from `product.html` and `search.html`
 
-### M7: Scoring engine
-- Implement the pure TypeScript scoring module (`scoring.config.ts` for weights and thresholds)
-- Pillar A: nutrition scoring (animal protein, taurine, carb load, moisture, AAFCO adequacy)
-- Pillar B: additive matching with the Additive Knowledge Base JSON
-- Pillar C: transparency scoring
-- Hard gate logic: propylene glycol cap, Tier 3 additive cap
-- Golden-file unit tests covering all bands, hard gates, and the worked example from PRD §6.7
-- Replace hardcoded scores with live engine output
+### M7: Scoring engine — Complete 2026-09-05
+- `assets/js/scoring.js`: pure, deterministic, no network and no DOM
+- All three pillars, both hard gates, weights renormalised across the pillars that could be computed, `scorable: false` where too little is known
+- 130 assertions in `tests.html`, run headlessly by `tools/run-tests.py` — a browser-hosted suite, because ADR-001 rules out a build step
+- `tools/check-live.py` renders four page states against the live API
+
+**What was not in the plan and had to be:** the plan assumed English labels. Only 9.5% of records are. The matcher's silence on the other 90% was being reported as a clean bill of health, and a French product with unnamed meat by-products and added sugar scored 77/Excellent. Aliases now cover six languages, and a label outside that set is stated as unchecked rather than clean. See [DATA-COVERAGE.md](./DATA-COVERAGE.md) — the write-up covers three further defects that the English-only matcher had been hiding.
 
 ### M8: Barcode scanner
 - Implement BarcodeDetector API with ZXing (@zxing/library) fallback
