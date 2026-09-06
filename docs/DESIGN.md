@@ -302,6 +302,7 @@ Defined in `cfc.css` and available to every page, since every page loads it. The
 | **Prev / next** | `.pagination` with `.dir` and `.label` | `.placeholder` for a missing direction |
 | **Skip link** | `.skip-link` | Off-screen until focused, then 8px from the top |
 | **Visually hidden** | `.sr-only` | |
+| **Ingredient row** | `.ingredient-row`, `.ingredient-row-open`, `.ingredient-tier`, `.ingredient-detail` | A plain `<li>` where the knowledge base has nothing to say, an `<li>` wrapping a `<details>` where it does. The separator sits on the list item so the two look identical until one is opened. The disclosure chevron is a rotated CSS border on `summary::after`, and the native marker is suppressed in both its spellings |
 | **Product thumbnail** | `.thumb`, `.thumb-empty` | 56px box on every card, photo or not. `object-fit: contain` on `--bg`, never `cover`: these are contributor photographs at whatever aspect ratio their phone produced, and cropping to fill a square is how the product name ends up outside the frame |
 
 **Buttons** are `.btn` in `cfc-app.css`, with `.btn-accent` for the filled variant and `.btn-text` for the quiet one, plus `.topbar-cta` and `.footer-cta` in `cfc.css` for the two chrome pills. The chrome pills are deliberately separate: they are part of the bar and the footer, not of a page.
@@ -402,7 +403,6 @@ Recorded so that nobody reads a specification as a description. Each of these ap
 | Item | Status |
 |---|---|
 | Score reveal count-up animation | Not built. Would conflict with "nothing animates in front of the score" and is unlikely ever to be built |
-| Ingredient row expansion | **The chevron is rendered and does nothing.** Either build the panel or remove the affordance; a control that does not respond is worse than no control |
 | Route transition fades | Not built. Full page navigations, so there is nothing to transition |
 | Skeleton loaders | Not built. Pages show a "Loading" line, which `tools/check-live.py` waits on |
 | Tier glyphs distinguishing additive tiers without colour | Not built. Tiers currently carry text labels, which satisfies the accessibility requirement, so this is a refinement rather than a gap |

@@ -5,7 +5,7 @@
  * paths that docs/PRD.md section 12 showed are the normal case, and the worked
  * example published in PRD.md §6.7. */
 import {
-  scoreProduct, toDryMatter, carbsByDifference, bandFor, matchesTerm, WEIGHTS,
+  scoreProduct, toDryMatter, carbsByDifference, bandFor, matchesTerm, explainIngredient, WEIGHTS,
 } from './scoring.js';
 import { suite } from './test-runner.js';
 
@@ -340,4 +340,86 @@ suite('an unnamed leading protein is reported as such', (t) => {
     'the nutrition pillar names the actual problem with the first ingredient');
   t.ok(!r.pillars.nutrition.reasons.some((x) => /starch source/.test(x)),
     'rather than reporting whatever happened to appear second');
+});
+
+/* ── Per-ingredient explanations (M15c) ── */
+
+suite('an ingredient in the knowledge base explains itself', (t) => {
+  const info = explainIngredient('Propylene glycol', KB);
+  t.ok(info, 'a known additive returns an explanation');
+  t.equal(info.kind, 'additive', 'and is reported as an additive');
+  t.equal(info.id, 'propylene-glycol', 'with the knowledge base id');
+  t.equal(info.tier, 3, 'and the tier the engine penalises on');
+  t.equal(info.matchedOn, 'propylene glycol',
+    'and the alias that fired, so the reader can check the match');
+});
+
+suite('an ordinary ingredient explains nothing', (t) => {
+  t.equal(explainIngredient('Chicken', KB), null,
+    'there is nothing true to add to the word chicken, so no row opens');
+  t.equal(explainIngredient('', KB), null, 'and an empty entry is not a match');
+  t.equal(explainIngredient('Chicken', null), null, 'nor is a missing knowledge base a crash');
+});
+
+suite('explanations use the same matcher as the score', (t) => {
+  t.equal(explainIngredient('bhakti powder', KB), null,
+    'so "bha" does not fire inside "bhakti", exactly as the additive pillar does not');
+  t.ok(explainIngredient('Mixed tocopherols', KB),
+    'and a plural label still matches an alias written in the singular');
+});
+
+suite('the more serious of two matches is the one shown', (t) => {
+  const kb = {
+    additives: [
+      { id: 'mild', name: 'Mild', tier: 2, aliases: ['glycol'], sources: [] },
+      { id: 'severe', name: 'Severe', tier: 3, aliases: ['propylene glycol'], sources: [] },
+    ],
+    vagueTerms: [],
+  };
+  const info = explainIngredient('Propylene glycol', kb);
+  t.equal(info.id, 'severe',
+    'a row that matches two entries reports the higher tier, not whichever was listed first');
+});
+
+suite('a vague term explains itself when no additive matches', (t) => {
+  const info = explainIngredient('Meat and animal derivatives', KB);
+  t.ok(info, 'an unnamed source is explained');
+  t.equal(info.kind, 'vague', 'and is distinguished from an additive');
+  t.equal(info.id, 'unnamed-meat', 'and names which group it fell into');
+  /* The shared fixture leaves `why` empty on purpose, so that editing the
+     real wording cannot break these tests. The mapping from `why` to the
+     field the page renders still needs proving, so it gets its own kb. */
+  const withText = { additives: [], vagueTerms: [
+    { id: 'unnamed-meat', name: 'Unnamed protein source',
+      aliases: ['meat by-product'], why: 'The species is not stated.' }] };
+  t.equal(explainIngredient('Meat by-products', withText).healthImpact,
+    'The species is not stated.',
+    'and carries the reason the transparency pillar penalised it');
+});
+
+suite('an explanation never contradicts the score', (t) => {
+  /* The engine gives Tier 0 credit only to an entry that is not itself an
+     unnamed source. "Viandes et sous-produits animaux" matches the beneficial
+     "named by-products" entry on the bare stem while the transparency pillar
+     penalises the very same words, and the page must not call that row
+     Beneficial. */
+  const kb = {
+    additives: [{ id: 'named-by-products', name: 'Named by-products', tier: 0,
+      aliases: ['sous-produits', 'by-product'], sources: [] }],
+    vagueTerms: [{ id: 'unnamed-meat', name: 'Unnamed protein source',
+      aliases: ['viandes et sous-produits'], why: 'The species is not stated.' }],
+  };
+  const info = explainIngredient('Viandes et sous-produits animaux (dont boeuf 4%)', kb);
+  t.equal(info.kind, 'vague',
+    'an entry that is both a named by-product and an unnamed source is reported as unnamed');
+
+  const named = explainIngredient('Chicken by-product meal', kb);
+  t.equal(named.kind, 'additive', 'while a genuinely named by-product keeps its credit');
+
+  const withAdditive = {
+    additives: [{ id: 'bha', name: 'BHA', tier: 3, aliases: ['bha'], sources: [] }],
+    vagueTerms: kb.vagueTerms,
+  };
+  t.equal(explainIngredient('Viandes et sous-produits animaux, bha', withAdditive).kind, 'additive',
+    'and a real additive still wins: being inside a vague entry does not make BHA less of one');
 });

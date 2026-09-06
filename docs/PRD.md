@@ -183,7 +183,6 @@ These are decisions, not gaps. Each is a thing the project has chosen not to do.
 | Curated top-100 SKU catalogue | M12 | The only route to meaningful coverage of common United States products |
 | Analytics | M12 | Nothing is measured today. See section 14 |
 | Lighthouse CI and Core Web Vitals gates | M12 | Unblocked: M14 removed the Tailwind CDN, so the numbers are now stable enough to gate on |
-| Ingredient row expansion | Backlog | The chevron is rendered but inert |
 | "Better alternatives" on a poor product | Backlog | Specified in the original PRD, never built. Needs a same-format query the API supports poorly |
 | Pre-generated per-barcode pages | Backlog | For search indexing. The generator pattern already exists |
 | EU and FEDIAF profiles | Backlog | Separate compliance effort |
@@ -511,6 +510,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M15a: Search logic and brand browse | 2026-09-06 | Complete |
 | M14: One interface across the whole site | 2026-09-06 | Complete |
 | M15b: Product photos on cards | 2026-09-06 | Complete |
+| M15c: Ingredient explanations | 2026-09-06 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -591,6 +591,34 @@ taking the network-first path into the API cache: revalidated on every view
 when the bytes never change, and counted against the wrong cache. It was
 invisible while one photo existed on one page. Putting a photo on every card is
 what made the ordering matter, and the fix is one swapped block.
+
+**M15c: ingredient rows that explain themselves.** An ingredient the additive
+knowledge base recognises opens to show what it is for, what it does to a cat,
+what the regulator says, and the sources. Everything else stays a plain row.
+
+*What the documentation got wrong:* both this document and DESIGN.md had
+recorded, for three milestones, that "the chevron is rendered but inert" and
+that a control which does not respond is worse than no control. The chevron was
+never rendered. The string does not appear in any commit's code. The entry was
+not stale, it was wrong in a direction that made the project look worse than it
+was, and it survived because nobody checked a claim that sounded like a
+confession. Section 26.1 already says never to assume a documented behaviour
+exists; it is worth saying that the same applies to documented defects.
+
+*The scope decision:* this is not a general ingredient dictionary. It answers
+for the 20 additives and 3 vague-term groups the scoring engine already reasons
+about, and returns nothing for everything else. There is no true thing this
+project can add to the word "chicken", and padding every row with filler would
+bury the rows that matter.
+
+*What it had to get right:* the explanation and the score cannot disagree. The
+engine withholds Tier 0 credit from an entry that is itself an unnamed source,
+because one ingredient cannot be both a named organ meat and an unnamed one.
+"Viandes et sous-produits animaux" matches the beneficial named-by-products
+entry on a bare stem while the transparency pillar penalises the very same
+words. The first build of this feature labelled that row "Beneficial" while the
+score was penalising it, which is the exact failure the page exists to avoid. It
+now reports the same call the engine made, and a test pins it.
 
 ### Next
 
@@ -1081,7 +1109,7 @@ The shell precache is currently 29 entries. `tools/check-live.py` asserts it and
 | Search relevance | Delegated wholly to the API, which matches fields beyond name and brand | A curated catalogue, or a local index over it |
 | Scorable-only filter | Filters the current page rather than the query, because the API cannot filter on scorability | Only a local catalogue can fix this properly |
 | Product image quality | Contributor photographs at whatever angle and lighting they had, shown as they are | Nothing to do inside this architecture. The catalogue is the source, and a photo of the real tin is worth more than a tidy one |
-| Ingredient expansion | Chevron rendered but inert | Build the explanation panel, or remove the affordance |
+| Ingredient explanations | Only entries in the additive knowledge base explain themselves, which is 20 additives and 3 vague-term groups | A general ingredient dictionary, if one can be sourced without inventing claims. Nothing true can be added to "chicken" today |
 | "Better alternatives" | Specified in the original PRD, never built | Needs a same-format query the API supports poorly |
 | Types | Nothing enforces the shapes in 16.5 | Optional `tsc --checkJs --noEmit` job with JSDoc types |
 | Per-page `<style>` blocks | The same utility definitions duplicated in eight files | Removed by M14 |
@@ -1442,7 +1470,7 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | "User can submit barcode plus a photo of the label to add it to the queue"; "This feeds a review queue for editorial processing" | PRD §4.4, PRFAQ internal 9 and external 8 | **There is no queue and never will be.** M10 decided contributions go upstream | Trusted the code. The decision is deliberate and better-argued than the plan it replaced. Rewritten in sections 4, 13 and 28 |
 | "Compare two or three products" | PRD §4.5 | Two only. A third column was dropped in M11 | Trusted the code; the reasoning is recorded in section 13 |
 | "Better alternatives within the same format when the score is Poor or Bad" | PRD §7 | Never built | Kept as intent. Moved to the Future table in section 6 and the debt table in 16.11 |
-| "Ingredient list, each item expandable for an explanation" | PRD §7, DESIGN §10 | The chevron renders and does nothing | Kept as intent, recorded as debt |
+| "Ingredient list, each item expandable for an explanation" | PRD §7, DESIGN §10 | **The chevron was never rendered.** Both documents said it was built and inert; the string never appears in any commit's code. The claim was wrong twice over | Built in M15c, for the rows the knowledge base can actually speak to. The documentation error is left here because a document that said "inert" for three milestones is the more useful record |
 | "Submit queue processing, 50 or fewer waiting, internal queue dashboard" | METRICS | No queue exists, so the metric is unmeasurable | Deleted. It measured a feature that was cancelled |
 | Score reveal count-up, ingredient expand transition, route transition fades, skeleton loaders, tier glyphs, Open Graph image | DESIGN §8, §9, §10, §12, all marked "planned" | None built | Kept, still marked as not built, in DESIGN.md |
 | Scan button "disabled with tooltip in MVP", `role="tooltip"` on it | DESIGN §7, §10 | The scanner shipped in M8. There is no disabled button and no tooltip | Trusted the code. Removed |

@@ -11,7 +11,7 @@
    so plainly, rather than a zero or a blank that reads as a finding.
    ========================================================================== */
 import { fetchProduct } from './opff.js';
-import { scoreProduct, loadKnowledgeBase, toDryMatter } from './scoring.js';
+import { scoreProduct, loadKnowledgeBase, toDryMatter, explainIngredient } from './scoring.js';
 import { recordView } from './history.js';
 
 const BAND = {
@@ -152,17 +152,84 @@ function renderPillars(result) {
      <p class="text-micro text-ink-soft mt-2">Each pillar is scored 0&ndash;100, then weighted. Where a pillar cannot be assessed its weight is redistributed across the others rather than counted as zero. <a href="./methodology.html">Full methodology</a>.</p>`);
 }
 
-function renderIngredients(product) {
+/* ── Ingredient explanations ──
+
+   An ingredient row opens only where the additive knowledge base has something
+   to say about it. Everything else stays a plain row: there is nothing true
+   this project can add to the word "chicken", and padding every row with
+   filler would bury the rows that matter.
+
+   Native <details>, not a hand-rolled disclosure. It is keyboard-accessible,
+   announced correctly by screen readers, works with JavaScript already run and
+   nothing further bound, and survives being redrawn by innerHTML. An earlier
+   version of the documentation described a chevron with a click handler here;
+   the chevron was never built, which is recorded in PRD section 24. */
+
+function tierChip(info) {
+  const tier = TIER[info.tier];
+  if (tier) {
+    return `<span class="ingredient-tier" style="background:${tier.bg};color:${tier.ink}">${esc(tier.label)}</span>`;
+  }
+  if (info.kind === 'vague') {
+    return '<span class="ingredient-tier" style="border:1px solid var(--hairline);color:var(--ink-soft)">Unnamed source</span>';
+  }
+  // Tier 0, the beneficial entries. Named, because a row that opens with no
+  // label on it looks like a warning the reader has not read yet.
+  return '<span class="ingredient-tier" style="border:1px solid var(--hairline);color:var(--good)">Beneficial</span>';
+}
+
+function explanation(info) {
+  const parts = [];
+  if (info.function) {
+    parts.push(`<p class="ingredient-detail-row"><span class="ingredient-detail-key">Function</span>${esc(info.function)}</p>`);
+  }
+  if (info.healthImpact) {
+    parts.push(`<p class="ingredient-detail-row"><span class="ingredient-detail-key">Health impact</span>${esc(info.healthImpact)}</p>`);
+  }
+  if (info.regulatory) {
+    parts.push(`<p class="ingredient-detail-row"><span class="ingredient-detail-key">Regulatory</span>${esc(info.regulatory)}</p>`);
+  }
+  const sources = (info.sources || [])
+    .map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a>`)
+    .join(', ');
+  if (sources) {
+    parts.push(`<p class="ingredient-detail-row"><span class="ingredient-detail-key">Sources</span>${sources}</p>`);
+  }
+  /* The alias that fired is shown because the match is a judgement the reader
+     is entitled to check: an entry can be flagged on a phrase buried inside a
+     longer one, and "matched on: bha" is the difference between a finding and
+     an assertion. */
+  parts.push(`<p class="ingredient-detail-row"><span class="ingredient-detail-key">Matched on</span>&ldquo;${esc(info.matchedOn)}&rdquo;, against the reference in <a href="./learn-additives.html">the additive guide</a></p>`);
+  return `<div class="ingredient-detail">${parts.join('')}</div>`;
+}
+
+function renderIngredients(product, kb) {
   if (!product.ingredients.length) {
     return section('ingredients-heading', 'Ingredients',
       unknownCard('No ingredient list has been recorded for this product. Open Pet Food Facts is community-maintained; anyone can add one.'));
   }
+  let explained = 0;
   const rows = product.ingredients
-    .map((ing, i) => `<li class="ingredient-row"><span class="ingredient-num">${i + 1}.</span><span class="ingredient-name">${esc(ing)}</span></li>`)
+    .map((ing, i) => {
+      const num = `<span class="ingredient-num">${i + 1}.</span>`;
+      const name = `<span class="ingredient-name">${esc(ing)}</span>`;
+      const info = explainIngredient(ing, kb);
+      if (!info) return `<li class="ingredient-row">${num}${name}</li>`;
+      explained += 1;
+      return `<li><details class="ingredient-row ingredient-row-open">
+        <summary>${num}${name}${tierChip(info)}</summary>
+        ${explanation(info)}
+      </details></li>`;
+    })
     .join('');
+  /* Only claim the rows expand when some of them do. */
+  const hint = explained
+    ? `<p class="text-micro text-ink-soft mt-2">Listed by weight before processing, as printed on the label. `
+      + `${explained === 1 ? 'One entry is' : `${explained} entries are`} in our additive reference and `
+      + `${explained === 1 ? 'opens' : 'open'} for an explanation.</p>`
+    : '<p class="text-micro text-ink-soft mt-2">Listed by weight before processing, as printed on the label.</p>';
   return section('ingredients-heading', 'Ingredients',
-    `<ol class="ingredient-list">${rows}</ol>
-     <p class="text-micro text-ink-soft mt-2">Listed by weight before processing, as printed on the label.</p>`);
+    `<ol class="ingredient-list">${rows}</ol>${hint}`);
 }
 
 function renderAdditives(result) {
@@ -339,7 +406,7 @@ async function main() {
     renderNotice(result.warnings),
     renderVerdict(result),
     renderPillars(result),
-    renderIngredients(product),
+    renderIngredients(product, kb),
     renderAdditives(result),
     renderNutrition(product),
     renderAdequacy(product),

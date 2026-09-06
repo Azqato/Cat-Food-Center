@@ -262,20 +262,77 @@
 /* ══════════════════════════════════════════════════════════════════════════
    Product detail
    ══════════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════
+   Ingredient list
+
+   Two kinds of row. A plain <li> for an ingredient the knowledge base has
+   nothing to say about, and an <li> wrapping a <details> for one it does.
+   Both have to look identical until the second is opened, so the separator
+   lives on the list item and the padding lives on the row.
+
+   Native <details> rather than a hand-rolled disclosure: keyboard support,
+   correct screen-reader announcement and open state all come for free, and
+   none of it has to be rebound when the page redraws itself with innerHTML.
+   ══════════════════════════════════════════════════════════════════════════ */
 .ingredient-list {
   border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden;
   list-style: none; padding: 0; margin: 0;
 }
+.ingredient-list > li { border-bottom: 1px solid var(--hairline); background: var(--surface); }
+.ingredient-list > li:last-child { border-bottom: none; }
+
 .ingredient-row {
   display: flex; align-items: center; gap: 12px; padding: 10px 16px;
-  background: var(--surface); border-bottom: 1px solid var(--hairline);
+  background: var(--surface);
 }
-.ingredient-row:last-child { border-bottom: none; }
 .ingredient-num {
   font-variant-numeric: tabular-nums; color: var(--ink-soft); width: 1.5rem;
   text-align: right; flex-shrink: 0; font-size: .875rem;
 }
 .ingredient-name { font-size: .875rem; color: var(--ink); flex: 1; }
+
+/* The expandable variant. `display: block` because a <details> that is a flex
+   container puts its own content in the flex flow beside the summary. */
+.ingredient-row-open { display: block; padding: 0; }
+.ingredient-row-open > summary {
+  display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+  cursor: pointer; list-style: none;
+}
+/* Both spellings of "do not draw the default triangle": we draw our own, on
+   the other side of the row, where a disclosure control is expected. */
+.ingredient-row-open > summary::-webkit-details-marker { display: none; }
+.ingredient-row-open > summary::marker { content: ''; }
+.ingredient-row-open > summary:hover { background: var(--bg); }
+.ingredient-row-open > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.ingredient-row-open > summary::after {
+  content: ''; width: 7px; height: 7px; flex-shrink: 0; margin-left: 2px;
+  border-right: 2px solid var(--ink-soft); border-bottom: 2px solid var(--ink-soft);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 150ms ease;
+}
+.ingredient-row-open[open] > summary::after { transform: rotate(-135deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ingredient-row-open > summary::after { transition: none; }
+}
+
+.ingredient-tier {
+  font-size: .6875rem; padding: 2px 8px; border-radius: 999px; flex-shrink: 0;
+  white-space: nowrap; font-weight: 500;
+}
+
+.ingredient-detail { padding: 2px 16px 14px 44px; background: var(--surface); }
+.ingredient-detail-row {
+  font-size: .8125rem; line-height: 1.55; color: var(--ink); margin: 0 0 8px;
+}
+.ingredient-detail-row:last-child { margin-bottom: 0; color: var(--ink-soft); }
+.ingredient-detail-key {
+  display: block; font-size: .6875rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-soft); margin-bottom: 2px;
+}
+.ingredient-detail a { color: var(--accent); text-decoration: none; }
+.ingredient-detail a:hover { text-decoration: underline; }
 
 .nutrition-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .nutrition-card  { background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; padding: 16px; }

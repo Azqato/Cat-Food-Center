@@ -498,6 +498,92 @@ export function scoreProduct(product, kb) {
   };
 }
 
+/* ── Per-ingredient explanation ── */
+
+/**
+ * What the knowledge base has to say about one ingredient entry, or null.
+ *
+ * This is deliberately not a general ingredient dictionary. There is nothing
+ * true this project can say about "chicken" that the word does not already
+ * say, and a panel that padded every row with filler would make the rows that
+ * matter harder to find rather than easier. It answers for exactly the entries
+ * the scoring engine already reasons about: the 20 additives in
+ * `additives.json` and the vague-term groups. Everything else returns null and
+ * stays plain text.
+ *
+ * The same `matchesTerm` the engine uses, so an ingredient that the additive
+ * pillar penalised cannot fail to explain itself, and one it ignored cannot
+ * claim to have been counted.
+ *
+ * @param {string} entry  One ingredient, as printed on the label.
+ * @param {object} kb     The additive knowledge base.
+ * @returns {{kind: 'additive'|'vague', id: string, name: string, tier?: number,
+ *            function?: string, healthImpact?: string, regulatory?: string,
+ *            sources?: Array<{label: string, url: string}>,
+ *            matchedOn: string} | null}
+ */
+export function explainIngredient(entry, kb) {
+  if (!entry || !kb) return null;
+  const text = String(entry).toLowerCase();
+
+  /* Additives first, and the highest tier first within that. One entry can
+     match more than one alias, and where it does the visitor should be shown
+     the more serious of the two: "propylene glycol" appearing inside a longer
+     phrase matters more than a humectant note. */
+  const additives = (kb.additives || [])
+    .map((a) => {
+      const matchedOn = (a.aliases || []).find((alias) => matchesTerm(text, alias));
+      return matchedOn ? { ...a, matchedOn } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => (b.tier || 0) - (a.tier || 0));
+
+  const vague = (kb.vagueTerms || [])
+    .map((term) => {
+      const matchedOn = (term.aliases || []).find((alias) => matchesTerm(text, alias));
+      return matchedOn ? { term, matchedOn } : null;
+    })
+    .find(Boolean);
+
+  /* The engine withholds Tier 0 credit from an entry that is itself an
+     unnamed source, because one ingredient cannot be both a named organ
+     meat and an unnamed one. Viandes et sous-produits animaux is the case
+     that forced it: the bare stem sous-produits matches the beneficial
+     entry while the transparency pillar penalises the same words. The
+     explanation has to make the same call, or the page would label a row
+     Beneficial that the score treated as a transparency problem. A real
+     additive still wins: being inside a vague entry does not make BHA less
+     of an additive. */
+  const best = additives[0];
+  if (best && !(best.tier === 0 && vague)) {
+    const a = best;
+    return {
+      kind: 'additive',
+      id: a.id,
+      name: a.name,
+      tier: a.tier,
+      function: a.function,
+      healthImpact: a.healthImpact,
+      regulatory: a.regulatory,
+      sources: a.sources || [],
+      matchedOn: a.matchedOn,
+    };
+  }
+
+  if (vague) {
+    return {
+      kind: 'vague',
+      id: vague.term.id,
+      name: vague.term.name,
+      healthImpact: vague.term.healthImpact || vague.term.why,
+      sources: vague.term.sources || [],
+      matchedOn: vague.matchedOn,
+    };
+  }
+
+  return null;
+}
+
 /* ── Knowledge base loading ── */
 
 let kbPromise = null;

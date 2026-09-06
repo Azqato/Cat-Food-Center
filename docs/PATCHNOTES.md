@@ -21,6 +21,47 @@ punctuation rather than content.
 
 ---
 
+## [0.15.1] - 2026-09-06
+
+**Ingredient rows that explain themselves (M15c).**
+
+Added
+* **An ingredient the additive knowledge base recognises now opens** to show
+  its function, its health impact on a cat, the regulatory position and the
+  sources, plus the alias the match fired on. Native `<details>`, so keyboard
+  support, screen-reader announcement and open state all come for free and none
+  of it has to be rebound when the page redraws itself.
+* **`explainIngredient(entry, kb)`** in `scoring.js`, using the same
+  `matchesTerm` the engine scores with. An ingredient the additive pillar
+  penalised cannot fail to explain itself, and one it ignored cannot claim to
+  have been counted.
+* A count under the list, so the page only claims rows expand where some do.
+* Eighteen assertions covering the matcher, the tier ordering, the vague-term
+  fallback and the case below. 178 passing.
+
+Fixed
+* **The explanation could contradict the score.** The engine withholds Tier 0
+  credit from an entry that is itself an unnamed source, because one ingredient
+  cannot be both a named organ meat and an unnamed one. "Viandes et
+  sous-produits animaux" matches the beneficial named-by-products entry on a
+  bare stem while the transparency pillar penalises the very same words. The
+  first build of this labelled that row "Beneficial" while the score was
+  marking it down. It now makes the same call the engine made.
+
+Notes
+* **This is not a general ingredient dictionary and is not meant to become one
+  by accident.** It answers for the 20 additives and 3 vague-term groups in
+  `additives.json` and returns nothing for anything else. There is no true
+  thing this project can add to the word "chicken", and padding every row with
+  filler would bury the rows that matter.
+* **A documentation correction.** PRD section 24.1 and DESIGN section 13 had
+  both recorded, since M2, that "the chevron is rendered and does nothing". No
+  chevron was ever rendered: the string appears in no commit's code. The entry
+  was not stale, it was wrong, and it survived three milestones because nobody
+  checks a claim that sounds like a confession. Both documents now say so.
+
+---
+
 ## [0.15.0] - 2026-09-06
 
 **A picture of the tin, everywhere a product is listed (M15b).**
