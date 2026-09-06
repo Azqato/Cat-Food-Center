@@ -6,6 +6,32 @@ Format: newest first. Use semantic-ish version tags (major.minor.patch). Pre-lau
 
 ---
 
+## [0.10.0] - 2026-09-05
+
+**Offline support, and installability (M9). The app works in the aisle where the signal does not.**
+
+Added
+* `sw.js` — a hand-written service worker. No build step means no Workbox, and that turned out to be the better outcome: every caching decision is one of three strategies, chosen per resource, with the reason written next to it.
+  * App shell precached (23 entries), so every page renders with no network at all.
+  * API responses **network-first** — a cached answer is a fallback, never a preference.
+  * Images cache-first; they are large and never change under a URL.
+  * Third-party CDNs left alone. They set their own cache headers, and second-guessing them from here would mean owning their invalidation too.
+* `offline.html` — for a page never opened on this device. It says what still works rather than showing the browser's own error page.
+* `manifest.webmanifest` and generated icons at 192, 512 and 512-maskable. The app installs to a home screen and opens standalone.
+* `assets/js/pwa.js` — registration (on `load`, so it never competes with rendering) and an offline banner.
+* Two more checks in `tools/check-live.py`: the worker precaches and does not grow per product viewed, and an offline product still renders **and is labelled**.
+
+Changed
+* A product page served from cache now says so, with the time it was saved. The worker stamps the response, `opff.js` carries the stamp through, and the page renders a notice.
+
+Notes
+* **A cached score must never be presented as a current one.** The scoring engine changes and the database changes, so a stale score rendered as fresh is the same failure as the English-only matcher — confidently wrong, with nothing about it looking wrong. That rule is why the stamp exists, and it is written at the top of `sw.js` so the next change to that file has to reckon with it.
+* **Navigations are deliberately not cached.** Every product is `product.html` under a different query string, so caching responses would add one byte-identical entry per product viewed and grow the shell cache without bound. The precached document is found with `ignoreSearch` instead — and without that flag an offline product page would fall through to `offline.html` despite the document being cached.
+* **A 404 is never cached.** It is how an unknown barcode is detected, and caching it would keep reporting "not found" after the product is added to the database.
+* `navigator.onLine` is trusted only in the negative direction. It reports a network interface, not reachability, so a false "you are online" shows nothing rather than a wrong reassurance.
+
+---
+
 ## [0.9.0] - 2026-09-05
 
 **The scanner (M8), and a home page that shows your own history instead of two invented products.**

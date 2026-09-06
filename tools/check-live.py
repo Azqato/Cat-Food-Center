@@ -189,6 +189,53 @@ async def main():
                                    ', '.join('%s->%s' % (k, v['decoded'][:16])
                                              for k, v in roundtrip.items())))
             await page.close()
+
+            total += 2
+            # The service worker, end to end: install it, view a product, go
+            # offline, and check the same product still renders *and says it is
+            # a saved copy*. The label is the part that matters — an old score
+            # shown as a current one is the failure this cache could introduce.
+            context = await browser.new_context()
+            page = await context.new_page()
+            await page.goto(base + '/index.html')
+            await page.wait_for_timeout(2500)
+            shell_size = await page.evaluate(
+                "caches.open('cfc-shell-v1').then(c => c.keys()).then(k => k.length)")
+
+            await page.goto(base + '/product.html?barcode=%s' % CASES[0][0])
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Loading')", timeout=25000)
+            await page.wait_for_timeout(900)
+            # The shell cache must not grow per product viewed: every product is
+            # the same document under a different query string.
+            shell_after = await page.evaluate(
+                "caches.open('cfc-shell-v1').then(c => c.keys()).then(k => k.length)")
+
+            installed = shell_size > 10 and shell_after == shell_size
+            if not installed:
+                failures.append('service worker install')
+            print('%s %-44s %s' % ('PASS' if installed else 'FAIL', 'service worker precaches the shell',
+                                   '%d entries, unchanged after a product view=%s'
+                                   % (shell_size, shell_after == shell_size)))
+
+            await context.set_offline(True)
+            await page.goto(base + '/product.html?barcode=%s' % CASES[0][0])
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Loading')", timeout=25000)
+            await page.wait_for_timeout(1000)
+            body = await page.inner_text('#product-article')
+            unknown_title = ''
+            offline_ok = 'saved copy' in body and len(body) > 200
+            if offline_ok:
+                await page.goto(base + '/never-visited.html')
+                await page.wait_for_timeout(700)
+                unknown_title = await page.title()
+                offline_ok = 'Offline' in unknown_title
+            if not offline_ok:
+                failures.append('offline behaviour')
+            print('%s %-44s %s' % ('PASS' if offline_ok else 'FAIL', 'offline: cached product, labelled',
+                                   'unvisited page falls back to "%s"' % unknown_title))
+            await context.close()
             await browser.close()
     finally:
         httpd.shutdown()

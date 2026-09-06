@@ -29,7 +29,6 @@ What is implemented:
 - GitHub Actions deploy on push to `main`
 
 What is deferred:
-- Service worker and offline caching
 - Compare page
 - Submit-missing-product flow
 
@@ -40,7 +39,7 @@ Browser (static page, no server)
   - HTML + CSS custom properties + ES modules
   - Tailwind via CDN on four pages; plain CSS on the eleven guide pages
   - Camera barcode scanner (BarcodeDetector API, ZXing fallback)
-  - Service worker (offline cache: viewed products + additive KB)     [deferred]
+  - Service worker (offline cache: shell, viewed products, images)
         |
         v
 Data layer (all fetched or computed in the browser)
@@ -87,6 +86,9 @@ Cat-Food-Center/
 ├── search.html              # Search (Tailwind CDN)
 ├── product.html             # Product detail; barcode via ?barcode= query string
 ├── scan.html                # Camera barcode scanner + manual entry
+├── offline.html             # Shown for a page never opened on this device
+├── sw.js                    # Service worker — MUST stay at the root for scope
+├── manifest.webmanifest     # PWA manifest
 ├── tests.html               # Browser-hosted test suite; run by tools/run-tests.py
 ├── methodology.html         # Public scoring explanation
 ├── learn.html               # The Cat Care Guide — GENERATED, do not hand-edit
@@ -104,6 +106,7 @@ Cat-Food-Center/
 │   │   ├── scoring.js       #   The CFC Score — pure, no network, no DOM
 │   │   ├── scanner.js       #   Camera + BarcodeDetector/ZXing + checksums
 │   │   ├── history.js       #   Recently viewed, localStorage only
+│   │   ├── pwa.js           #   SW registration + offline banner (classic script)
 │   │   ├── *-page.js        #   Per-page rendering
 │   │   └── *.test.js        #   Tests, loaded by tests.html
 │   └── data/                # Additive knowledge base JSON
@@ -260,8 +263,10 @@ too rather than hand-copying the chrome a fifth time.
 ## 9. Performance and offline
 
 - Target Largest Contentful Paint under 2.5 s on a mid-range phone over 4G.
-- Cache the additive KB and Nutrient Reference for offline use (deferred with service worker).
-- Cache viewed product pages stale-while-revalidate (deferred).
+- The app shell, including the additive knowledge base, is precached by `sw.js` — 23 entries, enough to render every page with no network.
+- API responses are cached network-first: a saved copy is a fallback, never a preference. Anything served from cache is stamped by the worker and **labelled on the page**, because a stale score presented as current is the failure mode this whole project is built against.
+- Navigations are not cached — every product is the same document under a different query string — and a 404 is never cached, because it is how an unknown barcode is detected.
+- `offline.html` covers any page never opened on the device.
 
 ## 10. Privacy and security
 
@@ -307,7 +312,6 @@ and is the most likely cause of a 404 on a working local page.
 
 | Area | Shortcut taken | Correct solution |
 |---|---|---|
-| Offline | No service worker | Add Workbox or custom SW (M9) |
 | Product coverage | Whatever Open Pet Food Facts happens to hold; about a fifth of products can be scored on all three pillars | Curate a local catalog for common SKUs under `assets/data/` (M12) — see [DATA-COVERAGE.md](./DATA-COVERAGE.md) |
 | Alias languages | Six covered; anything else is reported as unchecked rather than scored as clean | Extend the alias lists, and extend `MATCHED_LANGUAGES` with them, never ahead of them |
 | Ingredient expand | Chevron rendered but non-interactive | Add expandable explanation panel |

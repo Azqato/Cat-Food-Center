@@ -13,7 +13,9 @@ Two things learned in building them shape everything after:
 - **The database is thinner than the PRD assumed.** About a fifth of products carry enough data to score all three pillars. Partial data is the normal path, and the engine refuses to score rather than guessing. See [DATA-COVERAGE.md](./DATA-COVERAGE.md).
 - **The database is not English.** Only 9.5% of records carry English ingredients, and an English-only matcher reported the rest as clean. Any text check added from here is a language check too.
 
-The barcode scanner (M8) is done — the feature ADR-001 was written to make sure static hosting could still support, and it needed no server, as predicted. Next is offline support (M9).
+The barcode scanner (M8) is done — the feature ADR-001 was written to make sure static hosting could still support, and it needed no server, as predicted. So is offline support (M9): the app installs, and a product already looked at stays readable with no signal.
+
+Next is the not-found / submit flow (M10).
 
 ---
 
@@ -31,7 +33,7 @@ The barcode scanner (M8) is done — the feature ADR-001 was written to make sur
 | M6: Data layer — Open Pet Food Facts | 2026-09-05 | Complete |
 | M7: Scoring engine | 2026-09-05 | Complete |
 | M8: Barcode scanner | 2026-09-05 | Complete |
-| M9: Service worker / PWA offline | 2026-11 | Planned |
+| M9: Service worker / PWA offline | 2026-09-05 | Complete |
 | M10: Not-found / submit flow | 2026-12 | Planned |
 | M11: Compare page | 2026-12 | Planned |
 | M12: Public beta | 2027-01 | Planned |
@@ -107,11 +109,16 @@ The barcode scanner (M8) is done — the feature ADR-001 was written to make sur
 
 **Two things worth recording.** UPC-E has its own checksum rule — it must be expanded to UPC-A before it can be checked — and validating it as if it were EAN-8 would have made the scanner appear to simply never see small US packages, with no error anywhere. And the secure-context requirement means `http://<LAN-IP>` has no camera at all, so testing from a phone on the local network fails in a way that looks like broken code; the page names that case explicitly rather than showing a dead viewfinder.
 
-### M9: Service worker / PWA offline
-- Web app manifest
-- Service worker with stale-while-revalidate for product pages
-- Cache-first strategy for the Additive KB and Nutrient Reference JSON
-- Offline indicator when serving from cache
+### M9: Service worker / PWA offline — Complete 2026-09-05
+- `manifest.webmanifest` and generated icons; the app installs to a home screen
+- `sw.js`, written by hand — there is no build step, and a cache nobody can read is worse than no cache. Three strategies, each chosen per resource with the reason stated in the file
+- Precached shell (23 entries) so every page renders with no network; `offline.html` for anything never visited
+- API responses network-first, so a cached answer is only ever a fallback, never a preference
+- Offline banner via `assets/js/pwa.js`
+
+**The rule that shaped it: a cached score must never be presented as a current one.** The engine changes and the database changes, so an old score rendered as fresh is the same class of failure as reporting an unreadable label as clean — confidently wrong, with nothing about it looking wrong. The worker stamps any response it serves from cache, `opff.js` carries the stamp through, and the product page says it is showing a saved copy and when it was saved.
+
+Two details worth keeping: navigations are deliberately **not** cached, because every product is the same document under a different query string and caching the response would add one identical entry per product viewed — the precached document is found with `ignoreSearch` instead. And a 404 from the API is never cached, because it is how an unknown barcode is detected, and caching it would keep reporting "not found" after the product is added to the database.
 
 ### M10: Not-found / submit flow
 - 404 state when a barcode is not in the Open Pet Food Facts catalog

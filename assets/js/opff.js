@@ -265,7 +265,14 @@ async function getJSON(url, signal) {
   const response = await fetch(url, { signal, headers: { Accept: 'application/json' } });
   if (response.status === 404) return { status: 0 };
   if (!response.ok) throw new Error('Open Pet Food Facts returned ' + response.status);
-  return response.json();
+  const body = await response.json();
+  // The service worker stamps a response it served from its cache because the
+  // network was unreachable (see sw.js). Carrying that through to the page is
+  // the whole point of the stamp: a score derived from a saved copy has to say
+  // so, rather than looking exactly like a fresh one.
+  const cachedAt = response.headers.get('x-cfc-cached');
+  if (cachedAt) body._servedFromCache = cachedAt;
+  return body;
 }
 
 /**
@@ -287,7 +294,7 @@ export async function fetchProduct(barcode, { signal } = {}) {
   try {
     const data = await getJSON(API + '/product/' + code + '.json?fields=' + FIELDS, signal);
     result = data.status === 1 && data.product
-      ? { found: true, product: normalize(data.product) }
+      ? { found: true, product: normalize(data.product), servedFromCache: data._servedFromCache }
       : { found: false };
   } catch (err) {
     if (err.name === 'AbortError') throw err;

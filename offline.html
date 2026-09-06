@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cat Food Center — Trustworthy reviews for your purrfect companion!</title>
+  <title>Offline — Cat Food Center</title>
   <link rel="icon" href="./favicon.svg">
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#C2410C">
@@ -19,7 +19,6 @@
   <style>
     body { background: var(--bg); font-family: 'Public Sans', system-ui, sans-serif; }
     .font-display { font-family: 'Fraunces', Georgia, serif; }
-    .text-display { font-size: 3rem;    line-height: 1.1; }
     .text-h1      { font-size: 1.75rem; line-height: 1.2; }
     .text-h2      { font-size: 1.25rem; line-height: 1.3; }
     .text-small   { font-size: .875rem; line-height: 1.5; }
@@ -39,6 +38,20 @@
     .nav-link { font-size: .875rem; color: var(--ink-soft); text-decoration: none; padding: 4px 8px; border-radius: 6px; transition: color 150ms; white-space: nowrap; }
     .nav-link:hover:not([aria-current]) { color: var(--ink); }
     .nav-link[aria-current="page"] { color: var(--accent); font-weight: 600; }
+    /* Viewfinder. The video fills a fixed-aspect box and is cropped rather
+       than letterboxed, because a letterboxed preview makes people hold the
+       phone at the wrong distance. */
+    .viewfinder { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #000;
+                  border-radius: 12px; overflow: hidden; }
+    .viewfinder video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* A window over the middle of the frame. It is guidance, not a crop — the
+       decoder reads the whole frame — so it is drawn with a scrim rather than
+       anything that could be mistaken for a hard boundary. */
+    .reticle { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+               pointer-events: none; }
+    .reticle-box { width: 78%; height: 38%; border: 2px solid rgba(255,255,255,.9);
+                   border-radius: 8px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.35); }
+    .scan-status { min-height: 1.5rem; }
   </style>
 </head>
 <body class="bg-bg text-ink min-h-screen flex flex-col">
@@ -50,8 +63,8 @@
         Cat Food Center
       </a>
       <nav class="flex items-center gap-1 min-w-0" aria-label="Main navigation" style="overflow-x:auto;scrollbar-width:none">
-        <a href="./index.html" class="nav-link" aria-current="page">Home</a>
-        <a href="./scan.html" class="nav-link">Scan</a>
+        <a href="./index.html" class="nav-link">Home</a>
+        <a href="./scan.html" class="nav-link" aria-current="page">Scan</a>
         <a href="./search.html" class="nav-link">Search</a>
         <a href="./learn.html" class="nav-link">Learn</a>
         <a href="./methodology.html" class="nav-link">Methodology</a>
@@ -66,64 +79,30 @@
 
   <!-- ── Main ── -->
   <main class="flex-1 w-full max-w-content mx-auto px-4 py-8">
-    <div class="flex flex-col items-center gap-12 pt-8">
+    <div class="flex flex-col gap-6" style="max-width:34rem;margin:0 auto;width:100%">
 
-      <!-- Wordmark + tagline -->
-      <div class="text-center">
-        <h1 class="font-display text-h1 text-ink">Cat Food Center</h1>
-        <p class="text-ink-soft text-small mt-2">Trustworthy reviews for your purrfect companion!</p>
-      </div>
-
-      <!-- Scan button -->
-      <div class="flex flex-col items-center gap-3">
-        <a href="./scan.html"
-          class="btn-link w-32 h-32 rounded-pill bg-accent text-on-accent font-display text-h2 flex items-center justify-center shadow-md select-none">
-          Scan
-        </a>
-        <p class="text-ink-soft text-small">Point at a barcode</p>
-      </div>
-
-      <!-- Search form -->
-      <form action="./search.html" method="get" class="w-full flex gap-2" style="max-width:24rem" role="search">
-        <input type="search" name="q" placeholder="Brand or product name…"
-          aria-label="Search cat food products"
-          class="flex-1 min-w-0 border border-hairline rounded-card px-4 py-3 text-small text-ink bg-surface" />
-        <button type="submit"
-          class="btn-link rounded-card bg-accent text-on-accent font-medium text-small px-5 py-3 shrink-0 border-0 cursor-pointer">
-          Search
-        </button>
-      </form>
-
-      <!-- Cat Care Guide -->
-      <section class="w-full" aria-label="The Cat Care Guide">
-        <a href="./learn.html"
-          class="card-link flex-col gap-2 bg-surface border border-hairline rounded-card p-5">
-          <span class="text-micro text-ink-soft" style="text-transform:uppercase;letter-spacing:.05em">Free guide</span>
-          <span class="font-display text-h2 text-ink">The Cat Care Guide</span>
-          <span class="text-small text-ink-soft">
-            Everything you need to feed and raise a cat well — the exact daily nutrient requirements,
-            additives to avoid, hydration, food types, life stages, and diet in disease.
-          </span>
-          <span class="text-small text-accent" style="margin-top:2px">Start reading &rarr;</span>
-        </a>
-      </section>
-
-      <!-- Recently viewed — filled from this device's storage by assets/js/home-page.js,
-           and hidden entirely until there is something to show. -->
-      <section id="recent-section" class="w-full" aria-label="Recently viewed products" hidden>
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-display text-h2 text-ink">Recently viewed</h2>
-          <button id="recent-clear" type="button"
-            class="text-micro text-ink-soft"
-            style="background:none;border:0;cursor:pointer;text-decoration:underline">
-            Clear
-          </button>
-        </div>
-        <ul id="recent-list" class="flex flex-col gap-3" style="list-style:none;padding:0"></ul>
-        <p class="text-ink-soft text-micro mt-3">
-          Kept on this device only. Scores are recalculated when you open a product.
+      <div>
+        <h1 class="font-display text-h1 text-ink">You are offline</h1>
+        <p class="text-ink-soft text-small mt-2">
+          This page has not been opened on this device before, so there is no copy of it saved here.
+          Scoring a product needs the ingredient list and the analysis panel, and those come from
+          the database over the network.
         </p>
+      </div>
+
+      <section class="bg-surface border border-hairline rounded-card p-5">
+        <h2 class="font-display text-h2 text-ink mb-3">What still works</h2>
+        <ul class="text-small text-ink-soft" style="padding-left:1.1rem;line-height:1.7">
+          <li>Products you have already viewed, from the <a href="./index.html" class="text-accent">home page</a></li>
+          <li>The <a href="./methodology.html" class="text-accent">methodology</a> &mdash; how a score is worked out</li>
+          <li>The <a href="./scan.html" class="text-accent">scanner</a>, which reads the barcode on your device.
+              The lookup afterwards will need a connection.</li>
+        </ul>
       </section>
+
+      <p class="text-ink-soft text-micro">
+        This page will load normally as soon as you are back online.
+      </p>
 
     </div>
   </main>
@@ -136,7 +115,7 @@
     </p>
   </footer>
 
-  <script type="module" src="./assets/js/home-page.js"></script>
+  
 
   <script src="./assets/js/pwa.js"></script>
 

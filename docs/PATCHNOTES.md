@@ -4,6 +4,17 @@ All notable changes to Cat Food Center are documented here. Format follows [Keep
 
 ---
 
+## v0.8.0 — 2026-09-05
+
+### Added
+- **Works offline.** A product you have already opened stays readable with no connection, and the app installs to a home screen. Pages you have never opened show a page explaining what still works, rather than the browser's error screen.
+- An offline banner, and a notice on any product page that is being shown from a saved copy — including when it was saved.
+
+### Notes
+- A cached score is always labelled as one. The scoring engine and the database both change, so an old score shown as current would be wrong in exactly the way this project exists to avoid.
+
+---
+
 ## v0.7.0 — 2026-09-05
 
 ### Added

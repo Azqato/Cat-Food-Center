@@ -140,7 +140,9 @@ Two things about the data are worth knowing before reading the code:
 - **About a fifth of products carry enough data to score all three pillars.** Partial data is the normal path, and the engine returns no score rather than a guess when too little is known.
 - **Only about a tenth of records carry English ingredients.** Every text check is therefore a language check; where the label is in a language the aliases do not cover, the engine says so rather than reporting silence as a clean result.
 
-Both are measured, with the method, in [`docs/DATA-COVERAGE.md`](docs/DATA-COVERAGE.md). Next up is offline support. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+Both are measured, with the method, in [`docs/DATA-COVERAGE.md`](docs/DATA-COVERAGE.md).
+
+The site is also installable and works offline: the shell is precached, and a product already viewed stays readable with no signal — labelled as a saved copy, because a stale score shown as a current one would be wrong in exactly the way this project exists to avoid. Next up is the not-found / submit flow. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Documentation
 

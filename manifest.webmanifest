@@ -1,0 +1,20 @@
+{
+  "name": "Cat Food Center",
+  "short_name": "Cat Food",
+  "description": "Scan or search a cat food and see how it scores, with the reasoning shown.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F2",
+  "theme_color": "#C2410C",
+  "icons": [
+    { "src": "./assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Scan a barcode", "url": "./scan.html" },
+    { "name": "Search", "url": "./search.html" }
+  ]
+}

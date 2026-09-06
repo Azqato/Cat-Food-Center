@@ -300,7 +300,7 @@ async function main() {
     return;
   }
 
-  const [{ found, product, error }, kb] = await Promise.all([
+  const [{ found, product, error, servedFromCache }, kb] = await Promise.all([
     fetchProduct(barcode),
     loadKnowledgeBase(),
   ]);
@@ -324,8 +324,17 @@ async function main() {
     bandLabel: result.scorable ? result.bandLabel : undefined,
   });
 
+  // A saved copy is labelled as one. The scoring engine and the database both
+  // move, so a score computed from cached data is not the same claim as one
+  // computed from a live fetch, and must not look identical to it.
+  const cacheNotice = servedFromCache
+    ? [`You are offline, so this is a saved copy${servedFromCache !== 'yes' ? ` from ${new Date(servedFromCache).toLocaleString()}` : ''}. `
+       + 'The score was worked out from that saved data and may not reflect the current record.']
+    : [];
+
   article.innerHTML = [
     renderHeader(product, result),
+    renderNotice(cacheNotice, 'info'),
     renderNotice(result.warnings),
     renderVerdict(result),
     renderPillars(result),
