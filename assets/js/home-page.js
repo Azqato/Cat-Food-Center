@@ -6,6 +6,7 @@
    than standing there empty: an empty list on a home page reads as something
    broken.
    ========================================================================== */
+import { SITE } from './site.js';
 import { recentProducts, clearRecent } from './history.js';
 import { thumbHtml } from './thumb.js';
 
@@ -48,7 +49,7 @@ function card(entry) {
      is whatever was stored at the time of the visit, so an entry saved before
      M15b simply shows the placeholder. */
   return `<li>
-    <a href="./product.html?barcode=${esc(entry.barcode)}"
+    <a href="${SITE}product/?barcode=${esc(entry.barcode)}"
        class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
       ${thumbHtml(entry.thumbUrl)}
       <div class="min-w-0 flex-1">

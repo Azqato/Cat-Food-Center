@@ -356,7 +356,7 @@ export async function searchProducts(query, { page = 1, pageSize = 24, brand = '
      preference. A text query has to go to CGI because v2 does not search text
      at all (see SEARCH_CGI). A brand-only browse stays on v2, where the `|` OR
      expression that merges a brand's spellings is verified and where the
-     counts match the ones brands.html shows. */
+     counts match the ones /brands/ shows. */
   const url = q
     ? SEARCH_CGI + '?action=process&json=1'
       + '&tagtype_0=categories&tag_contains_0=contains&tag_0=cat-food'

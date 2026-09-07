@@ -162,16 +162,16 @@ These are decisions, not gaps. Each is a thing the project has chosen not to do.
 | Feature | Where | Notes |
 |---|---|---|
 | Home | `index.html` | Scan call to action, search, recently viewed, guide entry point |
-| Text search | `search.html` | Live Open Pet Food Facts query, scored on the fly, relevance ordered, paginated |
-| Scorable-only filter | `search.html` | Filters the current page and says so; the API cannot filter on scorability |
-| Brand browse | `brands.html` | Every cat food brand with more than one product, case variants merged |
-| Brand-filtered results | `search.html?brand=` | Uses the `brands_tags` filter with `\|` as OR |
-| Product detail | `product.html?barcode=` | Score, verdict, ingredients, additive flags, nutrition, AAFCO adequacy |
-| Barcode scanner | `scan.html` | `BarcodeDetector` with a ZXing fallback, plus manual entry |
-| Compare | `compare.html?a=&b=` | Two products, pillar by pillar, dry-matter basis |
-| Missing product hand-off | `submit.html?barcode=` | Typo check, re-query, then a deep link to Open Pet Food Facts |
-| Methodology | `methodology.html` | Public scoring explanation, including what the score cannot see |
-| Cat Care Guide | `learn.html` plus ten more | Eleven generated pages |
+| Text search | `/search/` | Live Open Pet Food Facts query, scored on the fly, relevance ordered, paginated |
+| Scorable-only filter | `/search/` | Filters the current page and says so; the API cannot filter on scorability |
+| Brand browse | `/brands/` | Every cat food brand with more than one product, case variants merged |
+| Brand-filtered results | `/search/?brand=` | Uses the `brands_tags` filter with `\|` as OR |
+| Product detail | `/product/?barcode=` | Score, verdict, ingredients, additive flags, nutrition, AAFCO adequacy |
+| Barcode scanner | `/scan/` | `BarcodeDetector` with a ZXing fallback, plus manual entry |
+| Compare | `/compare/?a=&b=` | Two products, pillar by pillar, dry-matter basis |
+| Missing product hand-off | `/submit/?barcode=` | Typo check, re-query, then a deep link to Open Pet Food Facts |
+| Methodology | `/methodology/` | Public scoring explanation, including what the score cannot see |
+| Cat Care Guide | `/learn/` plus ten more | Eleven generated pages |
 | Recently viewed | `index.html` | `localStorage` only, never leaves the device |
 | Offline and installable | `sw.js`, `manifest.webmanifest` | Precached shell, cached answers labelled as saved copies |
 | Light, dark and system theming | Every page | Persisted, applied before first paint |
@@ -304,7 +304,7 @@ The engine lives in [`assets/js/scoring.js`](../assets/js/scoring.js) and is pur
 | B. Additives and safety | 35% | Presence and risk tier of flagged additives |
 | C. Ingredient quality and transparency | 10% | Named sources, honest labelling |
 
-Weights are declared in `WEIGHTS` in `scoring.js` and must stay in sync with `methodology.html`.
+Weights are declared in `WEIGHTS` in `scoring.js` and must stay in sync with `/methodology/`.
 
 **Renormalisation is the important part.** Where a pillar cannot be computed, its weight is redistributed across the pillars that could be, and the result records which pillars contributed. This is why two scores are not always comparable, and why the compare page refuses to declare an overall winner.
 
@@ -322,7 +322,7 @@ Scored on a dry-matter basis wherever moisture is known, because a wet food at 1
 
 ### 11.3 Pillar B: additives and safety (35%)
 
-Each ingredient is matched against the knowledge base in [`assets/data/additives.json`](../assets/data/additives.json), version 1.1.0, which currently holds 20 additives and 3 catch-all vague terms. Tiers and evidence match `learn-additives.html` exactly; changing one without the other is a defect.
+Each ingredient is matched against the knowledge base in [`assets/data/additives.json`](../assets/data/additives.json), version 1.1.0, which currently holds 20 additives and 3 catch-all vague terms. Tiers and evidence match `/learn/additives/` exactly; changing one without the other is a defect.
 
 | Tier | Meaning | Count | Effect |
 |---|---|---|---|
@@ -519,14 +519,14 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M18: Search that searches | 2026-09-07 | Complete |
 | M18a: Crawl policy for the test page | 2026-09-07 | Complete |
 | M18b: Confidence travels with the score | 2026-09-07 | Complete |
-| M19: The root policy, applied | 2026-09 | **Policy adopted, move not started** |
+| M19: The root policy, applied | 2026-09 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
 
 **M0 to M3.** Next.js scaffold, static shell, the first documentation suite, and the methodology page.
 
-**M4: the Cat Care Guide.** Eleven pages at `learn.html` and `learn-*.html`, generated from `tools/learn/` so the shared chrome cannot drift. Content covers nutrition fundamentals, the complete AAFCO daily requirement for all 42 nutrients with worked per-day amounts, label reading, food formats, hydration, a tiered additive reference, feeding practice, life stages, toxic foods, and diet in common conditions.
+**M4: the Cat Care Guide.** Eleven pages at `/learn/` and `/learn/<topic>/`, generated from `tools/learn/` so the shared chrome cannot drift. Content covers nutrition fundamentals, the complete AAFCO daily requirement for all 42 nutrients with worked per-day amounts, label reading, food formats, hydration, a tiered additive reference, feeding practice, life stages, toxic foods, and diet in common conditions.
 
 **M5: theming.** Palette extracted to `assets/cfc-tokens.css` so both page families share it. Dark values are written twice, once under `[data-theme="dark"]` and once under `prefers-color-scheme`, and `tools/check-contrast.py` fails if the two drift apart. The theme script is blocking in `<head>` so the stored preference applies before first paint.
 
@@ -560,7 +560,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 
 Five separate causes were confirmed. There was no pagination at all, so 24 of 1571 results were reachable and nothing led to result 25. The API's relevance ranking was discarded by a scorable-first re-sort, so the closest match to what somebody typed could sit below a loosely related product that happened to score well. The match is not restricted to name or brand, so "chicken" returned ocean fish above real chicken products. The records themselves carry numeric brand identifiers and untranslated names, rendered faithfully. And there was no filter, facet, sort or brand browse to compensate.
 
-Pagination, relevance ordering and a scorable-only filter shipped, along with `brands.html`.
+Pagination, relevance ordering and a scorable-only filter shipped, along with `/brands/`.
 
 *Two of those five diagnoses were wrong, and M18 found out why.* The 1571 figure and the "chicken returns ocean fish" observation were both readings of a result set that had nothing to do with the query: `/api/v2/search` was ignoring `search_terms` entirely and returning the whole cat-food category every time. The ranking was not loose, it was absent, and the count was not the number of matches, it was the size of the category. The paragraph above is left as it was written because it is an accurate record of what was believed in M15a; section 24.1 carries the correction.
 
@@ -572,7 +572,7 @@ Pagination, relevance ordering and a scorable-only filter shipped, along with `b
 
 The navigation question that had blocked the milestone was answered as decided: links inline in the bar above 900px, folded into the existing drawer below it, with a guide page's section list nested beneath the site links. One control, two levels.
 
-*Learned, and it is the reason to port rather than restyle:* the defects the port exposed were not in the pages being ported, they were in the shell those pages moved into, and both were invisible while only guide pages used it. `.article a { color: var(--accent) }` outranks any component that colours its own anchor from a single class, which rendered the home page's round scan button as accent text on an accent circle. And the drawer is a grid child, so hiding it on only one of the two application shells left it holding a column on the other and pushing the article onto the next grid row, which rendered `methodology.html` as a blank screen. A shell used by one kind of page has not been tested, it has been exercised.
+*Learned, and it is the reason to port rather than restyle:* the defects the port exposed were not in the pages being ported, they were in the shell those pages moved into, and both were invisible while only guide pages used it. `.article a { color: var(--accent) }` outranks any component that colours its own anchor from a single class, which rendered the home page's round scan button as accent text on an accent circle. And the drawer is a grid child, so hiding it on only one of the two application shells left it holding a column on the other and pushing the article onto the next grid row, which rendered `/methodology/` as a blank screen. A shell used by one kind of page has not been tested, it has been exercised.
 
 *The smaller lesson:* `.text-display` was defined in nine places and meant 3rem in all of them. Consolidating nine copies into one is where a value silently becomes something else, so the port was checked by diffing every rule in the old inline blocks against the new stylesheet rather than by reading the pages.
 
@@ -671,7 +671,11 @@ now reports the same call the engine made, and a test pins it.
 
 *What was rejected:* withholding the number below a confidence threshold. It is the strictest reading of tenet 2 and it is defensible, but the engine already refuses outright when it knows too little (`scorable: false`), and a second, quieter refusal on top of that would make the site harder to use without making it more honest. A number that carries its own caveat is a better answer than no number.
 
-**M19: the root policy, applied.** *Adopted 2026-09-07. Nothing has moved yet.* Section 16.4 now states which files the repository root is permitted to hold and what requires each one, and everything else moves into a subfolder. In practice that is nineteen pages becoming directories served as `/search/`, `/learn/nutrition/` and so on, and `tests.html` joining the tool that runs it.
+**M19: the root policy, applied.** *2026-09-07.* Section 16.4 states which files the repository root is permitted to hold and what requires each one, and everything else now lives in a subfolder. Nineteen pages became directories served as `/search/`, `/learn/nutrition/` and so on; `tests.html` joined the tool that runs it, at `tools/tests.html`. The root holds eight files and the directories.
+
+*What shipped:* both generators write `<name>/index.html` and compute the depth prefix themselves. Around 140 paths changed, and none of them is a hand-written prefix: chrome, content fragments and guide modules all write the token `{{root}}`, and each generator substitutes `./`, `../` or `../../` for the depth it is writing into, so no fragment knows how deep its output sits. Scripts measure rather than assume, `assets/js/site.js` from `import.meta.url` and `assets/js/pwa.js` from `document.currentScript.src`. The service worker went to `v4`, because a device holding `v3` has nine documents cached under addresses that no longer exist. `sitemap.xml` is now generated by `tools/site/build.py` from the same page lists that write the pages, having gone stale by hand twice.
+
+*Two bugs the move introduced, both found by gates and one of which found a gate.* `scoring.js` loaded its additives knowledge base from a page-relative path, so from `/product/` it asked for `/product/assets/data/additives.json` and every score on the site failed. `check-live.py` passed all twelve page loads while the pages read "Could not load this product", because it asked only whether a heading was non-empty. Each page-load check now asserts a string the page cannot print while broken, which is the M18 lesson arriving in a second place: a check that cannot fail is not a check. The suite is 21 checks, the newest asserting that a worker registered from `/search/` has the whole site in scope, since a wrongly-scoped registration succeeds silently and narrows offline support to one directory.
 
 *Why it is a milestone rather than tidying:* every page URL on the site changes, and this host has no redirect mechanism at all, so section 23.3 governs what happens to the old addresses. The move is worth doing now or not at all: the sitemap is a day old, there is no analytics and no established inbound link, and the cost of changing a URL only ever rises.
 
@@ -807,11 +811,11 @@ Three generators run locally with their output committed:
 
 ```bash
 python tools/site/build.py       # regenerates the nine application pages
-python tools/learn/build.py      # regenerates the eleven learn*.html pages
+python tools/learn/build.py      # regenerates the eleven pages under learn/
 python tools/check-contrast.py   # audits both palettes against WCAG AA
 ```
 
-**Every HTML page at the root except `tests.html` is generated, and hand-edits to any of them are silently undone on the next build.** For a guide page, edit `tools/learn/c_<page>.py`. For an application page, edit `tools/site/content/<name>.html`. For anything in the head, the bar, the drawer or the footer of either family, edit `tools/site/chrome.py`, which both generators import.
+**Every HTML page on the site is generated, and hand-edits to any of them are silently undone on the next build.** For a guide page, edit `tools/learn/c_<page>.py`. For an application page, edit `tools/site/content/<name>.html`. For anything in the head, the bar, the drawer or the footer of either family, edit `tools/site/chrome.py`, which both generators import.
 
 ### 15.4 Commands
 
@@ -893,7 +897,7 @@ There is no staging environment.
 
 | Error | Likely cause | Fix |
 |---|---|---|
-| An edit to a page at the root disappeared | Every root page but `tests.html` is generated and a build overwrote it | Edit `tools/site/content/<name>.html` or `tools/learn/c_<page>.py`, or `tools/site/chrome.py` for the chrome, and rerun |
+| An edit to a page disappeared | Every page on the site is generated and a build overwrote it | Edit `tools/site/content/<name>.html` or `tools/learn/c_<page>.py`, or `tools/site/chrome.py` for the chrome, and rerun |
 | Assets 404 on GitHub Pages but work locally | An absolute path was used | Use `./assets/...`. Pages serves this repository under a subpath |
 | A page flashes light before going dark | `cfc-theme.js` was moved out of `<head>` or given `defer`/`async` | It must be a blocking script in `<head>`. That is the whole mechanism |
 | A component inside `.article` loses its own colour | `.article a:not([class])` is prose only, so a classed anchor must set its own colour | Give the component a colour on its class in `cfc-app.css`. See docs/DESIGN.md section 6.5 |
@@ -958,7 +962,7 @@ Consequences:
 |---|---|---|---|
 | No server-side writes | Submitting a missing product | Resolved differently: contributions go upstream to Open Pet Food Facts | A single serverless function alongside Pages |
 | No secrets | Any API needing a key | Prefer keyless APIs | The same function as a signing proxy |
-| No dynamic routes | `product.html?barcode=X` works, `/product/X` does not | Query-string routing, rendered client-side | Pre-generate a file per SKU for the top-100 catalogue |
+| No dynamic routes | `/product/?barcode=X` works, `/product/X` does not | Query-string routing, rendered client-side | Pre-generate a file per SKU for the top-100 catalogue |
 | No rate-limit shielding | Every visitor hits the upstream API directly | Service worker caching, plus a local catalogue | A proxy and cache layer, if the upstream ever objects |
 | Client-side rendering hurts crawlability | Product page discoverability | The Cat Care Guide, the main search surface, is fully static HTML with its content in the markup | Pre-generation |
 | No build step means no type checking | Engine correctness | Keep scoring pure and cover it with browser-hosted tests | A type-check-only CI job (`tsc --checkJs --noEmit`) that changes nothing served |
@@ -991,7 +995,7 @@ There is no unpinned third-party runtime dependency left. M14 removed the last o
 
 #### The root policy
 
-**Adopted 2026-09-07. The repository does not satisfy it yet:** twenty page files and `tests.html` are still at the root, and M19 is the milestone that moves them. Until M19 ships, the tree below is a target and not a description, and this paragraph is what tells the two apart. It is deleted when they agree.
+**Adopted 2026-09-07. Satisfied since M19, the same day.** The tree below is a description, not a target. It was a target for the few hours between adopting the policy and moving the files, and a paragraph stood here saying so; it was deleted when the two agreed, which is what that paragraph was for.
 
 **The rule, in one sentence: a file sits at the repository root only when something outside this project requires it to be there.**
 
@@ -1021,25 +1025,25 @@ Habit, tidiness, "it has always been there" and "it is easier to find" are not r
 
 That table is the whole permitted set. It is not a snapshot of what happens to be there.
 
-**Everything else lives in a subfolder.** The files that are at the root today and should not be:
+**Everything else lives in a subfolder.** What was at the root before M19 and is not any more:
 
-| What | Where it goes | Why it is not a root file |
+| What | Where it went | Why it is not a root file |
 |---|---|---|
 | The nineteen application and guide pages other than `index.html` | `<name>/index.html`, served as `/<name>/` | They are content. Nothing outside this project requires a page at a particular depth, and URL depth is not a ranking factor |
-| `tests.html` | `tools/` | A developer artifact, run by `tools/run-tests.py`, unlinked from the site and already `noindex`. It belongs with the tool that drives it |
+| `tests.html` | `tools/tests.html` | A developer artifact, run by `tools/run-tests.py`, unlinked from the site and already `noindex`. It belongs with the tool that drives it |
 
 **Four consequences, which are the part that keeps this policy true rather than aspirational:**
 
 1. **No page file at the root except `index.html`.** A page is created as a directory containing `index.html`. The generators own this: `tools/site/build.py` and `tools/learn/build.py` decide every output path, so it cannot be got wrong by hand.
 2. **Nothing is added to the root without adding a row to the table above**, naming which of the four requirements applies. A change that cannot fill in the "what requires it" column is a change that belongs in a subfolder.
-3. **Relative paths remain mandatory** (ADR-001, and section 26.2). A page at depth *n* reaches the assets through *n* `../` segments, and that depth is computed by the generator, never written by hand. This is the largest single risk in the M19 move: a wrong prefix produces a page that is correct from one directory and 404s from another, and the two look identical in a diff.
+3. **Relative paths remain mandatory** (ADR-001, and section 26.2). A page at depth *n* reaches the assets through *n* `../` segments, and that depth is computed by the generator, never written by hand. The chrome, every content fragment and every guide module write the token `{{root}}`, and each generator substitutes the prefix for the depth it is writing into; nothing upstream of that substitution knows how deep its output will sit. This was the largest single risk in the M19 move, because a wrong prefix produces a page that is correct from one directory and 404s from another, and the two look identical in a diff. Scripts measure instead of assuming: `assets/js/site.js` derives the site root from `import.meta.url`, and `assets/js/pwa.js` derives the service worker's path from `document.currentScript.src`, because a module in `assets/js/` is two levels below the root whatever page imported it.
 4. **Retiring a page's old address is governed by section 23.3**, not by this policy. Moving a page changes a public URL, and the tombstone rule applies in full unless a decision is recorded that it does not.
 
 #### The layout
 
 Everything at the repository root is served verbatim. `tools/` and `docs/` are the exceptions: they run or are read on a developer machine.
 
-**This is the target, after M19.** The repository does not match it yet; see the note above.
+**This is the repository as it stands, since M19.**
 
 ```
 Cat-Food-Center/
@@ -1242,7 +1246,7 @@ Derived from the code as it stands, not from any style guide. Where usage is inc
 
 | Thing | Convention | Examples |
 |---|---|---|
-| HTML pages | lowercase, hyphenated, `.html` | `search.html`, `learn-daily-requirements.html` |
+| HTML pages | lowercase, hyphenated, `.html` | `/search/`, `/learn/daily-requirements/` |
 | Page modules | `<page>-page.js` | `search-page.js`, `brands-page.js` |
 | Library modules | A single noun | `opff.js`, `scoring.js`, `scanner.js`, `history.js` |
 | Test modules | `<module>.test.js`, beside the module | `scoring.test.js` |
@@ -1390,7 +1394,7 @@ browser = await p.chromium.launch(channel='msedge')
 
 **Budgets:** LCP 2500ms, CLS 0.1, TBT 200ms. The first two are Google's "good" thresholds and are what section 14 already stated; TBT has no official threshold, and 200ms is Lighthouse's own boundary. TBT stands in for INP, which cannot be measured without a real session.
 
-**Ten of the twelve pages are gated. Two are not**, and the distinction is the honest part of this tool. A page the repository serves in full is a property of the code, so a regression in it is real and fails the build. `product.html` and a page of search results cannot paint until Open Pet Food Facts answers, and no commit here controls how fast that is. They are measured and printed on every run, because the numbers are worth seeing, but they cannot fail the build for something outside the repository. The product page currently measures about 2.5s LCP under this throttle, essentially all of it the API round trip.
+**Ten of the twelve pages are gated. Two are not**, and the distinction is the honest part of this tool. A page the repository serves in full is a property of the code, so a regression in it is real and fails the build. `/product/` and a page of search results cannot paint until Open Pet Food Facts answers, and no commit here controls how fast that is. They are measured and printed on every run, because the numbers are worth seeing, but they cannot fail the build for something outside the repository. The product page currently measures about 2.5s LCP under this throttle, essentially all of it the API round trip.
 
 **What it does not measure:**
 
@@ -1442,7 +1446,7 @@ Run the change on a local copy: the file opened from disk, `python -m http.serve
 - **Verifying functionality is local.** `python tools/run-tests.py`, `python tools/check-live.py`, `python tools/check-contrast.py`, `python tools/check-a11y.py`, `python tools/check-vitals.py` and `python tools/check-engines.py` all run against a local server, including the two that reach the live *API* but serve the *pages* from `127.0.0.1`.
 - **Confirming a deploy landed is a separate step**, done against production after the push, and it is a comparison rather than a test: fetch the deployed artifact and check it matches what was verified locally. That is legitimate and is not an exception to this rule.
 
-**Never point a destructive or state-changing check at production.** In this project that mostly means never writing to Open Pet Food Facts from a test, and never seeding records there to exercise the submit flow. `submit.html` deep-links a human to the upstream form and writes nothing itself, which is the property that keeps this simple. If a future feature can only be exercised against a live system, stop and ask.
+**Never point a destructive or state-changing check at production.** In this project that mostly means never writing to Open Pet Food Facts from a test, and never seeding records there to exercise the submit flow. `/submit/` deep-links a human to the upstream form and writes nothing itself, which is the property that keeps this simple. If a future feature can only be exercised against a live system, stop and ask.
 
 The local and production differences that can hide a bug are tabulated in section 15.7.
 
@@ -1556,7 +1560,7 @@ A visible record of what has and has not been permitted suits a posture whose en
 
 ### 22.5 The machine-readable layer
 
-`robots.txt` is **fully open** (`User-agent: *`, `Allow: /`) and carries a comment marking that as deliberate, so a future tightening is a decision rather than an accident. The single exception is `tests.html`, which asks not to be listed with a `noindex` meta tag in its own head rather than with a `Disallow` line here, for the reason given in open question 10. It names `LICENSE.md` as authoritative if the two ever appear to disagree. A grants-nothing licence beside an open `robots.txt` is a contradiction a cautious crawler operator could resolve the wrong way, and the comment exists to stop that.
+`robots.txt` is **fully open** (`User-agent: *`, `Allow: /`) and carries a comment marking that as deliberate, so a future tightening is a decision rather than an accident. The single exception is `tools/tests.html`, which asks not to be listed with a `noindex` meta tag in its own head rather than with a `Disallow` line here, for the reason given in open question 10. It names `LICENSE.md` as authoritative if the two ever appear to disagree. A grants-nothing licence beside an open `robots.txt` is a contradiction a cautious crawler operator could resolve the wrong way, and the comment exists to stop that.
 
 `sitemap.xml` sits at the repository root and lists every public page.
 
@@ -1577,29 +1581,31 @@ Everything uploaded by `actions/upload-pages-artifact@v3` with `path: .` is publ
 - **Public-facing:** every `.html` file at the root, `sw.js`, `manifest.webmanifest`, `favicon.svg`, everything under `assets/`, `robots.txt`, `sitemap.xml`, `LICENSE.md`, `README.md`, and `docs/`. All of it is fetchable at a real URL.
 - **Internal:** `tools/` and `.github/`. These are uploaded too, and are technically fetchable, but nothing outside the repository is meant to link to them and they are not addresses this project promises to keep.
 
-The distinction that matters: a name being derived from a source file does not make that source file public-facing. `tools/learn/c_toxic.py` produces `learn-toxic.html`. The **HTML** is the contract; the Python is not.
+The distinction that matters: a name being derived from a source file does not make that source file public-facing. `tools/learn/c_toxic.py` produces `/learn/toxic/`. The **HTML** is the contract; the Python is not.
 
 ### 23.2 Public surface, item by item
 
 | Address | Kind | Notes |
 |---|---|---|
 | `/` and `/index.html` | Page | |
-| `/search.html` | Page | Accepts `q`, `brand`, `page`, `only` |
-| `/brands.html` | Page | |
-| `/product.html` | Page | Accepts `barcode` |
-| `/scan.html` | Page | |
-| `/submit.html` | Page | Accepts `barcode` |
-| `/compare.html` | Page | Accepts `a`, `b` |
-| `/methodology.html` | Page | |
-| `/offline.html` | Page | Reached only by the service worker |
-| `/learn.html` and ten `/learn-*.html` | Pages | Generated. The main search surface |
-| `/tests.html` | Page | Public but unlinked. Not a promised address |
+| `/search/` | Page | Accepts `q`, `brand`, `page`, `only` |
+| `/brands/` | Page | |
+| `/product/` | Page | Accepts `barcode` |
+| `/scan/` | Page | |
+| `/submit/` | Page | Accepts `barcode` |
+| `/compare/` | Page | Accepts `a`, `b` |
+| `/methodology/` | Page | |
+| `/offline/` | Page | Reached only by the service worker |
+| `/learn/` and ten `/learn/<topic>/` | Pages | Generated. The main search surface |
+| `/tools/tests.html` | Page | Public but unlinked. Not a promised address |
 | `/sw.js` | Script | **Must stay at the root.** Its scope is its path |
 | `/manifest.webmanifest`, `/favicon.svg`, `/assets/icons/*` | Assets | Referenced by installed PWAs |
 | `/assets/*.css`, `/assets/*.js`, `/assets/js/*` | Assets | Referenced by every page and precached by the worker |
 | `/assets/data/additives.json` | Data | Fetched at runtime |
 | `/robots.txt`, `/sitemap.xml`, `/LICENSE.md`, `/README.md`, `/docs/*` | Documents | |
-| `/tests.html` | The browser test suite. Unlinked, absent from the sitemap, and `noindex` since M18a | Public because there is no build step to exclude it from, and there is nothing in it worth hiding |
+| `/tools/tests.html` | The browser test suite. Unlinked, absent from the sitemap, and `noindex` since M18a | Public because there is no build step to exclude it from, and there is nothing in it worth hiding |
+
+**These addresses changed once, in M19.** Every page but the home page was a root `.html` file until 2026-09-07 and is a directory now. The nineteen old addresses 404; they were retired without tombstones under the pre-beta exception in 23.3, and they are listed in 24.6. That is the only time this table has changed, and after public beta it cannot change this way again.
 
 **Query parameters are part of the public surface too.** A change that renames `?barcode=` breaks every shared link and every scan result in somebody's history, and is a breaking change in the sense this section means.
 
@@ -1620,7 +1626,7 @@ Compatibility entries, once created, are permanent. They are never chained: a to
 
 **This exception expires at public beta and is not renewable.** After M12 every retirement takes a tombstone, without exception and without a further decision. The exception is written with its own end date because a carve-out taken once on good grounds is exactly the kind of thing that gets cited a year later on no grounds at all.
 
-It has been invoked once, for M19, whose nineteen addresses are listed in section 24.6. **At the time of writing M19 has not shipped**, so no address has actually been retired yet; the decision to retire them without tombstones is what has been taken.
+It has been invoked once, for M19, whose nineteen addresses are listed in section 24.6. M19 shipped on 2026-09-07 and those nineteen addresses now 404. The exception is spent, not renewed: it remains available to a case that meets all four conditions before public beta, and to none after.
 
 ### 23.4 Removing internal source
 
@@ -1631,7 +1637,7 @@ A plain delete. No redirect, no alias, no stub file, no tombstone. Nothing exter
 | Item | Removed | Replaced by |
 |---|---|---|
 | The Next.js application (`app/`, `components/`, `next.config.ts`, `tailwind.config.ts`, `postcss.config.mjs`, `tsconfig.json`, `.eslintrc.json`, `package.json`) | 2026-09-05, M5.5 | Nothing. It was never built or deployed, so it had no public address. A plain delete, correct under this rule |
-| Mock product data in `product.html` and `search.html` | 2026-09-05, M6 | Live Open Pet Food Facts records |
+| Mock product data in `/product/` and `/search/` | 2026-09-05, M6 | Live Open Pet Food Facts records |
 | `docs/TRD.md` | 2026-09-06, M13 | Section 16 of this document |
 | `docs/RUNBOOK.md` | 2026-09-06, M13 | Section 15 |
 | `docs/METRICS.md` | 2026-09-06, M13 | Section 14 |
@@ -1680,7 +1686,7 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | The `scorable: false` refusal path | PRD | Sections 11.1 and 9 |
 | Theme toggle and dark mode in the global chrome | PRD §4.1, DESIGN §10 | Section 16, DESIGN.md |
 | Main navigation in the header | PRD §4.1 described only a wordmark and a Support button | Section 16, DESIGN.md |
-| Offline behaviour, the cache stamp, `offline.html` | TRD had one line | Section 16.8 |
+| Offline behaviour, the cache stamp, `/offline/` | TRD had one line | Section 16.8 |
 | Recently viewed as a real feature rather than a mock | PRD | Section 6 |
 | The `esc()` escaping pattern as the injection defence | SECURITY claimed React did it | Section 21.6 |
 
@@ -1696,19 +1702,19 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | "`npx lighthouse ...`" as the monitoring command | RUNBOOK | `npx` requires Node, which the prerequisites correctly say is absent | Section 15.10, PageSpeed Insights |
 | "Precached shell, 23 entries" | TRD, ROADMAP | 29 today | Section 16.8. The historical changelog entry was left alone |
 | "check-live.py, eight end-to-end checks" | TRD | 16 | Section 15.4 |
-| "The four Tailwind pages" | README, TRD, in five places | Eight, now nine with `brands.html` | Throughout |
+| "The four Tailwind pages" | README, TRD, in five places | Eight, now nine with `/brands/` | Throughout |
 | "Current implementation state (v0.7.0)" | TRD §0 | Five releases stale | This document carries an audit date instead of a version |
 | "The header is `fixed` on mobile and `sticky` on desktop" | DESIGN §5 | App pages are `sticky` at every width; guide pages are `fixed` at every width | DESIGN.md, corrected |
 | "`bg-accent text-white`" in the button and badge patterns | DESIGN §6 | The code uses `text-on-accent`, and DESIGN §2 says never to hardcode `text-white` on an accent fill | DESIGN.md. The document contradicted itself; the token is right |
 | "Product lists use `<ul role="list">` wrapping `<Link>` cards" | DESIGN §6 | `<Link>` is a React component. The code uses `<a>` | DESIGN.md |
 | "`public/favicon.svg`" | DESIGN §12 | There is no `public/` directory. It is at the root | DESIGN.md |
-| Routes written as `/search`, `/product/[barcode]` | DESIGN §10, PRD | Static hosting has no dynamic routes. They are `search.html` and `product.html?barcode=` | Throughout |
+| Routes written as `/search`, `/product/[barcode]` | DESIGN §10, PRD | Static hosting has no dynamic routes. They are `/search/` and `/product/?barcode=` | Throughout |
 
 ### 24.4 Contradictions between documents
 
 | Contradiction | Resolution |
 |---|---|
-| PRD §6.3 defined **Tier 1** as "low or no concern, may earn a small positive". `additives.json` defines **Tier 0** as the benign tier and **Tier 1** as "flagged by marketing rather than evidence" | Trusted the code, which is also what `learn-additives.html` and `methodology.html` say. The PRD was the only document using the old meaning. Section 11.3 documents four tiers, 0 to 3 |
+| PRD §6.3 defined **Tier 1** as "low or no concern, may earn a small positive". `additives.json` defines **Tier 0** as the benign tier and **Tier 1** as "flagged by marketing rather than evidence" | Trusted the code, which is also what `/learn/additives/` and `/methodology/` say. The PRD was the only document using the old meaning. Section 11.3 documents four tiers, 0 to 3 |
 | Two changelogs existed, `PATCHNOTES.md` at the root at `[0.12.2]` and `docs/PATCHNOTES.md` at `v0.10.1`, describing the same work under different version numbers | Merged into `docs/PATCHNOTES.md`, keeping the root file's more detailed entries and its numbering, which tracked reality more closely. Both histories are preserved |
 | DESIGN §2 forbids hardcoding `text-white` on an accent fill; DESIGN §6 prescribes `bg-accent text-white` | The prohibition is right and the code follows it |
 | ADR-001 said tests are runnable "in the browser and in Node"; the RUNBOOK correctly said there is no Node | The RUNBOOK was right |
@@ -1725,7 +1731,8 @@ Not errors, and not discrepancies of the kind the rest of section 24 records. Ea
 
 | Policy | Where | Status | Why | Bound |
 |---|---|---|---|---|
-| Section 23.3, "a retired public address gets a tombstone" | **M19.** Nineteen page addresses to be retired with no tombstone, returning 404: `/search.html`, `/brands.html`, `/product.html`, `/scan.html`, `/submit.html`, `/compare.html`, `/methodology.html`, `/offline.html`, `/learn.html` and the ten `/learn-*.html` guide pages | **Decided 2026-09-07. Not yet done:** M19 has not shipped and all nineteen addresses still resolve | A tombstone protects a link somebody already holds, and there is no such holder: the sitemap is a day old, there is no analytics, and no inbound link is known. Nineteen stub files at the root would also leave the root holding twenty HTML files instead of twenty-one, which is the milestone achieving nothing | The pre-beta exception in section 23.3, which expires at M12 and is not renewable. After public beta this cannot happen again |
+| Section 23.3, "a retired public address gets a tombstone" | **M19.** Nineteen page addresses retired with no tombstone, returning 404: `/search.html`, `/brands.html`, `/product.html`, `/scan.html`, `/submit.html`, `/compare.html`, `/methodology.html`, `/offline.html`, `/learn.html` and the ten `/learn-*.html` guide pages | **Done 2026-09-07.** M19 shipped; none of the nineteen resolves any more | A tombstone protects a link somebody already holds, and there is no such holder: the sitemap is a day old, there is no analytics, and no inbound link is known. Nineteen stub files at the root would also leave the root holding twenty HTML files instead of twenty-one, which is the milestone achieving nothing | The pre-beta exception in section 23.3, which expires at M12 and is not renewable. After public beta this cannot happen again |
+| Section 9, "offline support is site-wide" | **The eleven guide pages do not load `assets/js/pwa.js`.** Arriving on one registers no service worker and shows no offline banner; reaching any application page afterwards does both, and the worker then controls the guide pages too | **Long-standing.** Found while writing the M19 scope check, which had to register from `/search/` because no guide page would | Nobody decided this; the guide generator simply never picked up the script tag the application generator has. It is recorded rather than fixed inside M19 because M19's subject is where files live, and adding a worker registration to eleven pages is a behaviour change wearing a restructure's clothes | Until it is fixed. It is a one-line addition to `tools/learn/shell.py`, and it needs its own gate run rather than a ride on somebody else's |
 
 ---
 
@@ -1760,7 +1767,7 @@ No `TODO`, `FIXME` or `HACK` markers exist anywhere in the codebase.
 | Making `cfc-theme.js` non-blocking, or moving it out of `<head>` | A flash of the wrong palette on every load. The blocking position is the entire mechanism |
 | Moving `sw.js` out of the repository root | The worker's scope narrows and offline support silently stops covering the site |
 | Using an absolute path anywhere | Works locally, 404s in production |
-| Changing a tier in `additives.json` without changing `learn-additives.html` | The engine and the guide disagree, which is a trust failure rather than a bug |
+| Changing a tier in `additives.json` without changing `/learn/additives/` | The engine and the guide disagree, which is a trust failure rather than a bug |
 | Extending `MATCHED_LANGUAGES` ahead of the aliases | Re-creates the exact defect of section 12.4: labels reported as clean because nothing matched |
 | Renaming a query parameter | Breaks every shared link |
 
@@ -1777,7 +1784,7 @@ Numbered so they can be answered by reference. Answering one folds the answer in
 3. ~~**How aggressively should feeding-trial substantiation outweigh formulation?**~~ **Answered 2026-09-07:** deferred to M12, and deliberately not answered before it. The distinction is real and matters, and Open Pet Food Facts carries no feeding-trial field at all; `aafcoComplete` is absent from most records, which is why section 11 emits a warning telling the reader to check the packaging. Weighting it now would score how well a product was catalogued rather than the food, and would move a number on the strength of a database gap. If a curated local catalogue is built, substantiation is one of the fields it should carry, and this question is answered then with data behind it. Until then the engine saying nothing is the correct behaviour rather than a missing feature.
 4. ~~**Should the scorable-only filter page-hunt?**~~ **Answered in M18:** it scans, which is the bounded half of hunting. Five pages are fetched in parallel, deduped and filtered once; the page then states what it scanned rather than implying it saw everything. An unbounded hunt was rejected for the reason the question raised: the friendlier version is the one whose number cannot be stated honestly.
 5. ~~**What fills the guide shell's third column on a page with no headings?**~~ **Answered in M14:** nothing. The page collapses to one column, and `tools/site/build.py` decides per page by reading the fragment for headings rather than from a flag. See docs/DESIGN.md section 6.4.
-6. ~~**Does the `/` search affordance stay on pages that already have a search input?**~~ **Answered in M14:** no. `index.html` and `search.html` are built with `show_search=False`.
+6. ~~**Does the `/` search affordance stay on pages that already have a search input?**~~ **Answered in M14:** no. `index.html` and `/search/` are built with `show_search=False`.
 7. ~~**Should Safari and Firefox be driven by any automated check?**~~ **Answered in M17:** yes, and they now are. `tools/check-engines.py` runs the unit suite, all 12 page states and the barcode decode round-trip in Blink, Gecko and WebKit. The answer to the `BarcodeDetector` worry is that neither Gecko nor WebKit has it at all, so ZXing is not a fallback on those engines, it is the only path scanning has, and the decode round-trip passes in all three. See section 19.3.
 8. ~~**Should the tombstone mechanism in 23.3 be built before it is needed, or written when first used?**~~ **Answered 2026-09-07:** written when first used. The policy is the part that has to exist in advance; a mechanism built against an imagined case is built to the wrong shape. The first case arrived the same day, and did not use one: M19 retired nineteen addresses under the pre-beta exception now recorded in 23.3 and 24.6. So the mechanism still does not exist, which is the answer working rather than dodging it. Building it in advance would have meant building it for a case that then declined to use it.
 9. **Is the six-language alias list the right stopping point?** **Decided 2026-09-07: measure before answering, and the question stays open until the measurement exists.** The stopping point is currently a guess, and the cost of being wrong is invisible: an uncovered label is never scored wrongly, only capped at low confidence, denied the clean-additives bonus and warned about, so a badly chosen seventh language costs nothing and a badly chosen sixth silently under-serves a whole market. `tools/probe-opff.py` is to be extended to report the language distribution of ingredient lists across the cat food category, so the answer becomes how many products the next language would reach rather than an intuition about which languages matter. Nothing is added to `MATCHED_LANGUAGES` before that number exists, and the existing rule stands: aliases first, the constant after, never ahead of them.
@@ -1793,7 +1800,7 @@ Concrete instructions for whoever works on this next, human or model.
 ### 26.1 Before editing anything
 
 1. **Read this document's section 24** if you are about to change something the documentation describes. A discrepancy may already be recorded.
-2. **Check whether the file is generated.** Every HTML page at the root except `tests.html` is: the guide pages by `tools/learn/build.py`, the other nine by `tools/site/build.py`. Editing one directly is silently undone.
+2. **Check whether the file is generated.** Every HTML page on the site is: the eleven guide pages by `tools/learn/build.py`, the nine application pages by `tools/site/build.py`. `tools/tests.html` is the one hand-written HTML file, and it is not a page. Editing a generated file directly is silently undone.
 3. **Check whether the change is public-facing** by the definition in section 23.1, because that decides whether a removal needs a tombstone.
 4. **Never assume a documented behaviour exists.** This project has a history of documented features that were never built; section 24.1 lists them.
 
@@ -1802,7 +1809,7 @@ Concrete instructions for whoever works on this next, human or model.
 | Never | Because |
 |---|---|
 | Use an absolute path (`/assets/...`) | The site is served from a repository subpath. It works locally and 404s in production |
-| Hand-edit any root page but `tests.html` | All generated. Your change disappears on the next build |
+| Hand-edit any `index.html` | All generated. Your change disappears on the next build |
 | Add a file to the repository root | The root is a policy space since 2026-09-07, not a default location. Section 16.4 lists every file permitted there and what requires each one. If you cannot fill in the "what requires it" column, it belongs in a subfolder |
 | Create a page as a root `.html` file | Since M19 a page is a directory containing `index.html`. The generators decide the path; a hand-placed page also gets the `../` depth prefixes wrong, which 404s from one directory and not from another |
 | Move `cfc-theme.js` out of `<head>`, or add `defer`/`async` | The blocking position is what prevents a flash of the wrong palette |
@@ -1810,7 +1817,7 @@ Concrete instructions for whoever works on this next, human or model.
 | Add a Tailwind opacity modifier to a themed colour | It renders transparent. Add a token instead |
 | Interpolate API text into HTML without `esc()` | There is no framework escaping it. This is the injection surface |
 | Extend `MATCHED_LANGUAGES` before the aliases exist | Recreates the defect that made a bad product score 77/Excellent |
-| Change a tier in `additives.json` alone | It must change in `learn-additives.html` too, or the site contradicts itself |
+| Change a tier in `additives.json` alone | It must change in `/learn/additives/` too, or the site contradicts itself |
 | Test against production | Section 20. Production is where you confirm a deploy, not where you test |
 | Drive Chrome in an automated check | Section 19. Use Edge |
 | Introduce a secret or a keyed API | Section 16.2. It is a trigger to revisit the architecture, not a routine addition |
@@ -1820,8 +1827,8 @@ Concrete instructions for whoever works on this next, human or model.
 
 | Kind of work | Open first |
 |---|---|
-| Changing what a score means | `assets/js/scoring.js`, then section 11, then `methodology.html`, then `learn-additives.html` |
-| Adding or retiring an additive | `assets/data/additives.json` and `learn-additives.html`, together |
+| Changing what a score means | `assets/js/scoring.js`, then section 11, then `/methodology/`, then `/learn/additives/` |
+| Adding or retiring an additive | `assets/data/additives.json` and `/learn/additives/`, together |
 | Anything touching API data | `assets/js/opff.js` and section 12 |
 | Search, brands, pagination | `assets/js/search-page.js`, `assets/js/brands-page.js`, `opff.js` |
 | A visual or layout change | `docs/DESIGN.md`, then `assets/cfc-tokens.css`, then the page |

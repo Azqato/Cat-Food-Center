@@ -58,18 +58,18 @@ THROTTLE_CPU = 4
 # paint until Open Pet Food Facts answers, and that is not something a commit
 # here controls. Both are measured; only the first can fail the build.
 PAGES = [
-    ('/index.html', 'home', True),
-    ('/search.html', 'search, no query', True),
-    ('/brands.html', 'brand index', True),
-    ('/scan.html', 'scan', True),
-    ('/compare.html', 'compare, empty', True),
-    ('/methodology.html', 'methodology', True),
-    ('/offline.html', 'offline', True),
-    ('/learn.html', 'guide index', True),
-    ('/learn-daily-requirements.html', 'guide: the largest page', True),
-    ('/learn-additives.html', 'guide: additives', True),
-    ('/product.html?barcode=4008429158100', 'product (API)', False),
-    ('/search.html?q=chicken', 'search results (API)', False),
+    ('/', 'home', True),
+    ('/search/', 'search, no query', True),
+    ('/brands/', 'brand index', True),
+    ('/scan/', 'scan', True),
+    ('/compare/', 'compare, empty', True),
+    ('/methodology/', 'methodology', True),
+    ('/offline/', 'offline', True),
+    ('/learn/', 'guide index', True),
+    ('/learn/daily-requirements/', 'guide: the largest page', True),
+    ('/learn/additives/', 'guide: additives', True),
+    ('/product/?barcode=4008429158100', 'product (API)', False),
+    ('/search/?q=chicken', 'search results (API)', False),
 ]
 
 # Installed before the document, so the observers are watching from the first

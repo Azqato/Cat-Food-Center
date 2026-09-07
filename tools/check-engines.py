@@ -59,18 +59,18 @@ EDGE_CHANNEL = 'msedge'
 # find: the search page's h1 stays empty unless the results are a brand, and a
 # missing product renders a card rather than a section.
 PAGES = [
-    ('/index.html', 'home', 'The Cat Care Guide'),
-    ('/search.html?q=chicken', 'search results', 'can be scored'),
-    ('/brands.html', 'brand index', 'Browse by brand'),
-    ('/product.html?barcode=4008429158100', 'product, scored', 'Ingredients'),
-    ('/product.html?barcode=0050000102068', 'product, thin record', 'Nutrition'),
-    ('/product.html?barcode=9999999999999', 'product, not found', 'Product not found'),
-    ('/scan.html', 'scan', 'Scan a barcode'),
-    ('/submit.html?barcode=9999999999999', 'submit', 'Add a missing product'),
-    ('/compare.html?a=0064992282189&b=3596710487455', 'compare', 'Compare two foods'),
-    ('/methodology.html', 'methodology', 'Methodology'),
-    ('/offline.html', 'offline', 'You are offline'),
-    ('/learn-nutrition.html', 'guide page', 'Feline nutrition fundamentals'),
+    ('/', 'home', 'The Cat Care Guide'),
+    ('/search/?q=chicken', 'search results', 'can be scored'),
+    ('/brands/', 'brand index', 'Browse by brand'),
+    ('/product/?barcode=4008429158100', 'product, scored', 'Ingredients'),
+    ('/product/?barcode=0050000102068', 'product, thin record', 'Nutrition'),
+    ('/product/?barcode=9999999999999', 'product, not found', 'Product not found'),
+    ('/scan/', 'scan', 'Scan a barcode'),
+    ('/submit/?barcode=9999999999999', 'submit', 'Add a missing product'),
+    ('/compare/?a=0064992282189&b=3596710487455', 'compare', 'Compare two foods'),
+    ('/methodology/', 'methodology', 'Methodology'),
+    ('/offline/', 'offline', 'You are offline'),
+    ('/learn/nutrition/', 'guide page', 'Feline nutrition fundamentals'),
 ]
 
 FEATURES = """() => ({
@@ -116,7 +116,8 @@ async () => {
     return bits + '101';
   }
 
-  const scanner = await import('./assets/js/scanner.js');
+  // Relative to the scan page, which is /scan/ since M19, so one level up.
+  const scanner = await import('../assets/js/scanner.js');
   const out = {};
   for (const code of ['3596710487455', '5000159461122']) {
     const bits = bars(code), M = 3, quiet = 36;
@@ -186,7 +187,7 @@ async def run_engine(p, name, launch, base, failures):
 
     page = await browser.new_page(viewport={'width': 1280, 'height': 900})
 
-    await page.goto(base + '/index.html')
+    await page.goto(base + '/')
     features = await page.evaluate(FEATURES)
     print('  features: %s' % ', '.join(
         '%s=%s' % (k, 'yes' if v else 'NO') for k, v in features.items()))
@@ -196,7 +197,7 @@ async def run_engine(p, name, launch, base, failures):
     page.on('console', lambda m: errors.append(m.text)
             if m.type == 'error' and not ignorable(m.text) else None)
     page.on('pageerror', lambda e: errors.append(str(e)))
-    await page.goto(base + '/tests.html')
+    await page.goto(base + '/tools/tests.html')
     try:
         await page.wait_for_function('window.__testResults', timeout=30000)
         results = await page.evaluate('window.__testResults')
@@ -248,7 +249,7 @@ async def run_engine(p, name, launch, base, failures):
 
     # 3. The decode round-trip. In two of the three engines this is not a
     #    fallback path, it is the only one.
-    await page.goto(base + '/scan.html')
+    await page.goto(base + '/scan/')
     try:
         decoded = await page.evaluate(DECODE)
         ok = all(r['matches'] and r['valid'] for r in decoded.values())

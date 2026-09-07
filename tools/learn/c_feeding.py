@@ -136,7 +136,7 @@ meal portions rather than being added on top. For a 4.5&nbsp;kg cat on 260&nbsp;
 
 <p>Better treats: single-ingredient freeze-dried meat or fish, small pieces of plain cooked chicken or
 turkey, a licked lid, or a few kibbles from the daily ration used as training rewards. Note that
-<a href="./learn-toxic.html">a number of common human foods are toxic to cats</a>.</p>""",
+<a href="{{root}}learn/toxic/">a number of common human foods are toxic to cats</a>.</p>""",
 
 h2("weight", "7. Weight management"),
 """<p>Obesity is the most common nutritional disorder in pet cats and roughly half the cats in developed

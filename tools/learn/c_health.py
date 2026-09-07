@@ -207,15 +207,15 @@ h2("constipation", "10. Constipation and megacolon"),
 """<p>Common in older cats, and frequently driven by dehydration. Management combines increasing dietary
 moisture aggressively, adding fibre (psyllium or a fibre-enhanced therapeutic diet) and laxatives such
 as lactulose or polyethylene glycol under veterinary direction. Because dehydration is so often the
-underlying driver, the hydration measures on the <a href="./learn-hydration.html">hydration page</a> are
+underlying driver, the hydration measures on the <a href="{{root}}learn/hydration/">hydration page</a> are
 the first thing to fix. Untreated recurrent constipation can progress to megacolon, where the colon
 loses motility permanently and surgery becomes the option.</p>""",
 
 h2("next", "Related pages"),
 cards([
-    ("./learn-hydration.html", None, "Hydration",
+    ("{{root}}learn/hydration/", None, "Hydration",
      "The measures behind the moisture advice on this page."),
-    ("./learn-feeding.html", None, "How much and how often",
+    ("{{root}}learn/feeding/", None, "How much and how often",
      "Portion maths, weight management, and body condition scoring."),
 ]),
 

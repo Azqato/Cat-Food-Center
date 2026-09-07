@@ -6,18 +6,18 @@
       </div>
 
       <div class="flex flex-col items-center gap-3">
-        <a href="./scan.html" class="scan-cta">Scan</a>
+        <a href="{{root}}scan/" class="scan-cta">Scan</a>
         <p class="text-ink-soft text-small">Point at a barcode</p>
       </div>
 
-      <form action="./search.html" method="get" class="w-full flex gap-2" style="max-width:24rem" role="search">
+      <form action="{{root}}search/" method="get" class="w-full flex gap-2" style="max-width:24rem" role="search">
         <input type="search" name="q" placeholder="Brand or product name…"
           aria-label="Search cat food products" class="field flex-1 min-w-0" />
         <button type="submit" class="btn btn-accent shrink-0">Search</button>
       </form>
 
       <section class="w-full" aria-label="The Cat Care Guide">
-        <a href="./learn.html" class="card-link flex-col gap-2 bg-surface border border-hairline rounded-card p-5">
+        <a href="{{root}}learn/" class="card-link flex-col gap-2 bg-surface border border-hairline rounded-card p-5">
           <span class="text-micro text-ink-soft" style="text-transform:uppercase;letter-spacing:.05em">Free guide</span>
           <span class="font-display text-h2 text-ink">The Cat Care Guide</span>
           <span class="text-small text-ink-soft">

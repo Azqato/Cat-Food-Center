@@ -4,13 +4,17 @@
     python tools/site/build.py
 
 Each page is its body content in tools/site/content/<name>.html, wrapped in the
-shared chrome from chrome.py. The generated files at the repository root are
-committed, so deployment still needs no build step; the generator runs on a
-developer machine only.
+shared chrome from chrome.py. The generated files are committed, so deployment
+still needs no build step; the generator runs on a developer machine only.
+
+Since M19 a page is a directory holding an index.html, served as /search/
+rather than /search.html. index.html is the only page file the repository root
+is permitted to hold; the rule and the reasons are in PRD section 16.4.
 
 Do not hand-edit the generated pages. Edit the content fragment and rerun, the
 same rule the Cat Care Guide has had since M4.
 """
+import datetime
 import io
 import os
 import re
@@ -40,31 +44,31 @@ CONTENT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'content')
 PAGES = [
     ('index',       'Cat Food Center',
      'Scan a barcode or search to get an honest 0 to 100 score for any cat food, with the reasoning shown.',
-     './index.html', 'home-page.js', False, False),
+     '{{root}}', 'home-page.js', False, False),
     ('search',      'Search',
      'Search cat food by brand or product name and see a score for each result.',
-     './search.html', 'search-page.js', False, False),
+     '{{root}}search/', 'search-page.js', False, False),
     ('brands',      'Browse by brand',
      'Every cat food brand in the database, A to Z, with the number of products for each.',
-     './brands.html', 'brands-page.js', False, True),
+     '{{root}}brands/', 'brands-page.js', False, True),
     # A client-built rail: the product page's headings are written by
     # product-page.js after the fetch returns, so the generator ships the
     # column empty and the script fills it.
     ('product',     'Product',
      'The full breakdown for one cat food: score, ingredients, additive flags and nutrition.',
-     './search.html', 'product-page.js', 'client', True),
+     '{{root}}search/', 'product-page.js', 'client', True),
     ('scan',        'Scan a barcode',
      'Point your camera at the barcode on a tin of cat food to open its page.',
-     './scan.html', 'scan-page.js', False, True),
+     '{{root}}scan/', 'scan-page.js', False, True),
     ('submit',      'Add a missing product',
      'The product is not in the database yet. Here is how to add it so it works for everyone.',
-     './search.html', 'submit-page.js', False, True),
+     '{{root}}search/', 'submit-page.js', False, True),
     ('compare',     'Compare two foods',
      'Two cat foods side by side on a dry-matter basis, pillar by pillar.',
-     './compare.html', 'compare-page.js', False, True),
+     '{{root}}compare/', 'compare-page.js', False, True),
     ('methodology', 'Methodology',
      'How the CFC Score is calculated, what it weighs, and what it cannot see.',
-     './methodology.html', None, True, True),
+     '{{root}}methodology/', None, True, True),
     ('offline',     'Offline',
      'You are offline. Here is what still works.',
      None, None, False, False),
@@ -118,13 +122,109 @@ def build(name, title, description, current, module, want_toc, want_search):
         + chrome.footer()
         + '\n' + chrome.scripts(module)
         + '\n</body>\n</html>\n')
-    path = os.path.join(ROOT, name + '.html')
+    # The home page is the site root's own index. Every other page is a
+    # directory containing one, served as /search/ rather than /search.html,
+    # under the root policy in PRD section 16.4: index.html is the only page
+    # file the repository root is permitted to hold.
+    if name == 'index':
+        out_dir, depth = ROOT, 0
+    else:
+        out_dir, depth = os.path.join(ROOT, name), 1
+
+    # The one place a depth becomes a path. The chrome and every content
+    # fragment write {{root}}, so nothing upstream has to know how deep the
+    # page it is being written into will sit. A hand-written prefix is the
+    # failure mode this exists to remove: it works from one directory, 404s
+    # from another, and the two are indistinguishable in a diff.
+    out = out.replace('{{root}}', './' if depth == 0 else '../' * depth)
+
+    if not os.path.isdir(out_dir):
+        os.makedirs(out_dir)
+    path = os.path.join(out_dir, 'index.html')
     io.open(path, 'w', encoding='utf-8', newline='\n').write(out)
     return path
 
 
+BASE = 'https://azqato.github.io/Cat-Food-Center/'
+
+# path, changefreq, priority. Ordered as the sitemap reads.
+#
+# offline/ is deliberately absent: it is reached only by the service worker,
+# for a page never opened on this device, and has nothing to index. So is
+# tools/tests.html, which is unlinked, carries noindex, and is not an address
+# this project promises to keep.
+#
+# product/ is listed without a barcode. Every product is that one document
+# under a different query string, so there is one address to crawl rather than
+# one per SKU. See PRD section 16.2.
+SITEMAP = [
+    ('', 'weekly', '1.0'),
+    ('search/', 'weekly', '0.8'),
+    ('brands/', 'weekly', '0.8'),
+    ('scan/', 'monthly', '0.8'),
+    ('compare/', 'monthly', '0.7'),
+    ('methodology/', 'monthly', '0.7'),
+    ('product/', 'weekly', '0.5'),
+    ('submit/', 'yearly', '0.3'),
+    ('learn/', 'monthly', '0.9'),
+]
+
+SITEMAP_HEAD = """<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Cat Food Center sitemap.
+
+  GENERATED by tools/site/build.py. Do not hand-edit.
+
+  It is generated because it went stale twice by hand, and a sitemap that
+  lists an address the site no longer serves is worse than no sitemap: it
+  invites a crawler to spend its budget on 404s. The page lists here and the
+  ones that write the pages are now the same lists.
+
+  Every public page with content of its own. Deliberately omitted: the offline
+  page, reached only by the service worker for a page never opened on this
+  device, and tools/tests.html, which is unlinked, noindex, and not an address
+  this project promises to keep.
+
+  product/ is listed without a barcode. Every product is that one document
+  under a different query string, so there is one address to crawl rather than
+  one per SKU. Per-barcode pages would need pre-generating; see docs/PRD.md,
+  section 16.2.
+
+  Scope: this sitemap sits under a subpath of a domain this project does not
+  own, so it is trusted only for URLs beneath its own path unless the host-level
+  robots.txt names it. See robots.txt.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+"""
+
+
+def write_sitemap(lastmod):
+    """The sitemap, from the same page lists that generate the pages."""
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), 'learn'))
+    import shell  # noqa: E402  the guide's page list and slug-to-URL rule
+
+    entries = list(SITEMAP)
+    for slug, _label in shell.PAGES:
+        if slug == 'learn':
+            continue  # already above, at its own priority
+        entries.append((shell.href(slug).replace('{{root}}', ''), 'monthly', '0.7'))
+
+    out = [SITEMAP_HEAD]
+    for path, freq, priority in entries:
+        out.append('  <url>\n    <loc>%s%s</loc>\n    <lastmod>%s</lastmod>\n'
+                   '    <changefreq>%s</changefreq>\n    <priority>%s</priority>\n  </url>\n'
+                   % (BASE, path, lastmod, freq, priority))
+    out.append('</urlset>\n')
+    path = os.path.join(ROOT, 'sitemap.xml')
+    io.open(path, 'w', encoding='utf-8', newline='\n').write(''.join(out))
+    return len(entries)
+
+
 if __name__ == '__main__':
     for row in PAGES:
-        print('built %s.html' % row[0])
+        print('built %s' % ('index.html' if row[0] == 'index' else row[0] + '/index.html'))
         build(*row)
     print('\n%d pages written.' % len(PAGES))
+    n = write_sitemap(datetime.date.today().isoformat())
+    print('sitemap.xml written, %d urls.' % n)

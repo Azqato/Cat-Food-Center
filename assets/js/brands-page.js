@@ -1,5 +1,5 @@
 /* ==========================================================================
-   brands.html: every brand in the cat food category, biggest first.
+   /brands/: every brand in the cat food category, biggest first.
 
    This page exists because free-text search is the wrong primary tool for this
    database. The records are thin and inconsistently named, brands stored as
@@ -13,6 +13,7 @@
    and works offline once cached, where a round trip per keystroke would be
    neither.
    ========================================================================== */
+import { SITE } from './site.js';
 import { fetchBrands, brandTagExpression } from './opff.js';
 
 const listEl = document.getElementById('brand-list');
@@ -31,7 +32,7 @@ function tile(brand) {
   const expression = brandTagExpression(brand);
   const products = brand.count === 1 ? '1 product' : `${brand.count} products`;
   return `<li>
-    <a href="./search.html?brand=${encodeURIComponent(expression)}"
+    <a href="${SITE}search/?brand=${encodeURIComponent(expression)}"
        class="card-link items-center justify-between gap-3 bg-surface border border-hairline rounded-card px-4 py-3">
       <span class="text-ink text-small font-medium truncate">${esc(brand.name)}</span>
       <span class="text-ink-soft text-micro shrink-0">${products}</span>

@@ -1,8 +1,15 @@
 /* ==========================================================================
    Service worker registration, and the offline banner.
 
-   A classic script rather than a module: it has no imports, and it needs to run
-   on the guide pages too, which are generated and do not use modules.
+   A classic script rather than a module: it has no imports, and nothing here
+   needs one.
+
+   It is loaded by the nine application pages only. The eleven guide pages do
+   not include it, so arriving on one registers no worker and shows no offline
+   banner; a visitor who then reaches an application page gets both. That is
+   long-standing behaviour rather than a decision anybody made, and it is
+   recorded in docs/PRD.md section 24.6 rather than changed inside M19, whose
+   subject is where files live.
 
    Registration is deliberately late (on `load`) so that installing the worker
    and warming its cache never competes with rendering the page the visitor is
@@ -11,12 +18,29 @@
 (function () {
   'use strict';
 
+  /* Where sw.js is, measured rather than assumed.
+
+     This used to register './sw.js', which was correct while every page sat
+     at the repository root. Since M19 a page is a directory, so from /search/
+     that string means /search/sw.js. It would 404, and the more dangerous
+     half is what happens if it ever did not: a worker's scope comes from its
+     own path, so a worker registered under /search/ controls /search/ and
+     nothing else. Offline support would narrow to one directory with no error
+     anywhere, which is the failure PRD section 16.4 names.
+
+     '/sw.js' is not the fix either: the site is served from a repository
+     subpath and that points at the domain root.
+
+     document.currentScript is this file's own <script> element, and this file
+     is always assets/js/pwa.js, exactly two levels below the site root, on
+     every page at every depth. It is read here at top level because
+     currentScript is only defined during initial execution, not inside the
+     load callback below. */
+  var SW = new URL('../../sw.js', document.currentScript.src).href;
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      // A relative path, so the worker's scope is the site's directory. On
-      // GitHub Pages the site lives under a repository subpath, and '/sw.js'
-      // would point at the domain root and fail to register.
-      navigator.serviceWorker.register('./sw.js').catch(function () {
+      navigator.serviceWorker.register(SW).catch(function () {
         /* Registration fails on an insecure origin, in some private modes, and
            where the user has disabled it. None of that should surface: the site
            works without a worker, which is the whole point of a progressive

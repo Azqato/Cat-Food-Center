@@ -6,7 +6,7 @@
    visitor's browser, which is deliberate; a sceptical reader can open
    devtools and watch a score being derived. See docs/PRD.md section 16.2.
 
-   The methodology is published in PRD.md §6 and on methodology.html. This file
+   The methodology is published in PRD.md §6 and on /methodology/. This file
    is the implementation of that document; if the two disagree, the document is
    wrong until fixed, because it is what we tell people we do.
 
@@ -27,7 +27,7 @@
         and often the honest, outcome.
    ========================================================================== */
 
-/* PRD §6.1. These must stay in sync with methodology.html. */
+/* PRD §6.1. These must stay in sync with /methodology/. */
 export const WEIGHTS = { nutrition: 0.55, additives: 0.35, transparency: 0.10 };
 
 /* PRD §6.6. */
@@ -39,7 +39,7 @@ export const BANDS = [
 ];
 
 /* AAFCO adult maintenance minimum, dry-matter basis. The guide's
-   learn-daily-requirements.html carries the full 42-nutrient table; these are
+   /learn/daily-requirements/ carries the full 42-nutrient table; these are
    the two the API can ever supply. */
 const AAFCO_ADULT_MIN = { proteinDM: 26, fatDM: 9 };
 
@@ -125,7 +125,7 @@ function anyMatch(text, terms) {
 /* ── Dry-matter conversion ── */
 
 /**
- * Convert an as-fed percentage to dry matter (learn-labels.html §3).
+ * Convert an as-fed percentage to dry matter (/learn/labels/ §3).
  *
  *     dry matter % = as fed % ÷ (100 − moisture %) × 100
  *
@@ -141,7 +141,7 @@ export function toDryMatter(asFedPct, moisturePct) {
 }
 
 /**
- * Carbohydrate by difference: nitrogen-free extract (learn-labels.html §5).
+ * Carbohydrate by difference: nitrogen-free extract (/learn/labels/ §5).
  * Needs all four other fractions, so it is often unavailable.
  */
 export function carbsByDifference({ proteinDM, fatDM, fibreDM, ashDM }) {
@@ -254,7 +254,7 @@ function scoreNutrition(product, kb) {
   }
 
   /* Moisture: 10 points. Wet formats support hydration and urinary health
-     (learn-hydration.html). */
+     (/learn/hydration/). */
   if (product.format && product.format !== 'unknown') {
     possible += 10;
     const points = { wet: 10, 'semi-moist': 5, dry: 2, treat: 2 }[product.format] ?? 2;
@@ -588,8 +588,18 @@ export function explainIngredient(entry, kb) {
 
 let kbPromise = null;
 
+/* The default is resolved against this module's own location rather than
+   against the page. './assets/data/additives.json' was correct while every
+   page sat at the repository root; since M19 a page is a directory, so from
+   /product/ it asked for /product/assets/data/additives.json and every score
+   on the site failed at once. scoring.js is always assets/js/scoring.js, two
+   levels below the site root, whichever page imported it. Same reasoning as
+   assets/js/site.js, which cannot be imported here: scoring.js is pure and
+   has no dependencies, and that is worth keeping. */
+const KB_URL = new URL('../data/additives.json', import.meta.url).href;
+
 /** Fetch and cache the additive knowledge base. */
-export function loadKnowledgeBase(url = './assets/data/additives.json') {
+export function loadKnowledgeBase(url = KB_URL) {
   if (!kbPromise) {
     kbPromise = fetch(url).then((r) => {
       if (!r.ok) throw new Error('Could not load the additive knowledge base.');

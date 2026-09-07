@@ -1,7 +1,7 @@
     <div class="flex flex-col gap-6">
 
       <!-- Pre-filled from ?q= by assets/js/search-page.js -->
-      <form action="./search.html" method="get" class="flex gap-2" role="search">
+      <form action="{{root}}search/" method="get" class="flex gap-2" role="search">
         <input type="search" name="q" id="search-input" placeholder="Brand or product name…"
           aria-label="Search cat food products" class="field flex-1 min-w-0" />
         <button type="submit" class="btn btn-accent shrink-0">Search</button>
@@ -20,7 +20,7 @@
               style="accent-color:var(--accent);width:16px;height:16px;cursor:pointer">
             Only products that can be scored
           </label>
-          <a href="./brands.html" class="text-small text-accent">Browse by brand &rarr;</a>
+          <a href="{{root}}brands/" class="text-small text-accent">Browse by brand &rarr;</a>
         </div>
 
         <ul id="results-list" class="result-list"></ul>

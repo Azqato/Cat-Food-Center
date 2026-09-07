@@ -1,5 +1,5 @@
 /* ==========================================================================
-   submit.html: what to do when a product is not in the database.
+   /submit/: what to do when a product is not in the database.
 
    There is no submission queue of our own, and that is a decision rather than
    a gap. A static site cannot accept writes (docs/PRD.md section 16.2),
@@ -14,6 +14,7 @@
    out the most common false alarm (a mistyped barcode) before sending
    anybody off to fill in a form.
    ========================================================================== */
+import { SITE } from './site.js';
 import { isValidBarcode } from './scanner.js';
 import { fetchProduct } from './opff.js';
 
@@ -76,7 +77,7 @@ verifyForm.addEventListener('submit', async (event) => {
     // Worth catching: the visitor may have arrived here from a typo, or the
     // record may have been added since.
     say('That product is in the database after all.', 'good');
-    verifyResult.innerHTML += ` <a href="./product.html?barcode=${esc(code)}" class="text-accent">Open its page</a>.`;
+    verifyResult.innerHTML += ` <a href="${SITE}product/?barcode=${esc(code)}" class="text-accent">Open its page</a>.`;
     return;
   }
 

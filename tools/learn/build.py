@@ -10,7 +10,7 @@ Output is plain static HTML written to the repository root, so deployment
 still needs no build step: this script exists so the eleven pages cannot
 drift apart, not because the site requires it.
 
-Edit content in tools/learn/c_*.py and rerun. Do not hand-edit learn*.html;
+Edit content in tools/learn/c_*.py and rerun. Do not hand-edit learn/*/index.html;
 those files are generated and your changes will be overwritten.
 """
 import os

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Run tests.html headlessly and report the result.
+"""Run tools/tests.html headlessly and report the result.
 
     python tools/run-tests.py
 
 The suite itself lives in the browser (there is no Node.js in this project and
 no build step (see docs/PRD.md section 16.2). This script serves the)
-repository, loads tests.html in headless Edge, and reads back
+repository, loads tools/tests.html in headless Edge, and reads back
 window.__testResults. Exits non-zero if anything failed.
 """
 import asyncio
@@ -38,8 +38,8 @@ async def main():
     try:
         from playwright.async_api import async_playwright
     except ImportError:
-        print('Playwright is not installed. Open tests.html in a browser instead:')
-        print('  python -m http.server 8000   →   http://localhost:8000/tests.html')
+        print('Playwright is not installed. Open tools/tests.html in a browser instead:')
+        print('  python -m http.server 8000   →   http://localhost:8000/tools/tests.html')
         return 2
 
     httpd, port = serve()
@@ -51,7 +51,7 @@ async def main():
             page.on('console', lambda m: errors.append(m.text) if m.type == 'error' else None)
             page.on('pageerror', lambda e: errors.append(str(e)))
 
-            await page.goto('http://127.0.0.1:%d/tests.html' % port)
+            await page.goto('http://127.0.0.1:%d/tools/tests.html' % port)
             try:
                 await page.wait_for_function('window.__testResults', timeout=15000)
             except Exception:

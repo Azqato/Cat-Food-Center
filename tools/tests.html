@@ -11,9 +11,9 @@
      Answers PRD open question 10. -->
 <meta name="robots" content="noindex, follow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="./favicon.svg">
-<script src="./assets/cfc-theme.js"></script>
-<link rel="stylesheet" href="./assets/cfc-tokens.css">
+<link rel="icon" href="../favicon.svg">
+<script src="../assets/cfc-theme.js"></script>
+<link rel="stylesheet" href="../assets/cfc-tokens.css">
 <style>
   body {
     margin: 0; padding: 32px 24px 64px;
@@ -61,15 +61,15 @@
     The project has no build step and no Node.js, so the tests run where the code
     runs. Serve the repository (<code>python -m http.server 8000</code>) and open
     this page: ES modules will not load over <code>file://</code>.
-    <a href="./index.html">Back to the site</a>.
+    <a href="../">Back to the site</a>.
   </p>
   <div id="results"></div>
 </main>
 
 <script type="module">
-  import { run } from './assets/js/test-runner.js';
-  import './assets/js/opff.test.js';
-  import './assets/js/scoring.test.js';
-  import './assets/js/scanner.test.js';
+  import { run } from '../assets/js/test-runner.js';
+  import '../assets/js/opff.test.js';
+  import '../assets/js/scoring.test.js';
+  import '../assets/js/scanner.test.js';
   run();
 </script>

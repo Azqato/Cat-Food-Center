@@ -221,7 +221,7 @@ kilocalorie eaten, which for our example cat gives the same answer.</p>
 desert animals with a blunt thirst response, reliably fail to do. A cat eating only wet food takes in
 around 230&nbsp;ml from the food alone and arrives at adequate hydration without trying.</p>
 
-<p><a href="./learn-hydration.html">Full detail on hydration &rarr;</a></p>""",
+<p><a href="{{root}}learn/hydration/">Full detail on hydration &rarr;</a></p>""",
 
 h2("ceilings", "6. Upper limits: more is not better"),
 """<p>Deficiency gets the attention, but after obesity the most common nutritional problem in pet cats
@@ -270,7 +270,7 @@ h2("check", "7. How to check a real product meets this"),
 
   <li><strong>Convert the guaranteed analysis to dry matter</strong> before comparing anything above, or
   you will conclude every wet food is protein-deficient.
-  <a href="./learn-labels.html">How to do that &rarr;</a></li>
+  <a href="{{root}}learn/labels/">How to do that &rarr;</a></li>
 
   <li><strong>Ask the manufacturer the WSAVA questions.</strong> Do they employ a full-time qualified
   nutritionist with a PhD in animal nutrition or ACVN/ECVCN board certification? Who formulates the diets?

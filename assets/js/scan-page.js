@@ -1,5 +1,5 @@
 /* ==========================================================================
-   scan.html: camera, permission, and the manual fallback.
+   /scan/: camera, permission, and the manual fallback.
 
    The scanner itself lives in scanner.js. This file is the part that has to be
    kind about failure, which is most of the work: a camera feature fails for
@@ -11,6 +11,7 @@
    The manual barcode field is not a consolation prize. It is always visible,
    it works everywhere, and on a desktop browser it is the primary path.
    ========================================================================== */
+import { SITE } from './site.js';
 import { startScanner, unsupportedReason, isValidBarcode } from './scanner.js';
 
 const idle = document.getElementById('scan-idle');
@@ -37,7 +38,7 @@ function notice(title, body) {
 }
 
 function toProduct(code) {
-  window.location.href = `./product.html?barcode=${encodeURIComponent(code)}`;
+  window.location.href = `${SITE}product/?barcode=${encodeURIComponent(code)}`;
 }
 
 /**

@@ -13,13 +13,13 @@ same NAV and FOOTER definitions from here so the two cannot drift.
 # Site navigation. One list, used inline in the bar above 900px and inside the
 # drawer below it.
 NAV = [
-    ('./index.html',       'Home'),
-    ('./scan.html',        'Scan'),
-    ('./search.html',      'Search'),
-    ('./brands.html',      'Brands'),
-    ('./compare.html',     'Compare'),
-    ('./learn.html',       'Learn'),
-    ('./methodology.html', 'Methodology'),
+    ('{{root}}',       'Home'),
+    ('{{root}}scan/',        'Scan'),
+    ('{{root}}search/',      'Search'),
+    ('{{root}}brands/',      'Brands'),
+    ('{{root}}compare/',     'Compare'),
+    ('{{root}}learn/',       'Learn'),
+    ('{{root}}methodology/', 'Methodology'),
 ]
 
 SUPPORT_URL = 'https://azqato.github.io/support.html'
@@ -43,14 +43,14 @@ THEME_TOGGLE = (
     '</button>')
 
 FOOTER_LINKS = [
-    ('Find a food', [('./scan.html', 'Scan a barcode'), ('./search.html', 'Search'),
-                     ('./brands.html', 'Browse brands'), ('./compare.html', 'Compare two foods')]),
-    ('The guide', [('./learn.html', 'Overview'), ('./learn-nutrition.html', 'Nutrition'),
-                   ('./learn-additives.html', 'Additives'), ('./learn-toxic.html', 'Toxic foods')]),
-    ('About', [('./methodology.html', 'How scoring works'),
+    ('Find a food', [('{{root}}scan/', 'Scan a barcode'), ('{{root}}search/', 'Search'),
+                     ('{{root}}brands/', 'Browse brands'), ('{{root}}compare/', 'Compare two foods')]),
+    ('The guide', [('{{root}}learn/', 'Overview'), ('{{root}}learn/nutrition/', 'Nutrition'),
+                   ('{{root}}learn/additives/', 'Additives'), ('{{root}}learn/toxic/', 'Toxic foods')]),
+    ('About', [('{{root}}methodology/', 'How scoring works'),
                ('https://world.openpetfoodfacts.org/', 'Open Pet Food Facts'),
                ('https://github.com/Azqato/Cat-Food-Center/issues', 'Report a problem'),
-               ('./LICENSE.md', 'Licence')]),
+               ('{{root}}LICENSE.md', 'Licence')]),
 ]
 
 
@@ -58,7 +58,7 @@ def head(title, description, page_css=True, extra=''):
     """The <head>. cfc-theme.js is deliberately a blocking script here: that
     position is what applies the stored theme before first paint, and moving it
     or adding defer reintroduces a flash of the wrong palette on every page."""
-    app_css = ('  <link rel="stylesheet" href="./assets/cfc-app.css">\n' if page_css else '')
+    app_css = ('  <link rel="stylesheet" href="{{root}}assets/cfc-app.css">\n' if page_css else '')
     # The home page is already called Cat Food Center. Suffixing it would make
     # the browser tab read "Cat Food Center - Cat Food Center".
     full = title if title == 'Cat Food Center' else title + ' - Cat Food Center'
@@ -68,13 +68,13 @@ def head(title, description, page_css=True, extra=''):
         '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
         '  <title>%s</title>\n'
         '  <meta name="description" content="%s">\n'
-        '  <link rel="icon" href="./favicon.svg">\n'
-        '  <link rel="manifest" href="./manifest.webmanifest">\n'
+        '  <link rel="icon" href="{{root}}favicon.svg">\n'
+        '  <link rel="manifest" href="{{root}}manifest.webmanifest">\n'
         '  <meta name="theme-color" content="#C2410C">\n'
-        '  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">\n'
+        '  <link rel="apple-touch-icon" href="{{root}}assets/icons/icon-192.png">\n'
         '  <!-- Blocking on purpose: applies the stored theme before first paint. -->\n'
-        '  <script src="./assets/cfc-theme.js"></script>\n'
-        '  <link rel="stylesheet" href="./assets/cfc-tokens.css">\n'
+        '  <script src="{{root}}assets/cfc-theme.js"></script>\n'
+        '  <link rel="stylesheet" href="{{root}}assets/cfc-tokens.css">\n'
         '  <link rel="preconnect" href="https://fonts.googleapis.com">\n'
         '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
         # Six of the nine application pages cannot paint until Open Pet Food
@@ -85,7 +85,7 @@ def head(title, description, page_css=True, extra=''):
         '  <link rel="preconnect" href="https://images.openpetfoodfacts.org" crossorigin>\n'
         '  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;'
         '9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">\n'
-        '  <link rel="stylesheet" href="./assets/cfc.css">\n'
+        '  <link rel="stylesheet" href="{{root}}assets/cfc.css">\n'
         '%s%s</head>\n' % (full, description, app_css, extra))
 
 
@@ -101,7 +101,7 @@ def topbar(current, show_search=True):
     search = ''
     if show_search:
         search = (
-            '\n  <a class="topbar-search" href="./search.html">'
+            '\n  <a class="topbar-search" href="{{root}}search/">'
             '\n    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
             '<circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M20 20l-3.5-3.5"/></svg>'
             '\n    Search products\n    <span class="kbd">/</span>\n  </a>')
@@ -114,7 +114,7 @@ def topbar(current, show_search=True):
         '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
         '<path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>\n'
         '  </button>\n'
-        '  <a class="topbar-brand" href="./index.html">%s Cat Food Center</a>\n'
+        '  <a class="topbar-brand" href="{{root}}">%s Cat Food Center</a>\n'
         '  <nav class="topbar-nav" aria-label="Main navigation">%s\n  </nav>\n'
         '  <span class="topbar-spacer"></span>%s\n'
         '  %s\n'
@@ -151,7 +151,7 @@ def footer():
         '<footer class="site-footer">\n'
         '  <div class="site-footer-inner">\n'
         '    <div>\n'
-        '      <a class="footer-brand" href="./index.html">%s Cat Food Center</a>\n'
+        '      <a class="footer-brand" href="{{root}}">%s Cat Food Center</a>\n'
         '      <p class="footer-tagline">Trustworthy reviews for your purrfect companion. '
         'No ads, no affiliate links, no brand deals.</p>\n'
         '      <a class="footer-cta" href="%s" target="_blank" rel="noopener noreferrer">Support this project</a>\n'
@@ -169,8 +169,8 @@ def footer():
 def scripts(module=None, docs_js=True):
     out = ''
     if docs_js:
-        out += '<script src="./assets/cfc-docs.js"></script>\n'
+        out += '<script src="{{root}}assets/cfc-docs.js"></script>\n'
     if module:
-        out += '<script type="module" src="./assets/js/%s"></script>\n' % module
-    out += '<script src="./assets/js/pwa.js"></script>\n'
+        out += '<script type="module" src="{{root}}assets/js/%s"></script>\n' % module
+    out += '<script src="{{root}}assets/js/pwa.js"></script>\n'
     return out

@@ -190,7 +190,7 @@ E("Garlic and onion powder", 2,
   toppers. The organosulfur compounds in <em>Allium</em> species cause oxidative damage to feline red
   blood cells and Heinz body anaemia; cats are more sensitive than dogs. The amounts in a flavouring are
   usually small, but the effect is cumulative and there is no reason to accept any.
-  <a href="./learn-toxic.html">More on Allium toxicity &rarr;</a></p>"""),
+  <a href="{{root}}learn/toxic/">More on Allium toxicity &rarr;</a></p>"""),
 
 h2("tier1", "4. Tier 1 - commonly criticised, not actually a problem"),
 """<p>A lot of ingredient-list anxiety is aimed at the wrong targets. These come up constantly in

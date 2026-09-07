@@ -30,7 +30,7 @@ why, and how the nutrition compares once moisture is accounted for.
 food and a dry food can be read on the same scale rather than the wetter one
 looking worse for containing water.
 
-**Learn the subject.** [The Cat Care Guide](learn.html) is eleven free, sourced
+**Learn the subject.** [The Cat Care Guide](/learn/) is eleven free, sourced
 pages on feeding a cat, and is useful without looking up a single product.
 
 **Use it in a shop.** It works on a phone one-handed, installs to a home
@@ -54,7 +54,7 @@ in the United States, so a food containing it lands in the Bad band whatever
 else it does well.
 
 The full method is on the
-[methodology page](https://azqato.github.io/Cat-Food-Center/methodology.html),
+[methodology page](https://azqato.github.io/Cat-Food-Center/methodology/),
 and the score is calculated in your own browser, so anyone who wants to check
 it can watch it happen.
 

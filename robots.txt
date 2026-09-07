@@ -18,7 +18,10 @@
 # the intent either way. The same limitation applies to the sitemap below.
 
 # One page asks not to be listed, and it asks in its own head rather than
-# here: tests.html carries <meta name="robots" content="noindex, follow">.
+# here: tools/tests.html carries <meta name="robots" content="noindex, follow">.
+# It moved there from the repository root in M19, under the root policy in
+# docs/PRD.md section 16.4; the noindex travelled with it, which is the
+# advantage of a rule the page carries itself over one written down here.
 # A Disallow line would have been the wrong instrument. It stops the fetch
 # rather than the listing, and a URL disallowed from crawling can still be
 # indexed from a link alone, with no description because nobody was allowed

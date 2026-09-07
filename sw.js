@@ -26,8 +26,13 @@
    v3: M16a rewrote cfc.css and cfc-app.css to fix accessibility defects. The
    shell is served stale-while-revalidate, so a returning device would have
    shown the old stylesheet once more before picking up the new one. A contrast
-   fix that arrives on the second visit has not really been deployed. */
-const VERSION = 'v3';
+   fix that arrives on the second visit has not really been deployed.
+
+   v4: M19 moved every page. A device holding a v3 cache has nine documents
+   precached under addresses that no longer exist, and would serve them from
+   the shell cache indefinitely. Every one of those entries has to go, and
+   bumping the version is the only lever that reaches a device we cannot. */
+const VERSION = 'v4';
 const SHELL = `cfc-shell-${VERSION}`;
 const API = `cfc-api-${VERSION}`;
 const IMAGES = `cfc-images-${VERSION}`;
@@ -38,20 +43,21 @@ const IMAGES = `cfc-images-${VERSION}`;
 const SHELL_ASSETS = [
   './',
   './index.html',
-  './search.html',
-  './brands.html',
-  './product.html',
-  './scan.html',
-  './submit.html',
-  './compare.html',
-  './methodology.html',
-  './offline.html',
+  './search/',
+  './brands/',
+  './product/',
+  './scan/',
+  './submit/',
+  './compare/',
+  './methodology/',
+  './offline/',
   './favicon.svg',
   './assets/cfc-tokens.css',
   './assets/cfc-theme.js',
   './assets/cfc.css',
   './assets/cfc-app.css',
   './assets/cfc-docs.js',
+  './assets/js/site.js',
   './assets/js/opff.js',
   './assets/js/scoring.js',
   './assets/js/scanner.js',
@@ -180,15 +186,16 @@ self.addEventListener('fetch', (event) => {
   }
 
   /* Navigations: straight to the network, so a deploy is picked up
-     immediately, falling back to the precached page and then to offline.html.
+     immediately, falling back to the precached page and then to the offline
+     page.
 
      Deliberately not cached here. Every product is a different query string on
-     the same document, product.html?barcode=X,  so caching the response would
+     the same document, product/?barcode=X, so caching the response would
      add one entry per product viewed, all of them byte-identical, and grow the
      shell cache without bound. The document is already precached, so
      `ignoreSearch` finds it whatever the query, and the barcode is read from
      the URL by the page itself. Without that flag an offline product page
-     would fall through to offline.html even though the document was cached. */
+     would fall through to the offline page even though it was cached. */
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       const cache = await caches.open(SHELL);
@@ -196,7 +203,7 @@ self.addEventListener('fetch', (event) => {
         return await fetch(request);
       } catch {
         return (await cache.match(request, { ignoreSearch: true }))
-          || (await cache.match('./offline.html'))
+          || (await cache.match('./offline/'))
           || Response.error();
       }
     })());

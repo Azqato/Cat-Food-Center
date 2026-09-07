@@ -27,10 +27,20 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Barcodes observed to carry different amounts of data, so each page state gets
 # exercised: a full guaranteed analysis, a record with no ingredients, and a
 # barcode that is not in the database at all.
+# Barcode, description, and a string the rendered page can only contain if it
+# genuinely worked. The third element is the M19 addition; see the note by the
+# paths list below for why a non-empty heading was not enough.
+#
+# 4008429158100 sat in the first row until M19, described as a full guaranteed
+# analysis. By then its ingredient list had been removed upstream and it
+# rendered the same "no score" page as the second row, so the check exercised
+# one page state twice and the scored page not at all. Nothing failed, because
+# nothing asked. That is the point of the third element: a description is a
+# claim about the data, and only an expectation tests it.
 CASES = [
-    ('4008429158100', 'dry food with a full guaranteed analysis'),
-    ('0050000102068', 'record with no ingredients and no nutriments'),
-    ('9999999999999', 'barcode not in the database'),
+    ('3596710487455', 'wet food that scores, with its reasoning shown', 'How this score was reached'),
+    ('0050000102068', 'record with no ingredients and no nutriments', 'Why there is no score'),
+    ('9999999999999', 'barcode not in the database', 'Product not found'),
 ]
 
 
@@ -57,7 +67,8 @@ async () => {
     return bits + '101';
   }
 
-  const scanner = await import('./assets/js/scanner.js');
+  // Relative to the scan page, which is /scan/ since M19, so one level up.
+  const scanner = await import('../assets/js/scanner.js');
   const out = {};
   for (const code of ['3596710487455', '5000159461122']) {
     const bits = bars(code), M = 3, quiet = 36;   // quiet zone, or nothing decodes
@@ -121,20 +132,28 @@ async def main():
     try:
         async with async_playwright() as p:
             browser = await p.chromium.launch(channel=EDGE_CHANNEL)
+            # Each page carries text it can only show if it actually worked.
+            # Added in M19, after that milestone broke every score on the site
+            # and this check passed all twelve pages anyway: it asked whether a
+            # heading was non-empty, and "Could not load this product" is a
+            # non-empty heading. The same lesson as M18, in a new place. An
+            # expectation is a string the page cannot print while broken.
             paths = (
-                [('/product.html?barcode=%s' % code, desc) for code, desc in CASES]
-                + [('/search.html?q=chicken', 'text search for "chicken"'),
-                   ('/scan.html', 'scan page with no camera available'),
-                   ('/index.html', 'home page'),
-                   ('/submit.html?barcode=9999999999999', 'submit page for a missing barcode'),
-                   ('/compare.html?a=0064992282189&b=3596710487455',
-                    'compare two fully scorable products'),
-                   ('/brands.html', 'brand index'),
-                   ('/search.html?q=chicken&page=2', 'second page of text results'),
-                   ('/search.html?brand=purina%7CPurina', 'brand-filtered results'),
-                   ('/search.html?q=chicken&only=scorable',
-                    'text results filtered to scorable only')])
-            for path, description in paths:
+                [('/product/?barcode=%s' % code, desc, expect)
+                 for code, desc, expect in CASES]
+                + [('/search/?q=chicken', 'text search for "chicken"', 'can be scored'),
+                   ('/scan/', 'scan page with no camera available', 'Scan a barcode'),
+                   ('/', 'home page', 'Cat Food Center'),
+                   ('/submit/?barcode=9999999999999', 'submit page for a missing barcode',
+                    'Add a missing product'),
+                   ('/compare/?a=0064992282189&b=3596710487455',
+                    'compare two fully scorable products', 'Compare two foods'),
+                   ('/brands/', 'brand index', 'Browse by brand'),
+                   ('/search/?q=chicken&page=2', 'second page of text results', 'can be scored'),
+                   ('/search/?brand=purina%7CPurina', 'brand-filtered results', 'can be scored'),
+                   ('/search/?q=chicken&only=scorable',
+                    'text results filtered to scorable only', 'that can be scored')])
+            for path, description, expect in paths:
                 page = await browser.new_page(viewport={'width': 1280, 'height': 900})
                 errors = []
 
@@ -173,12 +192,17 @@ async def main():
                 overflow = await page.evaluate(
                     'document.documentElement.scrollWidth > document.documentElement.clientWidth')
 
-                ok = not errors and not overflow and heading.strip()
+                body = await page.evaluate(
+                    "document.querySelector('main').textContent || ''")
+                found = expect in body
+
+                ok = not errors and not overflow and heading.strip() and found
                 if not ok:
                     failures.append(path)
                 print('%s %-44s %s' % ('PASS' if ok else 'FAIL', description, heading.strip()[:52]))
-                print('       sections=%d overflow=%s%s'
-                      % (sections, overflow, ('  ERRORS: %s' % errors) if errors else ''))
+                print('       sections=%d overflow=%s expected=%s%s'
+                      % (sections, overflow, 'yes' if found else 'NO (%r)' % expect,
+                         ('  ERRORS: %s' % errors) if errors else ''))
                 await page.close()
 
             total += 2
@@ -192,7 +216,7 @@ async def main():
             # that cannot match anything must return nothing: it is the only
             # question whose right answer an ignored parameter cannot fake.
             page = await browser.new_page(viewport={'width': 1280, 'height': 900})
-            await page.goto(base + '/search.html?q=zzzzqqqxyw')
+            await page.goto(base + '/search/?q=zzzzqqqxyw')
             await page.wait_for_function(
                 "!document.body.textContent.includes('Loading')", timeout=25000)
             await page.wait_for_timeout(1000)
@@ -213,7 +237,7 @@ async def main():
             # matches ingredients and descriptions too, so this asks for a
             # majority rather than for all of them. A result set that ignores
             # the query lands nowhere near half.
-            await page.goto(base + '/search.html?q=salmon')
+            await page.goto(base + '/search/?q=salmon')
             await page.wait_for_function(
                 "!document.body.textContent.includes('Loading')", timeout=25000)
             await page.wait_for_timeout(1000)
@@ -251,17 +275,17 @@ async def main():
             # first-visit state the section is supposed to hide itself in.
             context = await browser.new_context()
             page = await context.new_page()
-            await page.goto(base + '/index.html')
+            await page.goto(base + '/')
             await page.wait_for_timeout(400)
             hidden_first = await page.evaluate(
                 "document.getElementById('recent-section').hidden")
 
-            await page.goto(base + '/product.html?barcode=%s' % CASES[0][0])
+            await page.goto(base + '/product/?barcode=%s' % CASES[0][0])
             await page.wait_for_function(
                 "!document.body.textContent.includes('Loading')", timeout=25000)
             await page.wait_for_timeout(600)
 
-            await page.goto(base + '/index.html')
+            await page.goto(base + '/')
             await page.wait_for_timeout(600)
             shown_after = await page.evaluate(
                 "!document.getElementById('recent-section').hidden"
@@ -281,7 +305,7 @@ async def main():
             # camera works - nothing here can - but it does prove that a correct
             # frame produces the correct barcode rather than a plausible wrong one.
             page = await browser.new_page()
-            await page.goto(base + '/scan.html')
+            await page.goto(base + '/scan/')
             roundtrip = await page.evaluate(DECODE_ROUNDTRIP)
             ok = all(r['matches'] and r['valid'] for r in roundtrip.values())
             if not ok:
@@ -297,7 +321,7 @@ async def main():
             # fetch returns, so cfc-docs.js builds the list from the DOM. That
             # makes it the one rail that can silently ship empty.
             page = await browser.new_page()
-            await page.goto(base + '/product.html?barcode=%s' % CASES[0][0])
+            await page.goto(base + '/product/?barcode=%s' % CASES[0][0])
             await page.wait_for_function(
                 "!document.body.textContent.includes('Loading')", timeout=25000)
             await page.wait_for_timeout(600)
@@ -318,12 +342,12 @@ async def main():
             # shown as a current one is the failure this cache could introduce.
             context = await browser.new_context()
             page = await context.new_page()
-            await page.goto(base + '/index.html')
+            await page.goto(base + '/')
             await page.wait_for_timeout(2500)
             shell_size = await page.evaluate(
                 SHELL_COUNT_JS)
 
-            await page.goto(base + '/product.html?barcode=%s' % CASES[0][0])
+            await page.goto(base + '/product/?barcode=%s' % CASES[0][0])
             await page.wait_for_function(
                 "!document.body.textContent.includes('Loading')", timeout=25000)
             await page.wait_for_timeout(900)
@@ -340,7 +364,7 @@ async def main():
                                    % (shell_size, shell_after == shell_size)))
 
             await context.set_offline(True)
-            await page.goto(base + '/product.html?barcode=%s' % CASES[0][0])
+            await page.goto(base + '/product/?barcode=%s' % CASES[0][0])
             await page.wait_for_function(
                 "!document.body.textContent.includes('Loading')", timeout=25000)
             await page.wait_for_timeout(1000)
@@ -356,6 +380,43 @@ async def main():
                 failures.append('offline behaviour')
             print('%s %-44s %s' % ('PASS' if offline_ok else 'FAIL', 'offline: cached product, labelled',
                                    'unvisited page falls back to "%s"' % unknown_title))
+            await context.close()
+
+            total += 1
+            # Scope.
+            #
+            # A worker controls its own directory and everything below it, and
+            # nothing above. Registering the wrong path is therefore not an
+            # error: it succeeds, and offline support silently narrows to one
+            # subtree with nothing logged anywhere. Before M19 every page sat at
+            # the root, so any relative path was the root and this could not go
+            # wrong; nothing checked it because nothing could. Now /search/ is a
+            # directory, './sw.js' from there would mean /search/sw.js, and the
+            # difference between that and working correctly is invisible until
+            # somebody is offline.
+            #
+            # Registration happens from /search/ rather than from the deepest
+            # page on the site because the guide pages do not load pwa.js at
+            # all; see the note in that file. /search/ is the deepest page that
+            # registers, and one level is all it takes for a relative path to be
+            # wrong.
+            context = await browser.new_context()
+            page = await context.new_page()
+            await page.goto(base + '/search/')
+            scope = await page.evaluate(
+                "navigator.serviceWorker.ready.then((r) => r.scope)")
+            # Registered from a subdirectory, controlling the root: the half
+            # that a scope-narrowed worker would fail.
+            await page.goto(base + '/')
+            await page.wait_for_timeout(600)
+            controlled = await page.evaluate("!!navigator.serviceWorker.controller")
+            scope_ok = scope == base + '/' and controlled
+            if not scope_ok:
+                failures.append('service worker scope')
+            print('%s %-44s %s' % ('PASS' if scope_ok else 'FAIL',
+                                   'service worker scope is the whole site',
+                                   'registered from /search/ with scope %s, home controlled=%s'
+                                   % (scope, controlled)))
             await context.close()
             await browser.close()
     finally:

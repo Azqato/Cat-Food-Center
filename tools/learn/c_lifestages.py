@@ -87,9 +87,9 @@ reversing it, and it is probably the single highest-leverage intervention in a y
 
 h2("adult", "4. Adult maintenance: one to seven years"),
 """<p>The steady state, and the stage where the main risk is complacency. A neutered indoor adult needs
-roughly <code>RER &times; 1.0–1.2</code> (see <a href="./learn-feeding.html">how much to feed</a> for)
+roughly <code>RER &times; 1.0–1.2</code> (see <a href="{{root}}learn/feeding/">how much to feed</a> for)
 the numbers. The nutritional targets are those on the
-<a href="./learn-daily-requirements.html">daily requirements page</a>.</p>
+<a href="{{root}}learn/daily-requirements/">daily requirements page</a>.</p>
 
 <p>What matters at this stage is monitoring rather than formulation:</p>
 <ul>

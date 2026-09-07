@@ -113,7 +113,7 @@ table(
         ["“Mixed tocopherols”, “Rosemary extract”, “Ascorbic acid”", "Natural preservatives. Shorter shelf life, no safety questions.", "<span class=\"chip chip-excellent\">Good</span>"],
     ]),
 
-"""<p><a href="./learn-additives.html">Full additive reference &rarr;</a></p>""",
+"""<p><a href="{{root}}learn/additives/">Full additive reference &rarr;</a></p>""",
 
 h2("naming", "5. The 95 / 25 / 3 naming rules"),
 """<p>US product names are regulated, and the wording tells you the minimum proportion of the named
@@ -135,7 +135,7 @@ similar and one is much cheaper, the name is usually where the difference is hid
 
 h2("calories", "6. Calorie content"),
 """<p>Expressed as kcal ME per kilogram and usually also per can or per cup. You need it to portion the
-food properly (see <a href="./learn-feeding.html">how much and how often</a>. Two cautions:)</p>
+food properly (see <a href="{{root}}learn/feeding/">how much and how often</a>. Two cautions:)</p>
 
 <ul>
   <li><strong>“Per cup” is unreliable.</strong> Kibble density varies by shape, and how you scoop varies

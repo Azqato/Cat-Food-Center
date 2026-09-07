@@ -1,5 +1,5 @@
 /* ==========================================================================
-   compare.html: two products side by side.
+   /compare/: two products side by side.
 
    ── The problem this page has to solve honestly ──
 
@@ -19,6 +19,7 @@
    Figures are shown on a dry-matter basis, because that is the only way a wet
    food at 11% protein and a dry food at 32% can be read against each other.
    ========================================================================== */
+import { SITE } from './site.js';
 import { fetchProduct } from './opff.js';
 import { scoreProduct, loadKnowledgeBase, toDryMatter, carbsByDifference } from './scoring.js';
 import { recentProducts } from './history.js';
@@ -117,7 +118,7 @@ function scoreTile(entry) {
     : `<span class="text-micro" style="color:${ink};text-align:center;line-height:1.2">Not<br>scored</span>`}
       </div>
       <div class="min-w-0">
-        <a href="./product.html?barcode=${esc(product.barcode)}" class="text-ink font-medium text-small" style="text-decoration:none">${esc(product.name)}</a>
+        <a href="${SITE}product/?barcode=${esc(product.barcode)}" class="text-ink font-medium text-small" style="text-decoration:none">${esc(product.name)}</a>
         <p class="text-ink-soft text-micro">${esc(meta || 'Brand not recorded')}</p>
         ${result.scorable ? `<p class="text-micro" style="color:${ink === '#FFFFFF' ? 'var(--ink-soft)' : 'var(--ink-soft)'}">${esc(result.bandLabel)} · ${esc(result.confidence)} confidence</p>` : ''}
       </div>
@@ -215,7 +216,7 @@ function renderComparison(entries) {
       Highlighted cells mark the higher or lower figure, not a verdict; a single number is
       not a food. Where only one product publishes a figure, neither is highlighted, because that
       would be a comment on the database rather than on the food.
-      <a href="./methodology.html" class="text-accent">Full methodology</a>.
+      <a href="${SITE}methodology/" class="text-accent">Full methodology</a>.
     </p>`;
 }
 

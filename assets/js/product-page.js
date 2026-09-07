@@ -1,5 +1,5 @@
 /* ==========================================================================
-   product.html: fetch a barcode, score it, render it.
+   /product/: fetch a barcode, score it, render it.
 
    The page previously rendered a hardcoded mock. It now renders whatever
    Open Pet Food Facts actually holds, which is usually less, and the job of
@@ -10,6 +10,7 @@
    figures are wrong. So every section has a "not published" state that says
    so plainly, rather than a zero or a blank that reads as a finding.
    ========================================================================== */
+import { SITE } from './site.js';
 import { fetchProduct } from './opff.js';
 import { scoreProduct, loadKnowledgeBase, toDryMatter, explainIngredient } from './scoring.js';
 import { recordView } from './history.js';
@@ -149,7 +150,7 @@ function renderPillars(result) {
 
   return section('pillars-heading', 'Pillar breakdown',
     `<div class="nutrition-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">${rows}</div>
-     <p class="text-micro text-ink-soft mt-2">Each pillar is scored 0&ndash;100, then weighted. Where a pillar cannot be assessed its weight is redistributed across the others rather than counted as zero. <a href="./methodology.html">Full methodology</a>.</p>`);
+     <p class="text-micro text-ink-soft mt-2">Each pillar is scored 0&ndash;100, then weighted. Where a pillar cannot be assessed its weight is redistributed across the others rather than counted as zero. <a href="${SITE}methodology/">Full methodology</a>.</p>`);
 }
 
 /* ── Ingredient explanations ──
@@ -199,7 +200,7 @@ function explanation(info) {
      is entitled to check: an entry can be flagged on a phrase buried inside a
      longer one, and "matched on: bha" is the difference between a finding and
      an assertion. */
-  parts.push(`<p class="ingredient-detail-row"><span class="ingredient-detail-key">Matched on</span>&ldquo;${esc(info.matchedOn)}&rdquo;, against the reference in <a href="./learn-additives.html">the additive guide</a></p>`);
+  parts.push(`<p class="ingredient-detail-row"><span class="ingredient-detail-key">Matched on</span>&ldquo;${esc(info.matchedOn)}&rdquo;, against the reference in <a href="${SITE}learn/additives/">the additive guide</a></p>`);
   return `<div class="ingredient-detail">${parts.join('')}</div>`;
 }
 
@@ -301,8 +302,8 @@ function renderNutrition(product) {
   }
 
   const dmNote = typeof n.moisturePct === 'number'
-    ? '<p class="text-micro text-ink-soft mt-2">DM = dry-matter basis, which is the only way to compare a wet food with a dry one. See <a href="./learn-labels.html#dry-matter">the conversion</a>.</p>'
-    : '<p class="text-micro text-ink-soft mt-2">No moisture figure was published, so these are as-fed values and cannot be compared across wet and dry foods. See <a href="./learn-labels.html#dry-matter">why that matters</a>.</p>';
+    ? `<p class="text-micro text-ink-soft mt-2">DM = dry-matter basis, which is the only way to compare a wet food with a dry one. See <a href="${SITE}learn/labels/#dry-matter">the conversion</a>.</p>`
+    : `<p class="text-micro text-ink-soft mt-2">No moisture figure was published, so these are as-fed values and cannot be compared across wet and dry foods. See <a href="${SITE}learn/labels/#dry-matter">why that matters</a>.</p>`;
 
   return section('nutrition-heading', 'Nutrition snapshot',
     `<div class="nutrition-grid">
@@ -320,7 +321,7 @@ function renderAdequacy(product) {
   return section('aafco-heading', 'AAFCO adequacy',
     `<div class="bg-surface border border-hairline rounded-card p-4">
       <p class="text-small text-ink" style="margin:0 0 8px">Not recorded.</p>
-      <p class="text-small text-ink-soft" style="margin:0">Open Pet Food Facts does not capture the AAFCO complete-and-balanced statement, so we cannot report it here, and its absence from this page is not evidence that the food lacks one. It is the single most important sentence on a cat food label: <a href="./learn-labels.html#aafco">what to look for and why</a>.</p>
+      <p class="text-small text-ink-soft" style="margin:0">Open Pet Food Facts does not capture the AAFCO complete-and-balanced statement, so we cannot report it here, and its absence from this page is not evidence that the food lacks one. It is the single most important sentence on a cat food label: <a href="${SITE}learn/labels/#aafco">what to look for and why</a>.</p>
     </div>`);
 }
 
@@ -350,8 +351,8 @@ function renderNotFound(barcode, error) {
     ? esc(error)
     : `Open Pet Food Facts has no record for barcode <code>${esc(barcode)}</code>. The catalogue is community-maintained and far from complete, so a miss is common and does not say anything about the product.`}</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="./search.html" class="btn-link rounded-pill bg-accent text-on-accent text-small font-medium px-6 py-3" style="display:inline-block">Search by name instead</a>
-      <a href="./submit.html?barcode=${esc(barcode)}" class="btn-link rounded-pill text-small font-medium px-6 py-3" style="display:inline-block;border:1px solid var(--hairline);color:var(--ink)">Add it to the database</a>
+      <a href="${SITE}search/" class="btn-link rounded-pill bg-accent text-on-accent text-small font-medium px-6 py-3" style="display:inline-block">Search by name instead</a>
+      <a href="${SITE}submit/?barcode=${esc(barcode)}" class="btn-link rounded-pill text-small font-medium px-6 py-3" style="display:inline-block;border:1px solid var(--hairline);color:var(--ink)">Add it to the database</a>
     </div>
   </div>`;
 }

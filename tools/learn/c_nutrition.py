@@ -81,7 +81,7 @@ callout("warning", """<p>Reading crude protein straight off a wet food label and
 protein-poor. A can showing 10&nbsp;% protein and 78&nbsp;% moisture is 45&nbsp;% protein on a dry-matter
 basis: considerably richer than a kibble showing 32&nbsp;%. You must convert to dry matter before
 comparing anything.
-<a href="./learn-labels.html">How to do the conversion &rarr;</a></p>"""),
+<a href="{{root}}learn/labels/">How to do the conversion &rarr;</a></p>"""),
 
 h2("fat", "3. Fat"),
 """<p>Fat is the cat's preferred energy substrate, the carrier for vitamins A, D, E, and K, and the
@@ -243,7 +243,7 @@ table(
 
 callout("tip", """<p>A food that hits those numbers, carries an AAFCO complete-and-balanced statement
 for the right life stage, names its animal proteins, and comes from a manufacturer that can answer
-the <a href="./learn-daily-requirements.html#check">WSAVA questions</a> is a good food. Almost
+the <a href="{{root}}learn/daily-requirements/#check">WSAVA questions</a> is a good food. Almost
 everything else on the packaging is marketing.</p>"""),
 
 h2("sources", "Sources"),

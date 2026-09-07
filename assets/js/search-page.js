@@ -1,5 +1,5 @@
 /* ==========================================================================
-   search.html: live search against Open Pet Food Facts, by text or by brand.
+   /search/: live search against Open Pet Food Facts, by text or by brand.
 
    Results are scored on the fly with the same engine the product page uses,
    so a card and a product page can never disagree.
@@ -42,6 +42,7 @@
    it had enough would hammer a volunteer-run database on behalf of a query
    that may have no scorable results at all.
    ========================================================================== */
+import { SITE } from './site.js';
 import { searchProducts, brandDisplayName } from './opff.js';
 import { scoreProduct, loadKnowledgeBase } from './scoring.js';
 import { thumbHtml } from './thumb.js';
@@ -105,7 +106,7 @@ function card(product, result) {
      same edge of the same link is one more than the row needs. The whole row
      was always the link. */
   return `<li data-scorable="${result.scorable ? 'yes' : 'no'}">
-    <a href="./product.html?barcode=${esc(product.barcode)}"
+    <a href="${SITE}product/?barcode=${esc(product.barcode)}"
        class="card-link items-center gap-4 bg-surface border border-hairline rounded-card p-4">
       ${thumbHtml(product.thumbUrl)}
       <div class="min-w-0 flex-1">
@@ -155,7 +156,7 @@ function urlFor(state) {
   if (state.page > 1) params.set('page', String(state.page));
   if (state.scorableOnly) params.set('only', 'scorable');
   const qs = params.toString();
-  return './search.html' + (qs ? '?' + qs : '');
+  return SITE + 'search/' + (qs ? '?' + qs : '');
 }
 
 function go(state) {
@@ -204,7 +205,7 @@ async function run() {
     controls.hidden = true;
     pager.hidden = true;
     empty('Search the catalogue',
-      'Type a brand or product name above, or <a href="./brands.html" class="text-accent">browse by brand</a>. '
+      `Type a brand or product name above, or <a href="${SITE}brands/" class="text-accent">browse by brand</a>. `
       + 'Results come from Open Pet Food Facts, a community-maintained database, and are scored live.');
     return;
   }

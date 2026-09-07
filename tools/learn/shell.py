@@ -78,6 +78,26 @@ SIDEBAR = [
 TITLES = dict(PAGES)
 
 
+def href(slug):
+    """The site address of a guide page, in token form.
+
+    Slugs are historical: they are the old filenames, `learn-nutrition` and so
+    on, and they still name the c_*.py modules and the sidebar entries. Since
+    M19 they are no longer addresses. The overview is served at `learn/` and
+    every other page at `learn/<topic>/`, so the slug is translated here in one
+    place rather than at each of the twenty-odd points that link to one.
+
+    The {{root}} token is substituted by build() with the right number of `../`
+    segments for the page being written. Nothing in this file knows its depth,
+    which is the point: the overview sits one level down and the topic pages
+    two, and hard-coding either is how a link comes to work on one page and
+    404 on the next.
+    """
+    if slug == 'learn':
+        return '{{root}}learn/'
+    return '{{root}}learn/%s/' % slug[len('learn-'):]
+
+
 def sidebar_html(slug):
     """The guide's own section list, emitted as the second level of the shared
     drawer. The site links sit above it, so a reader on a guide page can reach
@@ -89,10 +109,10 @@ def sidebar_html(slug):
         out.append('    <ul>')
         for s, name in items:
             cur = ' aria-current="page"' if s == slug else ''
-            out.append('      <li><a href="./%s.html"%s>%s</a></li>' % (s, cur, name))
+            out.append('      <li><a href="%s"%s>%s</a></li>' % (href(s), cur, name))
         out.append('    </ul>')
         out.append('  </div>')
-    return chrome.drawer('./learn.html', sections="\n".join(out) + "\n")
+    return chrome.drawer('{{root}}learn/', sections="\n".join(out) + "\n")
 
 
 HEADING_RE = re.compile(r'<h2 id="([^"]+)"[^>]*>(.*?)</h2>', re.S)
@@ -122,13 +142,13 @@ def pagination_html(slug):
     next_ = PAGES[i + 1] if i < len(PAGES) - 1 else None
     out = ['<nav class="pagination" aria-label="Guide pagination">']
     if prev_:
-        out.append('  <a href="./%s.html" rel="prev"><span class="dir">Previous</span>'
-                   '<span class="label">&larr; %s</span></a>' % prev_)
+        out.append('  <a href="%s" rel="prev"><span class="dir">Previous</span>'
+                   '<span class="label">&larr; %s</span></a>' % (href(prev_[0]), prev_[1]))
     else:
         out.append('  <span class="placeholder"></span>')
     if next_:
-        out.append('  <a class="next" href="./%s.html" rel="next"><span class="dir">Next</span>'
-                   '<span class="label">%s &rarr;</span></a>' % next_)
+        out.append('  <a class="next" href="%s" rel="next"><span class="dir">Next</span>'
+                   '<span class="label">%s &rarr;</span></a>' % (href(next_[0]), next_[1]))
     else:
         out.append('  <span class="placeholder"></span>')
     out.append('</nav>')
@@ -138,35 +158,35 @@ def pagination_html(slug):
 FOOTER = """<footer class="site-footer">
   <div class="site-footer-inner">
     <div>
-      <a class="footer-brand" href="./index.html">%(paw)s Cat Food Center</a>
+      <a class="footer-brand" href="{{root}}">%(paw)s Cat Food Center</a>
       <p class="footer-tagline">Science-based cat food reviews and a free, open guide to feeding a cat well.</p>
       <a class="footer-cta" href="https://azqato.github.io/support.html" target="_blank" rel="noopener noreferrer">Support</a>
     </div>
     <div class="footer-col">
       <h3>Fundamentals</h3>
       <ul>
-        <li><a href="./learn-nutrition.html">Nutrition fundamentals</a></li>
-        <li><a href="./learn-daily-requirements.html">Daily requirements</a></li>
-        <li><a href="./learn-labels.html">Reading a label</a></li>
-        <li><a href="./learn-feeding.html">How much to feed</a></li>
+        <li><a href="{{root}}learn/nutrition/">Nutrition fundamentals</a></li>
+        <li><a href="{{root}}learn/daily-requirements/">Daily requirements</a></li>
+        <li><a href="{{root}}learn/labels/">Reading a label</a></li>
+        <li><a href="{{root}}learn/feeding/">How much to feed</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h3>Food &amp; water</h3>
       <ul>
-        <li><a href="./learn-food-types.html">Wet, dry, raw &amp; fresh</a></li>
-        <li><a href="./learn-hydration.html">Hydration</a></li>
-        <li><a href="./learn-additives.html">Additives to avoid</a></li>
-        <li><a href="./learn-life-stages.html">Life stages</a></li>
+        <li><a href="{{root}}learn/food-types/">Wet, dry, raw &amp; fresh</a></li>
+        <li><a href="{{root}}learn/hydration/">Hydration</a></li>
+        <li><a href="{{root}}learn/additives/">Additives to avoid</a></li>
+        <li><a href="{{root}}learn/life-stages/">Life stages</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h3>Reference</h3>
       <ul>
-        <li><a href="./learn.html">The Cat Care Guide</a></li>
-        <li><a href="./learn-toxic.html">Toxic foods</a></li>
-        <li><a href="./learn-health.html">Diet in disease</a></li>
-        <li><a href="./methodology.html">CFC Score methodology</a></li>
+        <li><a href="{{root}}learn/">The Cat Care Guide</a></li>
+        <li><a href="{{root}}learn/toxic/">Toxic foods</a></li>
+        <li><a href="{{root}}learn/health/">Diet in disease</a></li>
+        <li><a href="{{root}}methodology/">CFC Score methodology</a></li>
       </ul>
     </div>
   </div>
@@ -184,14 +204,14 @@ TEMPLATE = """<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>%(title)s - Cat Food Center</title>
   <meta name="description" content="%(description)s">
-  <link rel="icon" href="./favicon.svg">
+  <link rel="icon" href="{{root}}favicon.svg">
   <!-- Blocking on purpose: applies the stored theme before first paint. -->
-  <script src="./assets/cfc-theme.js"></script>
+  <script src="{{root}}assets/cfc-theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/cfc-tokens.css">
-  <link rel="stylesheet" href="./assets/cfc.css">
+  <link rel="stylesheet" href="{{root}}assets/cfc-tokens.css">
+  <link rel="stylesheet" href="{{root}}assets/cfc.css">
 </head>
 <body>
 
@@ -203,9 +223,9 @@ TEMPLATE = """<!DOCTYPE html>
   <main class="article" id="main">
 
     <nav class="crumbs" aria-label="Breadcrumb">
-      <a href="./index.html">Home</a>
+      <a href="{{root}}">Home</a>
       <span class="sep">/</span>
-      <a href="./learn.html">The Cat Care Guide</a>
+      <a href="{{root}}learn/">The Cat Care Guide</a>
       <span class="sep">/</span>
       <span class="current">%(crumb)s</span>
     </nav>
@@ -223,7 +243,7 @@ TEMPLATE = """<!DOCTYPE html>
 
 %(footer)s
 
-<script src="./assets/cfc-docs.js"></script>
+<script src="{{root}}assets/cfc-docs.js"></script>
 </body>
 </html>
 """
@@ -235,7 +255,7 @@ def build(slug, h1, description, lede, body, crumb=None, title=None):
         "description": description,
         "paw": PAW,
         "theme": THEME_TOGGLE,
-        "topbar": chrome.topbar('./learn.html'),
+        "topbar": chrome.topbar('{{root}}learn/'),
         "sidebar": sidebar_html(slug),
         "crumb": crumb or TITLES.get(slug, h1),
         "h1": h1,
@@ -245,7 +265,22 @@ def build(slug, h1, description, lede, body, crumb=None, title=None):
         "toc": toc_html(body),
         "footer": chrome.footer(),
     }
-    path = os.path.join(OUT, slug + ".html")
+
+    # Where the page lands, and therefore how far it is from the site root.
+    # The overview is learn/index.html, one level down; every topic page is
+    # learn/<topic>/index.html, two. See the root policy in PRD section 16.4.
+    parts = ['learn'] if slug == 'learn' else ['learn', slug[len('learn-'):]]
+    out_dir = os.path.join(OUT, *parts)
+    depth = len(parts)
+
+    # The one place a depth becomes a path. Everything upstream writes
+    # {{root}}, so a fragment, a sidebar entry and the shared chrome are all
+    # depth-agnostic and none of them can be wrong about where they ended up.
+    html = html.replace('{{root}}', '../' * depth)
+
+    if not os.path.isdir(out_dir):
+        os.makedirs(out_dir)
+    path = os.path.join(out_dir, "index.html")
     with io.open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(html)
     return path
