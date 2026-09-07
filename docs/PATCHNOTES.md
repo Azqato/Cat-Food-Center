@@ -21,6 +21,36 @@ punctuation rather than content.
 
 ---
 
+## [0.15.3] - 2026-09-06
+
+**Stale claims swept out of the documentation and the source comments.**
+
+Fixed
+* **Four source comments still described a site with Tailwind pages in it.**
+  `cfc.css` called itself the Learn section's stylesheet and said the palette
+  file was loaded by "the Tailwind pages that do not load this file";
+  `cfc-tokens.css` named index, search, product and methodology as Tailwind CDN
+  pages; `sw.js` routed "fonts, Tailwind, ZXing" to the network; and
+  `tools/learn/shell.py` said the theme toggle was hand-copied into four pages.
+  M14 removed all of that four milestones ago. A comment that describes an
+  architecture the reader cannot find is worse than no comment: it sends them
+  looking for something that is not there.
+* **The milestone table had no M15d row**, though it shipped the same day.
+* **Two debt rows described shortcuts that no longer exist.** "Product page
+  rail" was closed by M15d and "Per-page `<style>` blocks" by M14.
+* **The dangerous-to-change table warned about Tailwind opacity modifiers**, a
+  hazard that cannot be reached from any file in the tree.
+* **"Eight hand-copied page chromes" was the wrong fragility to name.** M14
+  ended that edit and created a different one: `chrome.py` is the only copy
+  now, so a mistake in it is a mistake on all twenty pages at once. The row
+  says that instead.
+* **The unpinned-CDN row named Tailwind**, which is gone. ZXing is the one
+  still fetched at runtime.
+* **Section 25.4 read as a status section but held a snapshot** from the M13
+  audit, saying M14 was unbuilt and M15b planned. Both shipped.
+
+---
+
 ## [0.15.2] - 2026-09-06
 
 **The product page builds its own "On this page" rail (M15d).**

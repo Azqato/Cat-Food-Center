@@ -1,18 +1,22 @@
 /* ==========================================================================
-   Cat Food Center: shared stylesheet for the Learn (documentation) section.
+   Cat Food Center: the shared shell, loaded by every page on the site.
+
+   Written for the Learn section and adopted by the nine application pages in
+   M14, which is why the layout below is described as a documentation shell:
+   that is what it was, and the application pages moved into it rather than
+   getting a second one.
 
    Layout is a three-column documentation shell:
      [ sidebar 264px ] [ article, max 760px ] [ on-this-page 240px ]
    under a fixed top bar. Below 1180px the right rail drops; below 900px the
    sidebar becomes a slide-in drawer behind a hamburger button.
 
-   The Learn pages load cfc-tokens.css first, then this file. They use plain
-   semantic markup plus the classes below (no Tailwind) so nothing here
-   competes with a utility class for specificity.
+   Every page loads cfc-tokens.css first, then this file. The Learn pages stop
+   there; the application pages add cfc-app.css on top.
    ========================================================================== */
 
-/* Tokens and the theme toggle live in cfc-tokens.css, which every page in
-   the site loads: including the Tailwind pages that do not load this file. */
+/* Tokens and the theme toggle live in cfc-tokens.css, which every page in the
+   site loads ahead of this one. */
 
 /* ── Base ── */
 * { box-sizing: border-box; }

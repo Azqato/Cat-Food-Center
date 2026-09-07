@@ -203,7 +203,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(staleWhileRevalidate(request, SHELL));
   }
 
-  // Everything else (fonts, Tailwind, ZXing) goes to the network untouched.
+  // Everything else (fonts, ZXing) goes to the network untouched.
   // Third-party CDNs set their own cache headers, and second-guessing them
   // from here would mean owning their invalidation too.
 });

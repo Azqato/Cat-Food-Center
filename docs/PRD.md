@@ -511,6 +511,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M14: One interface across the whole site | 2026-09-06 | Complete |
 | M15b: Product photos on cards | 2026-09-06 | Complete |
 | M15c: Ingredient explanations | 2026-09-06 | Complete |
+| M15d: Client-built product page rail | 2026-09-06 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -1105,14 +1106,12 @@ The shell precache is currently 29 entries. `tools/check-live.py` asserts it and
 |---|---|---|
 | Product coverage | Whatever the database holds; about a fifth of products score on all three pillars | Curate a local catalogue for common SKUs under `assets/data/` (M12) |
 | Alias languages | Six covered; anything else is reported as unchecked | Extend the alias lists, and `MATCHED_LANGUAGES` with them, never ahead of them |
-| Product page rail | The product page has headings worth indexing, but they are written after the fetch, so the generator cannot see them | Build the rail client-side from `main.article h2[id]`, or leave the page at one column |
 | Search relevance | Delegated wholly to the API, which matches fields beyond name and brand | A curated catalogue, or a local index over it |
 | Scorable-only filter | Filters the current page rather than the query, because the API cannot filter on scorability | Only a local catalogue can fix this properly |
 | Product image quality | Contributor photographs at whatever angle and lighting they had, shown as they are | Nothing to do inside this architecture. The catalogue is the source, and a photo of the real tin is worth more than a tidy one |
 | Ingredient explanations | Only entries in the additive knowledge base explain themselves, which is 20 additives and 3 vague-term groups | A general ingredient dictionary, if one can be sourced without inventing claims. Nothing true can be added to "chicken" today |
 | "Better alternatives" | Specified in the original PRD, never built | Needs a same-format query the API supports poorly |
 | Types | Nothing enforces the shapes in 16.5 | Optional `tsc --checkJs --noEmit` job with JSDoc types |
-| Per-page `<style>` blocks | The same utility definitions duplicated in eight files | Removed by M14 |
 
 ---
 
@@ -1544,9 +1543,9 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | **`scoring.js`, roughly 500 lines** | The most complex logic in the project, and the place where a wrong answer does the most damage. Well covered by tests, but the tests are written by the same person as the matcher, which is precisely how the language defects survived 109 green assertions |
 | **`sw.js`** | Caching bugs are invisible locally and persist on devices that cannot be reached. `VERSION` is the only reliable lever |
 | **The duplicated dark palette** | Deliberate duplication in `cfc-tokens.css`, guarded by `check-contrast.py`. Remove the guard and the two copies drift silently |
-| **Eight hand-copied page chromes** | Every navigation change is an eight-file edit, and any one can be missed. M14 exists to end this |
+| **Two generators over one chrome** | M14 ended the eight-file navigation edit, and replaced it with a single point of failure: `tools/site/chrome.py` is the only copy of the head, top bar, drawer and footer, and both generators import it. A mistake there is now a mistake on all twenty pages at once |
 | **`tools/learn/` and `tools/site/` generation** | Editing a generated page directly appears to work and is silently reverted on the next build |
-| **Unpinned Tailwind CDN** | Third-party code that can change without a commit here |
+| **Unpinned ZXing CDN** | Third-party code that can change without a commit here. M14 removed the Tailwind CDN, which was the render-blocking one; the scanner library is still fetched at runtime |
 | **The `|` OR syntax in `brands_tags`** | Verified empirically against the live API, not from documentation. If the upstream changes it, brand pages silently under-report |
 
 No `TODO`, `FIXME` or `HACK` markers exist anywhere in the codebase.
@@ -1558,14 +1557,13 @@ No `TODO`, `FIXME` or `HACK` markers exist anywhere in the codebase.
 | Making `cfc-theme.js` non-blocking, or moving it out of `<head>` | A flash of the wrong palette on every load. The blocking position is the entire mechanism |
 | Moving `sw.js` out of the repository root | The worker's scope narrows and offline support silently stops covering the site |
 | Using an absolute path anywhere | Works locally, 404s in production |
-| Adding a Tailwind opacity modifier to a themed colour | Renders transparent. Tailwind cannot compute an opacity variant of a `var()` |
 | Changing a tier in `additives.json` without changing `learn-additives.html` | The engine and the guide disagree, which is a trust failure rather than a bug |
 | Extending `MATCHED_LANGUAGES` ahead of the aliases | Re-creates the exact defect of section 12.4: labels reported as clean because nothing matched |
 | Renaming a query parameter | Breaks every shared link |
 
 ### 25.4 Work in progress
 
-At the time of this audit, the working tree is clean and `main` is deployed. M14 is decided but not built. M15b is planned. Nothing is half-finished in the tree.
+The working tree is clean and `main` is deployed. M14 and all four parts of M15 are shipped. Nothing is half-finished in the tree. The next work is the M12 run-up: the accessibility and performance gates, then the curated catalogue that coverage actually depends on.
 
 ### 25.5 Open questions
 

@@ -1,13 +1,10 @@
 /* ==========================================================================
    Cat Food Center: design tokens and the theme toggle.
 
-   Shared by BOTH page families:
-     * the Tailwind CDN pages (index, search, product, methodology), whose
-       Tailwind colour names resolve to these variables, and
-     * the generated Learn pages, which load this ahead of cfc.css.
-
-   Keeping the palette in one file is what lets a single theme choice apply
-   across a site built two different ways.
+   The first stylesheet every page loads, ahead of cfc.css. Both page families
+   are generated from tools/ now, but the palette lived in one file even when
+   they were built two different ways, and that is what let a single theme
+   choice apply across the whole site throughout the change.
    ========================================================================== */
 
 /* ══════════════════════════════════════════════════════════════════════════

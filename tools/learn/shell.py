@@ -25,8 +25,9 @@ PAW = ('<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
        '<path d="M11.6 11.9c3.1 0 5.6 2.5 5.6 5 0 2-1.6 3.2-3.5 3.2-1.1 0-1.6-.45-2.1-.45'
        's-1 .45-2.1.45C7.6 20.1 6 18.9 6 16.9c0-2.5 2.5-5 5.6-5z"/></svg>')
 
-# One toggle control, shared by the generated pages and hand-copied into the
-# four Tailwind pages. Icons: sun (light), moon (dark), monitor (system).
+# One toggle control, on every page. It was hand-copied into four pages until
+# M14 put them all through a generator. Icons: sun (light), moon (dark),
+# monitor (system).
 THEME_TOGGLE = ('<button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">'
   '<svg class="i-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
   '<circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4'
