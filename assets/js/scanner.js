@@ -11,10 +11,17 @@
 
      1. `BarcodeDetector`, the platform API. Hardware-accelerated where it
         exists, no download, and on Android Chrome it is markedly faster than
-        anything shipped as JavaScript. Support is real but partial, Chrome and
-        Edge yes, Safari and Firefox largely not, so it cannot be the only path.
+        anything shipped as JavaScript.
      2. ZXing compiled to JavaScript, fetched from a CDN only when the platform
         API is missing. It costs a download, so it is never loaded speculatively.
+
+   "In order of preference" undersells the second one. M17 measured the three
+   engines directly: `BarcodeDetector` is absent from Gecko and from WebKit,
+   not partial there. Every browser on iOS is WebKit, and tenet 7 says the
+   phone in the aisle is the real use case, so for a large share of the people
+   this feature exists for, ZXing is not the fallback. It is the whole feature.
+   Treat its download cost and its failure modes accordingly, and see
+   tools/check-engines.py, which decodes a known EAN-13 in all three.
 
    The hard constraint is the secure context. `getUserMedia` is unavailable
    outside HTTPS and localhost, which means testing over `http://<LAN-IP>` from

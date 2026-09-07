@@ -24,6 +24,12 @@ What this does NOT measure:
     pages that wait on it are measured, but their numbers move with the
     database's mood, so they are reported and not gated. Section 19.2 of
     docs/PRD.md says which pages are gated and why.
+  * Layout shift in any engine but this one. The Layout Instability API is
+    Chromium-only; Gecko and WebKit expose no layout-shift entry type at all,
+    as tools/check-engines.py reports. A CLS number can only be had from
+    Blink, so the fix for one is taken on faith to help the others. It is a
+    layout reservation rather than an engine trick, so that faith is not
+    unreasonable, but it is faith.
 
 Why not Lighthouse: it needs Node, and ADR-001 keeps this project free of npm.
 Lighthouse reads the same three numbers out of the same browser timeline.

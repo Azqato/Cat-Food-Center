@@ -21,6 +21,42 @@ punctuation rather than content.
 
 ---
 
+## [0.17.0] - 2026-09-07
+
+**The site, in all three browser engines (M17).**
+
+Added
+* **`tools/check-engines.py`.** The unit suite, all 12 page states and the
+  barcode decode round-trip, in Blink (through Edge), Gecko and WebKit. It also
+  prints a feature-support matrix so the differences are recorded rather than
+  assumed. Playwright's own browser builds, so nothing here drives a browser
+  the maintainer is using: `python -m playwright install webkit firefox` once.
+
+Findings
+* **Nothing is broken.** 178 assertions pass in all three engines, every page
+  renders its expected content in all three, and nothing overflows at 1280px or
+  320px anywhere. That is the whole point of the tool: before it, no evidence
+  existed either way, and "works on an iPhone" was an assumption.
+* **`BarcodeDetector` exists in neither Gecko nor WebKit.** `scanner.js` had
+  this roughly right already, calling support "partial, Safari and Firefox
+  largely not". Measured, it is not partial on those engines, it is absent, so
+  on every browser on iOS ZXing is not the fallback but the whole feature. The
+  comment now says the measured thing, and the decode round-trip runs in all
+  three engines and passes in all three.
+* **CLS can only be measured in Blink.** The Layout Instability API is
+  Chromium-only, so M16b's layout reservation is taken on faith for the other
+  two engines. It is a `min-height` rather than an engine trick, so the faith
+  is reasonable; `check-vitals.py` now says so in as many words rather than
+  implying its numbers are universal.
+* **What this still cannot test:** headless WebKit exposes no `getUserMedia`,
+  which is Playwright's build and not Safari. The camera path in real Safari
+  is untested by anything, and no tool in this repository can change that. It
+  is recorded rather than glossed.
+
+Closes PRD open question 7, which had stood since the M13 audit.
+
+---
+
 ## [0.16.1] - 2026-09-07
 
 **Core Web Vitals, measured under a throttle (M16b).**

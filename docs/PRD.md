@@ -513,6 +513,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M15d: Client-built product page rail | 2026-09-06 | Complete |
 | M16a: WCAG 2.1 AA gate | 2026-09-06 | Complete |
 | M16b: Core Web Vitals gate | 2026-09-07 | Complete |
+| M17: Blink, Gecko and WebKit | 2026-09-07 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -637,6 +638,14 @@ now reports the same call the engine made, and a test pins it.
 *Why this was invisible for eleven milestones:* CLS is not visible on a fast connection, because the placeholder and the content arrive close enough together that nothing appears to move. It needs a throttle to see at all, and the project had no throttled measurement until this one.
 
 *Also added:* `preconnect` for the two Open Pet Food Facts origins, so the handshake overlaps with parsing on the pages that call the API, and `sw.js` went to `v3` because M16a's stylesheet fixes were served stale-while-revalidate and would otherwise have reached returning devices one visit late. A contrast fix that arrives on the second visit has not really been deployed.
+
+**M17: Blink, Gecko and WebKit.** `tools/check-engines.py`, described in section 19.3. It closes open question 7, which had stood since the M13 audit.
+
+*What it found:* nothing broken, and one thing understated. Every page renders in all three engines, the unit suite is 178 passing in all three, and nothing overflows at either width anywhere. `scanner.js` already called `BarcodeDetector` support "partial, Safari and Firefox largely not", which was the right instinct; measured, it is absent from both engines rather than partial, so on every browser on iOS ZXing is not a fallback but the whole feature. The decode round-trip now runs in all three engines and passes in all three.
+
+*What it cannot say:* headless WebKit exposes no `getUserMedia`, which is a property of Playwright's build rather than of Safari. Real Safari camera behaviour is still untested by anything, and no tool in this repository can change that.
+
+*Why this was worth doing before the catalogue:* the coverage gap was not that a defect was suspected, it was that no evidence existed either way. A green result is a finding.
 
 ### Next
 
@@ -784,6 +793,7 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 | `python tools/check-a11y.py --report` | The same audit, printing every violation with its selector, and exiting 0 |
 | `python tools/check-vitals.py` | LCP, CLS and TBT for 12 pages, CPU throttled 4x on a slow-4G connection. Exits non-zero, so it works as a gate |
 | `python tools/check-vitals.py --report` | The same run, naming the elements that shifted, and exiting 0 |
+| `python tools/check-engines.py` | The unit suite, all 12 page states and the barcode decode round-trip in Blink, Gecko and WebKit. Needs network, and `python -m playwright install webkit firefox` once |
 | `python tools/site/build.py` | Regenerate the nine application pages |
 | `python tools/learn/build.py` | Regenerate the eleven Cat Care Guide pages |
 | `python tools/probe-opff.py` | Re-measure the database behind section 12 |
@@ -1262,7 +1272,7 @@ browser = await p.chromium.launch(channel='msedge')
 
 `tools/run-tests.py`, `tools/check-live.py`, `tools/check-a11y.py` and `tools/check-vitals.py` all do this, through the `EDGE_CHANNEL` constant each defines. Version verified working: Edge 152.
 
-The project targets no second engine. Safari and Firefox are not driven by any automated check, which is a real coverage gap and is recorded as such in section 25.
+**Edge is the default, not the only engine.** Every gate above drives Blink through Edge, because that is the fastest thing to run and Blink is the majority engine. `tools/check-engines.py` additionally drives Gecko and WebKit; see section 19.3. It uses Playwright's own browser builds rather than any browser installed on this machine, which is the same reasoning that keeps Chrome out of the loop.
 
 ### 19.1 The accessibility gate
 
@@ -1302,6 +1312,31 @@ The project targets no second engine. Safari and Firefox are not driven by any a
 
 **Why not Lighthouse:** the same reason as 19.1. Lighthouse reads these three numbers out of the same browser timeline.
 
+### 19.3 The three engines
+
+`tools/check-engines.py` runs the unit suite, all 12 page states and the barcode decode round-trip in Blink (through Edge), Gecko and WebKit. Before it existed, nothing in this project had ever loaded a page in anything but Blink, which made "works on an iPhone" an assumption rather than a finding. Tenet 7 says mobile is the real use case, and every browser on iOS runs WebKit whatever its name is.
+
+**Playwright's own builds, not installed browsers.** Section 19's rule is that a test must not drive the browser the maintainer is using. Playwright downloads its Gecko and WebKit builds into its own cache, so nothing here touches an installed Firefox. `python -m playwright install webkit firefox` once, about 180MB.
+
+**What it found:**
+
+| Feature | Blink | Gecko | WebKit |
+|---|---|---|---|
+| `BarcodeDetector` | yes | **no** | **no** |
+| `serviceWorker` | yes | yes | yes |
+| `IntersectionObserver` | yes | yes | yes |
+| `largest-contentful-paint` | yes | yes | yes |
+| `layout-shift` | yes | **no** | **no** |
+| `:has()`, CSS nesting | yes | yes | yes |
+
+Three consequences follow, and only the first was expected:
+
+1. **ZXing is not a fallback on two of the three engines.** `scanner.js` already suspected this, calling support "partial, Safari and Firefox largely not". It is not partial: on Gecko and WebKit, which is every browser on iOS, the platform API does not exist, and ZXing is the whole feature rather than a fallback. The decode round-trip now runs in all three engines and passes in all three, which is the check that matters most in this file.
+2. **CLS can only be measured in Blink.** The Layout Instability API is Chromium-only. `check-vitals.py` therefore measures one engine, and M16b's layout reservation is taken on faith to help the other two. It is a `min-height` rather than an engine trick, so that faith is reasonable, but it is faith and section 19.2 says so.
+3. **Nothing else differed.** The unit suite is 178 passing in all three, every page renders its expected content, and nothing overflows at 1280px or 320px anywhere. That is a finding worth stating plainly, because the value of this tool is mostly that it can now say so.
+
+**One entry in the matrix is not about the shipping browser.** Headless WebKit reports no `getUserMedia`, which is a property of Playwright's build and not of Safari. It means this tool exercises the no-camera path in WebKit and cannot exercise the camera path there at all. Real Safari camera behaviour remains untested by anything, and that is the honest residue of open question 7.
+
 ---
 
 ## 20. Verification environment
@@ -1316,7 +1351,7 @@ Run the change on a local copy: the file opened from disk, `python -m http.serve
 
 **Two things that are easy to conflate:**
 
-- **Verifying functionality is local.** `python tools/run-tests.py`, `python tools/check-live.py`, `python tools/check-contrast.py`, `python tools/check-a11y.py` and `python tools/check-vitals.py` all run against a local server, including `check-live.py`, which reaches the live *API* but serves the *pages* from `127.0.0.1`.
+- **Verifying functionality is local.** `python tools/run-tests.py`, `python tools/check-live.py`, `python tools/check-contrast.py`, `python tools/check-a11y.py`, `python tools/check-vitals.py` and `python tools/check-engines.py` all run against a local server, including the two that reach the live *API* but serve the *pages* from `127.0.0.1`.
 - **Confirming a deploy landed is a separate step**, done against production after the push, and it is a comparison rather than a test: fetch the deployed artifact and check it matches what was verified locally. That is legitimate and is not an exception to this rule.
 
 **Never point a destructive or state-changing check at production.** In this project that mostly means never writing to Open Pet Food Facts from a test, and never seeding records there to exercise the submit flow. `submit.html` deep-links a human to the upstream form and writes nothing itself, which is the property that keeps this simple. If a future feature can only be exercised against a live system, stop and ask.
@@ -1634,7 +1669,7 @@ Numbered so they can be answered by reference. Answering one folds the answer in
 4. **Should the scorable-only filter page-hunt?** It filters the current page, which can show three results out of twenty-four. Fetching further pages until a target count is reached would be friendlier and would make the result count harder to state honestly.
 5. ~~**What fills the guide shell's third column on a page with no headings?**~~ **Answered in M14:** nothing. The page collapses to one column, and `tools/site/build.py` decides per page by reading the fragment for headings rather than from a flag. See docs/DESIGN.md section 6.4.
 6. ~~**Does the `/` search affordance stay on pages that already have a search input?**~~ **Answered in M14:** no. `index.html` and `search.html` are built with `show_search=False`.
-7. **Should Safari and Firefox be driven by any automated check?** Section 19 targets one engine. Real visitors on iOS run WebKit, where `BarcodeDetector` support differs, and nothing tests that path.
+7. ~~**Should Safari and Firefox be driven by any automated check?**~~ **Answered in M17:** yes, and they now are. `tools/check-engines.py` runs the unit suite, all 12 page states and the barcode decode round-trip in Blink, Gecko and WebKit. The answer to the `BarcodeDetector` worry is that neither Gecko nor WebKit has it at all, so ZXing is not a fallback on those engines, it is the only path scanning has, and the decode round-trip passes in all three. See section 19.3.
 8. **Should the tombstone mechanism in 23.3 be built before it is needed, or written when first used?** It is currently a policy with no implementation.
 9. **Is the six-language alias list the right stopping point?** It covers most of the database, but the honest-refusal path means every uncovered language is a product that cannot be fully scored.
 10. **Should `tests.html` be excluded from the sitemap and from crawling?** It is public and unlinked. It is currently omitted from `sitemap.xml` but not disallowed in `robots.txt`, since that file is deliberately fully open.
