@@ -18,14 +18,29 @@
    on the card and an optional filter the visitor chooses, not as a hidden sort
    key applied on their behalf.
 
-   ── Why the filter is honest about being partial ──
+   ── Why the filter scans, and why it stops ──
 
    The API cannot filter on scorability: whether a product can be scored is
    something only this engine knows, and it knows it only after fetching the
-   record. So the filter hides cards on the page you are looking at rather than
-   asking the database for a different page, and the label says exactly that.
-   A filter that silently returned "3 results" for a query with 1571 matches
-   would be lying about the database.
+   record. The filter used to hide cards on the page you were looking at, which
+   could show 3 results for a query with 1571 matches. That was honest, and it
+   was also close to useless.
+
+   So it scans instead: SCAN_PAGES pages of results in one go, scores all of
+   them, and shows every scorable product it found. What it will not do is
+   pretend that is the database. Three rules keep it straight:
+
+     1. The number it reports is always "N of the first S results", never "N
+        results". S and the true total are both on screen.
+     2. When the scan stops short of the total, the page says so, in the label
+        and again at the end of the last page. A filter that quietly ended at
+        120 of 1571 would be the same lie in a new place.
+     3. Nothing here re-ranks. Relevance is still the API's, and the scan takes
+        results in the order it was given them.
+
+   The bound is what makes this safe to ship. A filter that kept fetching until
+   it had enough would hammer a volunteer-run database on behalf of a query
+   that may have no scorable results at all.
    ========================================================================== */
 import { searchProducts, brandDisplayName } from './opff.js';
 import { scoreProduct, loadKnowledgeBase } from './scoring.js';
@@ -39,6 +54,12 @@ const BAND_TOKEN = {
 };
 
 const FORMAT_LABEL = { wet: 'Wet', dry: 'Dry', 'semi-moist': 'Semi-moist', treat: 'Treat' };
+
+/* Five pages of 24 is 120 records, fetched in parallel, and about a fifth of
+   them score (PRD section 12.1), so a typical scan finds twenty-odd. Raising
+   this buys more results for a linearly larger burden on a database nobody is
+   paid to run. It is a deliberate ceiling, not a technical limit. */
+const SCAN_PAGES = 5;
 
 const input = document.getElementById('search-input');
 const label = document.getElementById('results-label');
@@ -182,6 +203,11 @@ async function run() {
   setLabel('Searching…');
   list.innerHTML = '';
 
+  if (state.scorableOnly) {
+    await runFiltered(state, brandName);
+    return;
+  }
+
   const [{ products, total, pageSize, error }, kb] = await Promise.all([
     searchProducts(state.q, { page: state.page, brand: state.brand }),
     loadKnowledgeBase(),
@@ -206,32 +232,121 @@ async function run() {
   // rank.
   const scored = products.map((product) => ({ product, result: scoreProduct(product, kb) }));
   const scorableCount = scored.filter((s) => s.result.scorable).length;
-  const visible = state.scorableOnly ? scored.filter((s) => s.result.scorable) : scored;
 
   controls.hidden = false;
-  list.innerHTML = visible.map(({ product, result }) => card(product, result)).join('');
+  list.innerHTML = scored.map(({ product, result }) => card(product, result)).join('');
 
-  if (state.scorableOnly && !visible.length) {
-    list.innerHTML = `<li style="list-style:none">
-      <div class="text-center py-10">
-        <p class="text-small text-ink-soft" style="max-width:46ch;margin:0 auto">
-          None of the ${scored.length} results on this page carry an ingredient list, so none can be scored.
-          Try the next page, or <a href="${esc(urlFor({ ...state, scorableOnly: false }))}" class="text-accent">show everything</a>.
-        </p>
-      </div></li>`;
-  }
-
-  const subject = brandName
-    ? `${esc(brandName)}`
-    : `&ldquo;${esc(state.q)}&rdquo;`;
   const first = (state.page - 1) * pageSize + 1;
   const last = first + scored.length - 1;
-  setLabel(state.scorableOnly
-    ? `Showing the ${visible.length} of ${scored.length} on this page that can be scored · `
-      + `results ${first}&ndash;${last} of ${total} for ${subject}`
-    : `Results ${first}&ndash;${last} of ${total} for ${subject} · ${scorableCount} of these can be scored`);
+  setLabel(`Results ${first}&ndash;${last} of ${total} for ${subjectOf(state, brandName)}`
+    + ` · ${scorableCount} of these can be scored`);
 
   renderPager(state, total, pageSize, scored.length);
+}
+
+function subjectOf(state, brandName) {
+  return brandName ? esc(brandName) : `&ldquo;${esc(state.q)}&rdquo;`;
+}
+
+/* ── The scorable-only path ──
+
+   Fetches SCAN_PAGES pages at once, scores everything it got, and paginates
+   the scorable ones locally. Paginating locally is what keeps `page` in the
+   URL meaning the same thing in both modes: the page of the list in front of
+   you. It also means page 3 of a filtered search costs the same as page 1
+   rather than re-scanning further each time.
+
+   Deduplicated by barcode, because paged API results can repeat a record and
+   a duplicate card would inflate the count this page is trying to state
+   accurately. */
+async function runFiltered(state, brandName) {
+  const [pages, kb] = await Promise.all([
+    Promise.all(Array.from({ length: SCAN_PAGES }, (_, i) =>
+      searchProducts(state.q, { page: i + 1, brand: state.brand }))),
+    loadKnowledgeBase(),
+  ]);
+
+  const failed = pages.find((p) => p.error);
+  if (failed) {
+    setLabel('');
+    empty('Could not reach the database', esc(failed.error) + ' Check your connection and try again.');
+    return;
+  }
+
+  const total = pages[0].total;
+  const pageSize = pages[0].pageSize;
+  const seen = new Map();
+  for (const p of pages) {
+    for (const product of p.products) {
+      if (!seen.has(product.barcode)) seen.set(product.barcode, product);
+    }
+  }
+  const scanned = seen.size;
+  const subject = subjectOf(state, brandName);
+
+  if (!scanned) {
+    setLabel('');
+    const what = brandName ? `${esc(brandName)} products` : `&ldquo;${esc(state.q)}&rdquo;`;
+    empty('No matches',
+      `Nothing in the cat food catalogue matches ${what}. The database is far from complete, `
+      + 'so a miss says more about its coverage than about the product.');
+    return;
+  }
+
+  const scorable = [...seen.values()]
+    .map((product) => ({ product, result: scoreProduct(product, kb) }))
+    .filter((s) => s.result.scorable);
+
+  // "Everything there was" versus "as far as we looked" are different claims,
+  // and the page has to know which one it is making.
+  const exhausted = scanned >= total;
+  const scope = exhausted
+    ? `all ${total} results for ${subject}`
+    : `the first ${scanned} of ${total} results for ${subject}`;
+
+  controls.hidden = false;
+
+  if (!scorable.length) {
+    pager.hidden = true;
+    setLabel('');
+    empty('None of these can be scored',
+      `No product in ${scope} carries an ingredient list, so none can be scored. `
+      + (exhausted
+        ? 'That is the whole of what the database holds for this search.'
+        : 'There may be scorable products further down the results; this page checked the first '
+          + `${scanned}, because whether a product can be scored is only knowable after fetching it.`)
+      + ` <a href="${esc(urlFor({ ...state, scorableOnly: false }))}" class="text-accent">Show everything</a>.`);
+    // empty() hides the controls, which is right for a failed search and wrong
+    // here: the visitor's next move is almost certainly to untick the box, and
+    // it has to be there to untick.
+    controls.hidden = false;
+    return;
+  }
+
+  const lastPage = Math.max(1, Math.ceil(scorable.length / pageSize));
+  const page = Math.min(state.page, lastPage);
+  const slice = scorable.slice((page - 1) * pageSize, page * pageSize);
+
+  list.innerHTML = slice.map(({ product, result }) => card(product, result)).join('');
+
+  const first = (page - 1) * pageSize + 1;
+  setLabel(`Showing ${first}&ndash;${first + slice.length - 1} of the ${scorable.length} `
+    + `products in ${scope} that can be scored`);
+
+  renderPager({ ...state, page }, scorable.length, pageSize, slice.length);
+
+  // On the last page, say the scan stopped. The label already says it, but by
+  // the time somebody has read to the bottom of the results they have earned a
+  // reminder that "no more" means "no more that were looked at".
+  if (!exhausted && page === lastPage) {
+    pager.insertAdjacentHTML('afterend',
+      `<p class="text-micro text-ink-soft" style="max-width:52ch;margin:14px auto 0;text-align:center">
+         That is every scorable product in the first ${scanned} results. The search matched
+         ${total} in all, and the rest were not checked.
+         <a href="${esc(urlFor({ ...state, scorableOnly: false }))}" class="text-accent">Show everything</a>
+         to page through them yourself.
+       </p>`);
+  }
 }
 
 if (onlyScorable) {

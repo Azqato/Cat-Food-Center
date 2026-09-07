@@ -313,6 +313,8 @@ Defined in `cfc.css` and available to every page, since every page loads it. The
 
 **Lists of products** use `<ul style="list-style:none;padding:0">` with an `<a>` card per item, carrying `data-scorable` so the scorable-only filter can act on the rendered page. They are plain anchors: an earlier version of this document specified `<Link>` cards, which is a React component in a project that has no React.
 
+**The result count above a list is a sentence about what was looked at, not just a number.** An unfiltered search says "Results 1 to 24 of 32 for “salmon” · 6 of these can be scored". With the filter on, since M18, the list is drawn from a five-page scan rather than from the page on screen, so the line names the scope it actually covered: "Showing 1 to 12 of the 12 products in all 32 results for “salmon” that can be scored" when the scan reached the end of the query, and "the first 120 of 1578 results" when it did not, with a note at the foot of the last page repeating that the scan stopped there. A count that cannot say what it counted is a number the reader has to trust; this one shows its working.
+
 **The product row**, since M15b, is photo, then name and metadata, then the score tile: one image anchor on the left edge and one number anchor on the right, with the text between them. The chevron that used to close the row is gone. The score tile took its place, and two glyphs on the same edge of the same link is one more than the row needs; the whole row was always the link. The compare page is the exception, because its column is narrow and stacks below 700px: there the photo and the score tile sit together on the left, rather than putting the two halves of one product at opposite ends of a phone screen.
 
 ---

@@ -31,6 +31,28 @@
 
 const API = 'https://world.openpetfoodfacts.org/api/v2';
 
+/* The legacy CGI search endpoint, and the only one on this database that
+   actually searches text.
+
+   `/api/v2/search` accepts `search_terms` and ignores it. Verified 2026-09-07:
+   `search_terms=chicken`, `search_terms=salmon`, `search_terms=zzzzqqq` and no
+   search terms at all return the same count (1578, the whole cat-food
+   category) and the same first page of products, in the same order. It is not
+   that the ranking is poor. There is no matching happening at all.
+
+   This site had been asking v2 for text searches since M6, which means every
+   text search ever run here returned the same twenty-four products with a
+   label claiming they matched the query. `/cgi/search.pl` returns 32 for
+   salmon and 22 for tuna, all of them actually salmon and tuna, sends
+   `Access-Control-Allow-Origin: *`, and honours `fields`, `page` and
+   `page_size` exactly as v2 does.
+
+   Tag filtering on v2 was never affected: `brands_tags` is a tag lookup rather
+   than a text match, and it works. So a brand-only browse still goes to v2,
+   where the `|` OR syntax that merges a brand's several spellings is verified
+   (see brandTagExpression), and only a text query goes to CGI. */
+const SEARCH_CGI = 'https://world.openpetfoodfacts.org/cgi/search.pl';
+
 /* Only ask for what we use. A full record is 103 keys, most of them editorial
    metadata, and the search endpoint is markedly slower without this. */
 const FIELDS = [
@@ -330,10 +352,21 @@ export async function searchProducts(query, { page = 1, pageSize = 24, brand = '
   const b = String(brand || '').trim();
   if (!q && !b) return { products: [], total: 0, page: 1, pageSize };
 
-  const url = API + '/search?categories_tags_en=cat-food'
-    + (q ? '&search_terms=' + encodeURIComponent(q) : '')
-    + (b ? '&brands_tags=' + encodeURIComponent(b) : '')
-    + '&page=' + page + '&page_size=' + pageSize + '&fields=' + FIELDS;
+  /* Two endpoints, chosen by what is being asked for rather than by
+     preference. A text query has to go to CGI because v2 does not search text
+     at all (see SEARCH_CGI). A brand-only browse stays on v2, where the `|` OR
+     expression that merges a brand's spellings is verified and where the
+     counts match the ones brands.html shows. */
+  const url = q
+    ? SEARCH_CGI + '?action=process&json=1'
+      + '&tagtype_0=categories&tag_contains_0=contains&tag_0=cat-food'
+      + (b ? '&tagtype_1=brands&tag_contains_1=contains&tag_1='
+             + encodeURIComponent(b.split('|')[0]) : '')
+      + '&search_terms=' + encodeURIComponent(q)
+      + '&page=' + page + '&page_size=' + pageSize + '&fields=' + FIELDS
+    : API + '/search?categories_tags_en=cat-food'
+      + '&brands_tags=' + encodeURIComponent(b)
+      + '&page=' + page + '&page_size=' + pageSize + '&fields=' + FIELDS;
 
   try {
     const data = await getJSON(url, signal);

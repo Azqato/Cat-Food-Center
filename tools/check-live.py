@@ -181,6 +181,53 @@ async def main():
                       % (sections, overflow, ('  ERRORS: %s' % errors) if errors else ''))
                 await page.close()
 
+            total += 2
+            # Does the search actually search? Nothing asked this until M18, and
+            # for eleven milestones the answer was no: /api/v2/search accepted
+            # search_terms, answered 200, and returned the entire cat-food
+            # category whatever was typed. Every check here passed over it,
+            # because every check asked whether results came back.
+            #
+            # Two assertions, and the first is the one that matters. A query
+            # that cannot match anything must return nothing: it is the only
+            # question whose right answer an ignored parameter cannot fake.
+            page = await browser.new_page(viewport={'width': 1280, 'height': 900})
+            await page.goto(base + '/search.html?q=zzzzqqqxyw')
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Loading')", timeout=25000)
+            await page.wait_for_timeout(1000)
+            # Counted by [data-scorable], not by li: the "No matches" panel is
+            # itself an li, so a list item count of zero is not what an empty
+            # result looks like here.
+            nonsense = await page.evaluate(
+                "({ cards: document.querySelectorAll('#results-list [data-scorable]').length,"
+                "   body: (document.querySelector('main').textContent || '') })")
+            ok = nonsense['cards'] == 0 and 'No matches' in nonsense['body']
+            if not ok:
+                failures.append('impossible query returns nothing')
+            print('%s %-44s %s' % ('PASS' if ok else 'FAIL', 'a query that cannot match returns nothing',
+                                   '%d cards' % nonsense['cards']))
+
+            # And the second: a real query's results must be about the query.
+            # Not every card will say "salmon" in its name, because the database
+            # matches ingredients and descriptions too, so this asks for a
+            # majority rather than for all of them. A result set that ignores
+            # the query lands nowhere near half.
+            await page.goto(base + '/search.html?q=salmon')
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Loading')", timeout=25000)
+            await page.wait_for_timeout(1000)
+            hits = await page.evaluate(
+                "[...document.querySelectorAll('#results-list [data-scorable]')]"
+                ".map(el => (el.textContent || '').toLowerCase())")
+            matching = len([t for t in hits if 'salmon' in t])
+            ok = bool(hits) and matching * 2 > len(hits)
+            if not ok:
+                failures.append('results are about the query')
+            print('%s %-44s %s' % ('PASS' if ok else 'FAIL', 'results are about what was typed',
+                                   '%d of %d cards mention salmon' % (matching, len(hits))))
+            await page.close()
+
             total += 1
             # The recently-viewed list is the one thing that spans two pages, so
             # it needs one context that visits a product and then goes home.

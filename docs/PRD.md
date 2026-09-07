@@ -127,7 +127,7 @@ These are decisions, not gaps. Each is a thing the project has chosen not to do.
 **Searching and browsing**
 
 - As a researcher, I want to search by brand or product name so that I can find a product without its barcode.
-- As a researcher, I want to see more than the first page of results so that a search reporting 1571 matches gives me access to more than 24 of them.
+- As a researcher, I want to see more than the first page of results so that a search reporting 83 matches gives me access to more than 24 of them.
 - As a researcher, I want results ordered by how well they match what I typed so that the ranking answers my question rather than a different one.
 - As a researcher, I want to browse by brand so that I can find products without guessing how the database spelled a name.
 - As a researcher, I want to hide products that cannot be scored so that I can concentrate on the ones with an answer, while still knowing how many I hid.
@@ -479,6 +479,8 @@ The third and fourth were live in English too. They had never fired because no E
 - `GET /product/<barcode>.json` returns HTTP 404 with `status: 0` for an unknown barcode. A miss is common and is not an error.
 - The brand facet at `https://world.openpetfoodfacts.org/facets/categories/Cat%20food/brands.json` is CORS-enabled and lists 439 cat food brands with counts. Nine of those collide on case alone (`purina` at 110 products and `Purina` at 15 are the same brand).
 - In v2 tag filters, a comma means AND and `|` means OR. `brands_tags=purina|Purina` returns 125, which is how merged brands are queried in one request.
+- **`/api/v2/search` accepts `search_terms` and ignores it.** Verified 2026-09-07: `search_terms=chicken`, `search_terms=salmon`, `search_terms=zzzzqqq` and no search terms at all return the same `count` of 1578 and the same products in the same order, which is the whole cat-food category. There is no error and no warning; the response is well formed and simply unrelated to the query. Tag filters on the same endpoint work correctly, which is why a brand-only browse still uses it.
+- **`/cgi/search.pl?action=process&json=1` is the endpoint that actually searches text.** It honours `fields`, `page` and `page_size`, returns a truthful `count` (`salmon` 32, `tuna` 22, `chicken` 83), serves consecutive pages without overlap, and sends `Access-Control-Allow-Origin: *`. Its tag filters are numbered rather than named: `tagtype_0=categories&tag_contains_0=contains&tag_0=cat-food`, with a brand as pair 1.
 
 ---
 
@@ -514,6 +516,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M16a: WCAG 2.1 AA gate | 2026-09-06 | Complete |
 | M16b: Core Web Vitals gate | 2026-09-07 | Complete |
 | M17: Blink, Gecko and WebKit | 2026-09-07 | Complete |
+| M18: Search that searches | 2026-09-07 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -555,6 +558,8 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 Five separate causes were confirmed. There was no pagination at all, so 24 of 1571 results were reachable and nothing led to result 25. The API's relevance ranking was discarded by a scorable-first re-sort, so the closest match to what somebody typed could sit below a loosely related product that happened to score well. The match is not restricted to name or brand, so "chicken" returned ocean fish above real chicken products. The records themselves carry numeric brand identifiers and untranslated names, rendered faithfully. And there was no filter, facet, sort or brand browse to compensate.
 
 Pagination, relevance ordering and a scorable-only filter shipped, along with `brands.html`.
+
+*Two of those five diagnoses were wrong, and M18 found out why.* The 1571 figure and the "chicken returns ocean fish" observation were both readings of a result set that had nothing to do with the query: `/api/v2/search` was ignoring `search_terms` entirely and returning the whole cat-food category every time. The ranking was not loose, it was absent, and the count was not the number of matches, it was the size of the category. The paragraph above is left as it was written because it is an accurate record of what was believed in M15a; section 24.1 carries the correction.
 
 *The useful observation about the reference site:* CatFoodDB is organised brand-first, with an A to Z of over 150 brands and curated best-of lists by food type, and its own free-text search is disabled, with a notice on the site saying so. The site the owner preferred is better *without* working search, which suggests the answer is a browse structure rather than a better ranker. Its individual product entry layout has not been verified: two attempts at brand and best-of URLs returned 404.
 
@@ -646,6 +651,14 @@ now reports the same call the engine made, and a test pins it.
 *What it cannot say:* headless WebKit exposes no `getUserMedia`, which is a property of Playwright's build rather than of Safari. Real Safari camera behaviour is still untested by anything, and no tool in this repository can change that.
 
 *Why this was worth doing before the catalogue:* the coverage gap was not that a defect was suspected, it was that no evidence existed either way. A green result is a finding.
+
+**M18: search that searches, and a filter that scans.** Two changes, and the second uncovered the first.
+
+*The intended change* was open question 4: the scorable-only filter acted on the twenty-four results already on screen, so it could show three products and imply that was all there were. It now scans the first five pages of the query in parallel, dedupes by barcode, filters, and paginates what it holds locally. The count it prints says exactly what it scanned: "the 12 products in all 32 results" when the scan reached the end, and "the first 120 of 1578 results" when it did not, with a note at the foot of the last page saying the scan stopped there. Five pages is a deliberate ceiling: it is one round of parallel fetches, and a filter that hunted until it found enough would take an unbounded number of requests to produce a number nobody could state honestly.
+
+*What testing it uncovered* is the larger finding. `zzzzqqq` returned 1578 products. `/api/v2/search` accepts `search_terms`, returns HTTP 200, and ignores the parameter: every query returned the entire cat-food category in the same order. Text search on this site had never searched anything since M6, and M15a diagnosed the symptoms of that as a ranking problem and a field-matching problem, which is what they look like from outside. Text queries now go to `/cgi/search.pl`, verified against the same three probes; brand-only browses stay on v2, whose tag filters were never affected.
+
+*Learned:* a well-formed 200 with plausible data is the hardest kind of wrong to notice. Six gates, 178 assertions and a live check all passed over this for eleven milestones, because every one of them asked whether results came back rather than whether they were the right results. The assertion that would have caught it is the one nobody writes: search for a string that cannot match, and require nothing back. `tools/check-live.py` now writes it, along with a second asking that a majority of the cards on a `salmon` search mention salmon. A result set that ignores the query lands nowhere near either bar, and no other check in this repository would have noticed.
 
 ### Next
 
@@ -787,7 +800,7 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 |---|---|
 | `python -m http.server 8000` | Serve the site locally |
 | `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 178 assertions. Exits non-zero on failure, so it works as a gate |
-| `python tools/check-live.py` | 17 end-to-end checks against the live API. Needs network. Not deterministic, so it is a smoke check rather than a gate |
+| `python tools/check-live.py` | 19 end-to-end checks against the live API, two of them added in M18 to ask whether the search searches. Needs network. Not deterministic, so it is a smoke check rather than a gate |
 | `python tools/check-contrast.py` | Verify 38 foreground and background pairs against WCAG AA in both palettes |
 | `python tools/check-a11y.py` | WCAG 2.1 AA audit of all 25 page states in both themes, plus reflow at 320px and the skip link. 100 audits. Exits non-zero, so it works as a gate |
 | `python tools/check-a11y.py --report` | The same audit, printing every violation with its selector, and exiting 0 |
@@ -997,7 +1010,7 @@ Cat-Food-Center/
 │       └── additives.json   # Additive knowledge base, v1.1.0
 ├── tools/
 │   ├── run-tests.py         # Drives tests.html headlessly in Edge
-│   ├── check-live.py        # 16 end-to-end checks against the live API
+│   ├── check-live.py        # 19 end-to-end checks against the live API
 │   ├── check-contrast.py    # WCAG AA audit of both palettes
 │   ├── probe-opff.py        # Regenerates the numbers in section 12
 │   ├── site/                # Application page generator: chrome.py, build.py, content/
@@ -1071,7 +1084,8 @@ There is no API of our own. Two upstream endpoints and one internal data file.
 | Call | Purpose | Inputs | Failure handling |
 |---|---|---|---|
 | `GET /api/v2/product/<barcode>.json?fields=` | One product | Barcode, 6 to 14 digits | 404 with `status: 0` is a normal miss, returned as `{found:false}`, never as an error |
-| `GET /api/v2/search?categories_tags_en=cat-food&...` | Text or brand results | `search_terms`, `brands_tags`, `page`, `page_size`, `fields` | Network failure returns an empty result plus an error string; the page renders the error |
+| `GET /cgi/search.pl?action=process&json=1&...` | Text results | `search_terms`, `tag_0=cat-food`, an optional brand tag, `page`, `page_size`, `fields` | Network failure returns an empty result plus an error string; the page renders the error |
+| `GET /api/v2/search?categories_tags_en=cat-food&...` | Brand-only browse | `brands_tags`, `page`, `page_size`, `fields` | Same |
 | `GET /facets/categories/Cat%20food/brands.json` | The brand index | None | Same |
 | `GET ./assets/data/additives.json` | The knowledge base | None | A failure means no scoring; the page says so |
 
@@ -1114,7 +1128,7 @@ Three strategies, chosen per resource, all in `sw.js`:
 
 **The governing rule: a cached score must never be presented as a current one.** Anything served from cache is stamped with `x-cfc-cached`, `opff.js` carries the stamp through, and the page says it is showing a saved copy. A 404 is never cached, because it is how an unknown barcode is detected and caching it would keep reporting "not found" after the product is added.
 
-The shell precache is currently 29 entries. `tools/check-live.py` asserts it and also asserts it does not grow per product viewed.
+The `SHELL_ASSETS` list is currently 31 entries and the installed cache holds 32. `tools/check-live.py` asserts it and also asserts it does not grow per product viewed.
 
 ### 16.9 Third-party integrations
 
@@ -1137,8 +1151,8 @@ The shell precache is currently 29 entries. `tools/check-live.py` asserts it and
 |---|---|---|
 | Product coverage | Whatever the database holds; about a fifth of products score on all three pillars | Curate a local catalogue for common SKUs under `assets/data/` (M12) |
 | Alias languages | Six covered; anything else is reported as unchecked | Extend the alias lists, and `MATCHED_LANGUAGES` with them, never ahead of them |
-| Search relevance | Delegated wholly to the API, which matches fields beyond name and brand | A curated catalogue, or a local index over it |
-| Scorable-only filter | Filters the current page rather than the query, because the API cannot filter on scorability | Only a local catalogue can fix this properly |
+| Search relevance | Delegated wholly to `/cgi/search.pl`, whose ranking is not documented and cannot be tuned or inspected | A curated catalogue, or a local index over it |
+| Scorable-only filter | Scans the first five pages of the query and filters those, because the API cannot filter on scorability. Beyond 120 results it is a sample, and says so | Only a local catalogue can fix this properly |
 | Product image quality | Contributor photographs at whatever angle and lighting they had, shown as they are | Nothing to do inside this architecture. The catalogue is the source, and a photo of the real tin is worth more than a tidy one |
 | Ingredient explanations | Only entries in the additive knowledge base explain themselves, which is 20 additives and 3 vague-term groups | A general ingredient dictionary, if one can be sourced without inventing claims. Nothing true can be added to "chicken" today |
 | "Better alternatives" | Specified in the original PRD, never built | Needs a same-format query the API supports poorly |
@@ -1567,6 +1581,7 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | "Submit queue processing, 50 or fewer waiting, internal queue dashboard" | METRICS | No queue exists, so the metric is unmeasurable | Deleted. It measured a feature that was cancelled |
 | Score reveal count-up, ingredient expand transition, route transition fades, skeleton loaders, tier glyphs, Open Graph image | DESIGN §8, §9, §10, §12, all marked "planned" | None built | Kept, still marked as not built, in DESIGN.md |
 | Scan button "disabled with tooltip in MVP", `role="tooltip"` on it | DESIGN §7, §10 | The scanner shipped in M8. There is no disabled button and no tooltip | Trusted the code. Removed |
+| "Search by brand or product name", and every count and ranking claim that followed from it | PRD §6 and §13, DESIGN §5, PATCHNOTES M6 onward | **Text search never searched.** `/api/v2/search` ignored `search_terms` and returned the whole cat-food category for every query, including one that cannot match anything. The feature existed, was tested, and was documented; what it did was unrelated to what was typed | Fixed in M18 by moving text queries to `/cgi/search.pl`. The M15a entry that misread this as a ranking defect is left standing in §13 and in PATCHNOTES, with the correction recorded here |
 
 ### 24.2 Implemented features absent from the documentation
 
@@ -1666,7 +1681,7 @@ Numbered so they can be answered by reference. Answering one folds the answer in
 1. **Should a low-confidence score be visually distinct from a high-confidence one, or withheld?** Currently it is shown with a warning. Tenet 2 might argue for withholding.
 2. **Is a curated local catalogue in scope for the MVP?** Section 12.5 says it is the only route to the M12 coverage target, which makes M12 unreachable without it.
 3. **How aggressively should feeding-trial substantiation outweigh formulation?** The original PRD raised this; the engine currently does not distinguish them at all.
-4. **Should the scorable-only filter page-hunt?** It filters the current page, which can show three results out of twenty-four. Fetching further pages until a target count is reached would be friendlier and would make the result count harder to state honestly.
+4. ~~**Should the scorable-only filter page-hunt?**~~ **Answered in M18:** it scans, which is the bounded half of hunting. Five pages are fetched in parallel, deduped and filtered once; the page then states what it scanned rather than implying it saw everything. An unbounded hunt was rejected for the reason the question raised: the friendlier version is the one whose number cannot be stated honestly.
 5. ~~**What fills the guide shell's third column on a page with no headings?**~~ **Answered in M14:** nothing. The page collapses to one column, and `tools/site/build.py` decides per page by reading the fragment for headings rather than from a flag. See docs/DESIGN.md section 6.4.
 6. ~~**Does the `/` search affordance stay on pages that already have a search input?**~~ **Answered in M14:** no. `index.html` and `search.html` are built with `show_search=False`.
 7. ~~**Should Safari and Firefox be driven by any automated check?**~~ **Answered in M17:** yes, and they now are. `tools/check-engines.py` runs the unit suite, all 12 page states and the barcode decode round-trip in Blink, Gecko and WebKit. The answer to the `BarcodeDetector` worry is that neither Gecko nor WebKit has it at all, so ZXing is not a fallback on those engines, it is the only path scanning has, and the decode round-trip passes in all three. See section 19.3.
@@ -1729,7 +1744,7 @@ Run all three locally, in this order. All are local; none touches production.
 ```bash
 python tools/run-tests.py        # 160 assertions. Must be green. This is the gate
 python tools/check-contrast.py   # 38 pairs, both palettes. Required after any token change
-python tools/check-live.py       # 16 end-to-end checks. Needs network. A smoke check, not a gate
+python tools/check-live.py       # 19 end-to-end checks. Needs network. A smoke check, not a gate
 ```
 
 Then look at the page in a browser at `http://localhost:8000`. Two of the four defects in section 12.4 were found by rendering a real product, not by a test.

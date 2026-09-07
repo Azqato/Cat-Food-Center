@@ -21,6 +21,43 @@ punctuation rather than content.
 
 ---
 
+## [0.18.0] - 2026-09-07
+
+**Search that searches, and a filter that scans (M18).**
+
+Fixed
+* **Text search never searched.** `/api/v2/search` accepts `search_terms`, answers 200 with a
+  well-formed body, and ignores the parameter. `chicken`, `salmon`, `zzzzqqq` and no query at
+  all returned the same `count` of 1578, the same products, in the same order: the entire
+  cat-food category, every time, since M6. Text queries now go to
+  `/cgi/search.pl?action=process&json=1`, which returns 32 for salmon, 22 for tuna, 83 for
+  chicken and nothing at all for a string that cannot match. Brand-only browses stay on v2,
+  whose tag filters were never affected: a brand browse still returns the same 126 it did.
+* **The scorable-only filter no longer implies it saw everything.** It filtered the twenty-four
+  results on screen, so it could show three and look like an answer. It now fetches the first
+  five pages of the query in parallel, dedupes by barcode, filters, and paginates locally. This
+  closes PRD open question 4.
+
+Added
+* Two checks in `tools/check-live.py`, which is 19 now. A query that cannot match anything must
+  render no cards, and a majority of the cards on a `salmon` search must mention salmon. The
+  first is the one that matters: an ignored parameter can fake every other answer this suite
+  asks for, but it cannot fake an empty result.
+
+Changed
+* The count line states its scope. "Showing 1 to 12 of the 12 products in all 32 results for
+  “salmon” that can be scored" when the scan reached the end of the query, and "the first 120
+  of 1578 results" when it did not, with a note at the foot of the last page saying so again.
+
+Noted
+* Two of M15a's five diagnoses were readings of this bug from outside. Results that ignore the
+  query look exactly like results ranked badly, and a category size looks exactly like a match
+  count. Those entries below are left as they were written; PRD section 24.1 carries the
+  correction. Nothing in six gates and 178 assertions caught this, because every check asked
+  whether results came back and none asked whether they were the right ones.
+
+---
+
 ## [0.17.0] - 2026-09-07
 
 **The site, in all three browser engines (M17).**
