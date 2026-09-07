@@ -21,6 +21,34 @@ punctuation rather than content.
 
 ---
 
+## [0.18.2] - 2026-09-07
+
+**A policy for the repository root (M19, adopted).**
+
+**Nothing moved in this release.** This is the rule being written down before the work,
+rather than after it, so the move can be checked against something.
+
+Added
+* **PRD section 16.4 now governs the root rather than describing it.** A file may sit at
+  the repository root only when something outside this project requires it there: a
+  specification, the hosting platform, a GitHub repository convention, or a client that
+  probes a fixed path without reading the HTML first. The section lists every permitted
+  file with the requirement that earns it its place and what breaks if it moves.
+* Two entries in the "Never do these" table: do not add a file to the root, and do not
+  create a page as a root `.html` file.
+* M19 in the milestone table, marked as adopted and not started, and a roadmap entry saying
+  what it will move and why now is the moment.
+
+Noted
+* The root holds eight files that the policy permits and twenty-one that it does not. The
+  gap is stated at the top of section 16.4 and in the milestone table rather than left for
+  a reader to notice, because a target tree that reads as a description is exactly the
+  failure section 24 exists to record.
+* Moving nineteen pages changes nineteen public URLs on a host with no redirect mechanism,
+  so section 23.3 applies to every one of them. That decision is not made here.
+
+---
+
 ## [0.18.1] - 2026-09-07
 
 **The test page asks not to be listed (M18a).**

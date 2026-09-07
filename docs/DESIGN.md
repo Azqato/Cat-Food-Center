@@ -199,7 +199,7 @@ The list itself is written at build time on every page but one. `product.html` s
 
 ## 5. The application pages
 
-Nine pages: `index`, `search`, `brands`, `product`, `scan`, `submit`, `compare`, `methodology`, `offline`. Since M14 they are **generated**, the same way the guide pages have been since M4: the body of each lives in `tools/site/content/<name>.html` and the chrome is wrapped around it by `tools/site/build.py`. The generated files at the repository root are committed, so deployment still needs no build step (ADR-001).
+Nine pages: `index`, `search`, `brands`, `product`, `scan`, `submit`, `compare`, `methodology`, `offline`. (Their addresses change in M19, to `/search/` and so on, under the root policy in PRD section 16.4. Nothing in this document depends on the filenames.) Since M14 they are **generated**, the same way the guide pages have been since M4: the body of each lives in `tools/site/content/<name>.html` and the chrome is wrapped around it by `tools/site/build.py`. The generated files at the repository root are committed, so deployment still needs no build step (ADR-001).
 
 Do not hand-edit the nine pages. Edit the fragment and rerun `python tools/site/build.py`.
 

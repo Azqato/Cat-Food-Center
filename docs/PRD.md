@@ -518,6 +518,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M17: Blink, Gecko and WebKit | 2026-09-07 | Complete |
 | M18: Search that searches | 2026-09-07 | Complete |
 | M18a: Crawl policy for the test page | 2026-09-07 | Complete |
+| M19: The root policy, applied | 2026-09 | **Policy adopted, move not started** |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -662,6 +663,12 @@ now reports the same call the engine made, and a test pins it.
 *Learned:* a well-formed 200 with plausible data is the hardest kind of wrong to notice. Six gates, 178 assertions and a live check all passed over this for eleven milestones, because every one of them asked whether results came back rather than whether they were the right results. The assertion that would have caught it is the one nobody writes: search for a string that cannot match, and require nothing back. `tools/check-live.py` now writes it, along with a second asking that a majority of the cards on a `salmon` search mention salmon. A result set that ignores the query lands nowhere near either bar, and no other check in this repository would have noticed.
 
 **M18a: the test page asks not to be listed.** `tests.html` is a wall of assertion output with no reader value, and a search result pointing at it under this site's name would be a worse answer than no result. It now carries `<meta name="robots" content="noindex, follow">`. `robots.txt` stays fully open, because a `Disallow` there would have been the wrong tool for the job: it withholds the fetch rather than the listing, and a URL nothing is allowed to read can still be indexed from a link, described by nothing. Closes open question 10, the last of the small ones.
+
+**M19: the root policy, applied.** *Adopted 2026-09-07. Nothing has moved yet.* Section 16.4 now states which files the repository root is permitted to hold and what requires each one, and everything else moves into a subfolder. In practice that is nineteen pages becoming directories served as `/search/`, `/learn/nutrition/` and so on, and `tests.html` joining the tool that runs it.
+
+*Why it is a milestone rather than tidying:* every page URL on the site changes, and this host has no redirect mechanism at all, so section 23.3 governs what happens to the old addresses. The move is worth doing now or not at all: the sitemap is a day old, there is no analytics and no established inbound link, and the cost of changing a URL only ever rises.
+
+*What it is not:* an SEO change. URL depth is not a ranking factor and the current filenames are already readable and keyword-bearing. The gain is a root that states its own rules and a structure that survives the guide growing past twenty pages.
 
 ### Next
 
@@ -969,7 +976,57 @@ There is no unpinned third-party runtime dependency left. M14 removed the last o
 
 ### 16.4 Folder structure
 
+#### The root policy
+
+**Adopted 2026-09-07. The repository does not satisfy it yet:** twenty page files and `tests.html` are still at the root, and M19 is the milestone that moves them. Until M19 ships, the tree below is a target and not a description, and this paragraph is what tells the two apart. It is deleted when they agree.
+
+**The rule, in one sentence: a file sits at the repository root only when something outside this project requires it to be there.**
+
+"Requires" has a deliberately narrow meaning. It is one of four things:
+
+1. **A specification** names a fixed path, or derives behaviour from the path.
+2. **The hosting platform** reads the file only at the root.
+3. **GitHub's own repository conventions** read the file only at the root.
+4. **A user agent probes a fixed path** without first reading the HTML that would have told it otherwise.
+
+Habit, tidiness, "it has always been there" and "it is easier to find" are not requirements. Neither is importance: `docs/PRD.md` is the most important document in this project and it is not at the root, because nothing requires it to be.
+
+**Every file the root is permitted to hold, and what requires it:**
+
+| File | Requirement | What requires it | What breaks if it moves |
+|---|---|---|---|
+| `index.html` | Platform | GitHub Pages serves it as the directory index for the site root | The site's entry URL 404s |
+| `sw.js` | Specification | A service worker's scope is derived from its own URL path. At `assets/js/sw.js` it could register for `/assets/js/` and nothing else. The `Service-Worker-Allowed` response header lifts that restriction, and GitHub Pages sends no custom headers | Offline support narrows to nothing, with no error anywhere. The registration still succeeds |
+| `robots.txt` | Specification | The Robots Exclusion Protocol reads only `/robots.txt` at an origin. This copy is already non-authoritative, because the site is a subpath of `azqato.github.io` and the host's own file governs; see section 21 | Nothing today. Correctness is lost the day the site gets its own domain, which is the day nobody will think to re-check it |
+| `sitemap.xml` | Specification | A sitemap is trusted only for URLs at or below its own path | URLs above it stop being covered by it |
+| `manifest.webmanifest` | Specification, indirectly | It is linked by `href`, so it is movable in the narrow sense. But `start_url`, `scope` and every icon `src` inside it resolve against the manifest's own URL, and `scope` is the installed application's identity | A silent PWA regression: the app installs with the wrong scope or start URL. No gate here would catch it; a user would |
+| `favicon.svg` | Probed path | Declared with `<link rel="icon">`, which most browsers honour. Link-preview services, feed readers and several crawlers do not parse the HTML first: they request a fixed root path and read a 404 as "no icon" | The icon disappears in exactly the clients that show it beside a shared link |
+| `README.md` | Platform | GitHub renders the repository root README as the project's front page. No other location is read | The repository front page is blank |
+| `LICENSE.md` | Platform and convention | GitHub's licence detection reads the repository root. `LICENSE.md` section 9 and `robots.txt` name each other by root-relative path | The licence stops being detected, and two documents point at nothing |
+| `.nojekyll` | Platform | GitHub Pages runs Jekyll unless this file is at the root, and Jekyll silently drops directories whose names begin with an underscore | A deploy that omits files, discovered in production |
+| `.gitattributes`, `.gitignore`, `.github/` | Tooling | Git and GitHub Actions read them at the repository root only | Line-ending normalisation, ignore rules and the deploy workflow stop applying |
+
+That table is the whole permitted set. It is not a snapshot of what happens to be there.
+
+**Everything else lives in a subfolder.** The files that are at the root today and should not be:
+
+| What | Where it goes | Why it is not a root file |
+|---|---|---|
+| The nineteen application and guide pages other than `index.html` | `<name>/index.html`, served as `/<name>/` | They are content. Nothing outside this project requires a page at a particular depth, and URL depth is not a ranking factor |
+| `tests.html` | `tools/` | A developer artifact, run by `tools/run-tests.py`, unlinked from the site and already `noindex`. It belongs with the tool that drives it |
+
+**Four consequences, which are the part that keeps this policy true rather than aspirational:**
+
+1. **No page file at the root except `index.html`.** A page is created as a directory containing `index.html`. The generators own this: `tools/site/build.py` and `tools/learn/build.py` decide every output path, so it cannot be got wrong by hand.
+2. **Nothing is added to the root without adding a row to the table above**, naming which of the four requirements applies. A change that cannot fill in the "what requires it" column is a change that belongs in a subfolder.
+3. **Relative paths remain mandatory** (ADR-001, and section 26.2). A page at depth *n* reaches the assets through *n* `../` segments, and that depth is computed by the generator, never written by hand. This is the largest single risk in the M19 move: a wrong prefix produces a page that is correct from one directory and 404s from another, and the two look identical in a diff.
+4. **Retiring a page's old address is governed by section 23.3**, not by this policy. Moving a page changes a public URL, and the tombstone rule applies in full unless a decision is recorded that it does not.
+
+#### The layout
+
 Everything at the repository root is served verbatim. `tools/` and `docs/` are the exceptions: they run or are read on a developer machine.
+
+**This is the target, after M19.** The repository does not match it yet; see the note above.
 
 ```
 Cat-Food-Center/
@@ -977,21 +1034,21 @@ Cat-Food-Center/
 ├── LICENSE.md               # All rights reserved, plus the AI and search carve-out
 ├── robots.txt               # Fully open, deliberately
 ├── sitemap.xml              # Every public page
-├── index.html               # Home. GENERATED by tools/site/build.py, as are the eight below
-├── search.html              # Text and brand results; ?q= ?brand= ?page= ?only=
-├── brands.html              # Brand index
-├── product.html             # Product detail; ?barcode=
-├── scan.html                # Camera scanner and manual entry
-├── submit.html              # Missing-product hand-off; ?barcode=
-├── compare.html             # Two products; ?a= and ?b=
-├── methodology.html         # Public scoring explanation
-├── offline.html             # Shown for a page never opened on this device
-├── learn.html               # The Cat Care Guide. GENERATED by tools/learn/build.py
-├── learn-*.html             # Ten more guide pages. GENERATED
-├── tests.html               # Browser-hosted test suite; run by tools/run-tests.py
+├── index.html               # Home. GENERATED by tools/site/build.py, as is every page below
 ├── sw.js                    # Service worker. MUST stay at the root for scope
-├── manifest.webmanifest     # PWA manifest
-├── favicon.svg
+├── manifest.webmanifest     # PWA manifest. Its own URL is the base for start_url and scope
+├── favicon.svg              # Also probed at a fixed path by clients that do not read the HTML
+├── search/index.html        # Text and brand results; ?q= ?brand= ?page= ?only=
+├── brands/index.html        # Brand index
+├── product/index.html       # Product detail; ?barcode=
+├── scan/index.html          # Camera scanner and manual entry
+├── submit/index.html        # Missing-product hand-off; ?barcode=
+├── compare/index.html       # Two products; ?a= and ?b=
+├── methodology/index.html   # Public scoring explanation
+├── offline/index.html       # Shown for a page never opened on this device
+├── learn/
+│   ├── index.html           # The Cat Care Guide. GENERATED by tools/learn/build.py
+│   └── <topic>/index.html   # Ten more guide pages. GENERATED
 ├── .nojekyll                # Stops Pages ignoring underscore directories
 ├── assets/
 │   ├── cfc-tokens.css       # Palette, light and dark. Every page
@@ -1008,10 +1065,11 @@ Cat-Food-Center/
 │   │   ├── pwa.js           #   SW registration and offline banner (classic script)
 │   │   ├── *-page.js        #   Per-page rendering
 │   │   ├── test-runner.js   #   Minimal assertion runner
-│   │   └── *.test.js        #   Tests, loaded by tests.html
+│   │   └── *.test.js        #   Tests, loaded by tools/tests.html
 │   └── data/
 │       └── additives.json   # Additive knowledge base, v1.1.0
 ├── tools/
+│   ├── tests.html           # Browser-hosted test suite. Not a page: noindex, unlinked
 │   ├── run-tests.py         # Drives tests.html headlessly in Edge
 │   ├── check-live.py        # 19 end-to-end checks against the live API
 │   ├── check-contrast.py    # WCAG AA audit of both palettes
@@ -1713,6 +1771,8 @@ Concrete instructions for whoever works on this next, human or model.
 |---|---|
 | Use an absolute path (`/assets/...`) | The site is served from a repository subpath. It works locally and 404s in production |
 | Hand-edit any root page but `tests.html` | All generated. Your change disappears on the next build |
+| Add a file to the repository root | The root is a policy space since 2026-09-07, not a default location. Section 16.4 lists every file permitted there and what requires each one. If you cannot fill in the "what requires it" column, it belongs in a subfolder |
+| Create a page as a root `.html` file | Since M19 a page is a directory containing `index.html`. The generators decide the path; a hand-placed page also gets the `../` depth prefixes wrong, which 404s from one directory and not from another |
 | Move `cfc-theme.js` out of `<head>`, or add `defer`/`async` | The blocking position is what prevents a flash of the wrong palette |
 | Move `sw.js` out of the root | Scope is derived from path. Offline support silently narrows |
 | Add a Tailwind opacity modifier to a themed colour | It renders transparent. Add a token instead |
