@@ -32,8 +32,15 @@ function card(entry) {
   const tile = scored
     ? `<span class="font-display text-h2 leading-none" style="color:${ink};font-variant-numeric:tabular-nums">${entry.score}</span>`
     : `<span class="text-micro" style="color:${ink};text-align:center;line-height:1.2">Not<br>scored</span>`;
+  /* The band pill carries confidence, exactly as a search result does. An
+     entry stored before M18b has none, and says so rather than guessing: the
+     alternative is a bare number, which is the thing M18b exists to stop. It
+     is self-healing, since opening the product again rewrites the entry. */
+  const conf = entry.confidence
+    ? `${esc(entry.confidence)} confidence`
+    : 'confidence not recorded';
   const badge = scored
-    ? `<span class="inline-block text-micro px-2 rounded-pill mt-1" style="background:${bg};color:${ink};padding-top:2px;padding-bottom:2px">${esc(entry.bandLabel || '')}</span>`
+    ? `<span class="inline-block text-micro px-2 rounded-pill mt-1" style="background:${bg};color:${ink};padding-top:2px;padding-bottom:2px">${esc(entry.bandLabel || '')} · ${conf}</span>`
     : '';
 
   /* Same row as a search result, deliberately: the two lists sit one scroll
@@ -50,7 +57,7 @@ function card(entry) {
         ${badge}
       </div>
       <div class="w-14 h-14 rounded-card flex items-center justify-center shrink-0"
-           style="background:${bg}" aria-label="${scored ? `Score ${entry.score}, ${esc(entry.bandLabel || '')}` : 'Not scored'}">${tile}</div>
+           style="background:${bg}" aria-label="${scored ? `Score ${entry.score}, ${esc(entry.bandLabel || '')}, ${conf}` : 'Not scored'}">${tile}</div>
     </a>
   </li>`;
 }

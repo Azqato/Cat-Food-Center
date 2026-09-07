@@ -8,8 +8,11 @@
    not information we have any reason to hold.
 
    What is stored is the minimum needed to redraw a card without a network
-   round-trip: barcode, name, brand, score, band, and since M15b the URL of
-   the thumbnail. The URL is a public address on the catalogue's own image
+   round-trip: barcode, name, brand, score, band, confidence since M18b, and
+   since M15b the URL of the thumbnail. Confidence is stored because the card
+   prints the score, and a score without its confidence is a claim the engine
+   never made; an entry saved before M18b has none, and the card says that
+   rather than guessing. The URL is a public address on the catalogue's own image
    host, not a copy of the picture: it costs a few dozen bytes of quota and
    the service worker already holds the image itself. Not the full product:
    the
@@ -52,7 +55,8 @@ export function recentProducts() {
  * Record a product view, moving it to the front if it is already there.
  *
  * @param {{barcode: string, name: string, brand?: string, thumbUrl?: string,
- *          score?: number, band?: string, bandLabel?: string}} entry
+ *          score?: number, band?: string, bandLabel?: string,
+ *          confidence?: 'high'|'medium'|'low'}} entry
  */
 export function recordView(entry) {
   if (!entry || !entry.barcode) return;

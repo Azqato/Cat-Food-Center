@@ -21,6 +21,35 @@ punctuation rather than content.
 
 ---
 
+## [0.19.0] - 2026-09-07
+
+**Confidence travels with the score (M18b).**
+
+Changed
+* **Every card that prints a score now prints its confidence.** The band pill reads "Good ·
+  medium confidence" rather than "Good", on search results, brand-filtered results and the
+  recently-viewed list, and the same text is in the score tile's accessible name. The product
+  page and the compare page have stated confidence since M7 and M11; the cards printed a bare
+  number, which is the surface the number actually travels on.
+* Shown at every confidence level, not only the poor ones. A marker that appears selectively
+  makes its absence into a claim.
+
+Added
+* Recently-viewed entries store `confidence` beside the score, because the home page redraws
+  that card from `localStorage` with no network round-trip. An entry saved before this release
+  has none and says "confidence not recorded" rather than guessing; opening the product again
+  rewrites it.
+* A twentieth check in `tools/check-live.py`: every scored card on a page of results states
+  its confidence.
+
+Noted
+* Withholding the number below a threshold was considered and rejected. It is the strictest
+  reading of tenet 2, but the engine already refuses outright where it knows too little
+  (`scorable: false`), and a second quieter refusal on top of that would have cost usability
+  without buying honesty. Closes PRD open question 1.
+
+---
+
 ## [0.18.3] - 2026-09-07
 
 **Six decisions recorded (no code).**

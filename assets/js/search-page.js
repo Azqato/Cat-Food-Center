@@ -80,15 +80,24 @@ function card(product, result) {
   const tile = result.scorable
     ? `<span class="font-display text-h2 leading-none" style="color:${ink};font-variant-numeric:tabular-nums">${result.score}</span>`
     : `<span class="text-micro" style="color:${ink};text-align:center;line-height:1.2">Not<br>scored</span>`;
+  /* The band pill carries the confidence with it, and always, not only when
+     confidence is poor. A 72 built from three pillars and a full label and a
+     72 built from an ingredient list alone are different claims wearing the
+     same number, and until M18b the difference was stated on the product page
+     and on the compare page while these cards printed the bare digit. The
+     number is the part that travels: it is what gets scanned, remembered and
+     repeated, and a caveat that stays behind on another page is a caveat that
+     does not exist. Showing it only for low confidence would make its absence
+     the claim, which is exactly the reading tenet 2 refuses. */
   const badge = result.scorable
-    ? `<span class="inline-block text-micro px-2 rounded-pill mt-1" style="background:${bg};color:${ink};padding-top:2px;padding-bottom:2px">${result.bandLabel}</span>`
+    ? `<span class="inline-block text-micro px-2 rounded-pill mt-1" style="background:${bg};color:${ink};padding-top:2px;padding-bottom:2px">${result.bandLabel} · ${result.confidence} confidence</span>`
     : '<span class="inline-block text-micro px-2 rounded-pill mt-1" style="border:1px solid var(--hairline);color:var(--ink-soft);padding-top:2px;padding-bottom:2px">No ingredient list on record</span>';
 
   const meta = [product.brand, FORMAT_LABEL[product.format], product.quantity]
     .filter(Boolean).join(' · ');
 
   const ariaLabel = result.scorable
-    ? `Score ${result.score}, ${result.bandLabel}`
+    ? `Score ${result.score}, ${result.bandLabel}, ${result.confidence} confidence`
     : 'Not scored';
 
   /* Photo left, score right, name between. The chevron that used to close the

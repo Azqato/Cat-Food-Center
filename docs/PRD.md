@@ -518,7 +518,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M17: Blink, Gecko and WebKit | 2026-09-07 | Complete |
 | M18: Search that searches | 2026-09-07 | Complete |
 | M18a: Crawl policy for the test page | 2026-09-07 | Complete |
-| M18b: Confidence travels with the score | 2026-09 | **Decided, not started** |
+| M18b: Confidence travels with the score | 2026-09-07 | Complete |
 | M19: The root policy, applied | 2026-09 | **Policy adopted, move not started** |
 | M12: Public beta | 2027-01 | Planned |
 
@@ -665,7 +665,9 @@ now reports the same call the engine made, and a test pins it.
 
 **M18a: the test page asks not to be listed.** `tests.html` is a wall of assertion output with no reader value, and a search result pointing at it under this site's name would be a worse answer than no result. It now carries `<meta name="robots" content="noindex, follow">`. `robots.txt` stays fully open, because a `Disallow` there would have been the wrong tool for the job: it withholds the fetch rather than the listing, and a URL nothing is allowed to read can still be indexed from a link, described by nothing. Closes open question 10, the last of the small ones.
 
-**M18b: confidence travels with the score.** *Decided 2026-09-07. Not built yet.* The engine has computed a high, medium or low confidence for every score since M7, and says which on the product page and on the compare page. The search and brand cards print the bare number. Those cards are the surface the number actually travels on: they are what gets scanned, remembered and repeated, and a caveat left behind on another page is a caveat that does not exist. Every surface that prints a score will print its confidence beside it, always rather than only when confidence is poor, because showing it selectively would make its absence the claim. Answers open question 1.
+**M18b: confidence travels with the score.** The engine has computed a high, medium or low confidence for every score since M7, and says which on the product page and on the compare page. The search and brand cards print the bare number. Those cards are the surface the number actually travels on: they are what gets scanned, remembered and repeated, and a caveat left behind on another page is a caveat that does not exist. Every surface that prints a score will print its confidence beside it, always rather than only when confidence is poor, because showing it selectively would make its absence the claim. Answers open question 1.
+
+*What shipped:* the band pill on every product card now reads "Good · medium confidence" rather than "Good", on the search results, the brand-filtered results and the recently-viewed list on the home page, and the same text is in the tile’s accessible name. Recently-viewed entries store the confidence alongside the score, since the home page draws that card from `localStorage` without a network round-trip; an entry saved before this milestone has none and says "confidence not recorded" rather than guessing, which repairs itself the next time the product is opened. `tools/check-live.py` is 20 checks now, the new one asserting that every scored card on a page of results states its confidence.
 
 *What was rejected:* withholding the number below a confidence threshold. It is the strictest reading of tenet 2 and it is defensible, but the engine already refuses outright when it knows too little (`scorable: false`), and a second, quieter refusal on top of that would make the site harder to use without making it more honest. A number that carries its own caveat is a better answer than no number.
 
@@ -817,7 +819,7 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 |---|---|
 | `python -m http.server 8000` | Serve the site locally |
 | `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 178 assertions. Exits non-zero on failure, so it works as a gate |
-| `python tools/check-live.py` | 19 end-to-end checks against the live API, two of them added in M18 to ask whether the search searches. Needs network. Not deterministic, so it is a smoke check rather than a gate |
+| `python tools/check-live.py` | 20 end-to-end checks against the live API, two of them added in M18 to ask whether the search searches and one in M18b to ask whether the caveat travels with the score. Needs network. Not deterministic, so it is a smoke check rather than a gate |
 | `python tools/check-contrast.py` | Verify 38 foreground and background pairs against WCAG AA in both palettes |
 | `python tools/check-a11y.py` | WCAG 2.1 AA audit of all 25 page states in both themes, plus reflow at 320px and the skip link. 100 audits. Exits non-zero, so it works as a gate |
 | `python tools/check-a11y.py --report` | The same audit, printing every violation with its selector, and exiting 0 |
@@ -1082,7 +1084,7 @@ Cat-Food-Center/
 ├── tools/
 │   ├── tests.html           # Browser-hosted test suite. Not a page: noindex, unlinked
 │   ├── run-tests.py         # Drives tests.html headlessly in Edge
-│   ├── check-live.py        # 19 end-to-end checks against the live API
+│   ├── check-live.py        # 20 end-to-end checks against the live API
 │   ├── check-contrast.py    # WCAG AA audit of both palettes
 │   ├── probe-opff.py        # Regenerates the numbers in section 12
 │   ├── site/                # Application page generator: chrome.py, build.py, content/
@@ -1770,7 +1772,7 @@ The working tree is clean and `main` is deployed. M14 and all four parts of M15 
 
 Numbered so they can be answered by reference. Answering one folds the answer into the relevant section and marks it answered here.
 
-1. ~~**Should a low-confidence score be visually distinct from a high-confidence one, or withheld?**~~ **Decided 2026-09-07, shipping in M18b:** shown, and never without its confidence. The defect was not that the caveat was too quiet, it was that the caveat did not travel: the product page and the compare page both state confidence, and the search and brand cards print a bare number. Every surface that prints a score will print its confidence, always rather than only when it is poor, since a marker that appears selectively makes its absence into a claim. Withholding was rejected because the engine already refuses outright where it knows too little, and a second quieter refusal would cost usability without buying honesty. **Not implemented at the time of writing.**
+1. ~~**Should a low-confidence score be visually distinct from a high-confidence one, or withheld?**~~ **Answered in M18b:** shown, and never without its confidence. The defect was not that the caveat was too quiet, it was that the caveat did not travel: the product page and the compare page both state confidence, and the search and brand cards print a bare number. Every surface that prints a score will print its confidence, always rather than only when it is poor, since a marker that appears selectively makes its absence into a claim. Withholding was rejected because the engine already refuses outright where it knows too little, and a second quieter refusal would cost usability without buying honesty. A card that had no confidence stored before M18b says so rather than guessing.
 2. **Is a curated local catalogue in scope for the MVP?** Section 12.5 says it is the only route to the M12 coverage target, which makes M12 unreachable without it.
 3. ~~**How aggressively should feeding-trial substantiation outweigh formulation?**~~ **Answered 2026-09-07:** deferred to M12, and deliberately not answered before it. The distinction is real and matters, and Open Pet Food Facts carries no feeding-trial field at all; `aafcoComplete` is absent from most records, which is why section 11 emits a warning telling the reader to check the packaging. Weighting it now would score how well a product was catalogued rather than the food, and would move a number on the strength of a database gap. If a curated local catalogue is built, substantiation is one of the fields it should carry, and this question is answered then with data behind it. Until then the engine saying nothing is the correct behaviour rather than a missing feature.
 4. ~~**Should the scorable-only filter page-hunt?**~~ **Answered in M18:** it scans, which is the bounded half of hunting. Five pages are fetched in parallel, deduped and filtered once; the page then states what it scanned rather than implying it saw everything. An unbounded hunt was rejected for the reason the question raised: the friendlier version is the one whose number cannot be stated honestly.
@@ -1838,7 +1840,7 @@ Run all three locally, in this order. All are local; none touches production.
 ```bash
 python tools/run-tests.py        # 160 assertions. Must be green. This is the gate
 python tools/check-contrast.py   # 38 pairs, both palettes. Required after any token change
-python tools/check-live.py       # 19 end-to-end checks. Needs network. A smoke check, not a gate
+python tools/check-live.py       # 20 end-to-end checks. Needs network. A smoke check, not a gate
 ```
 
 Then look at the page in a browser at `http://localhost:8000`. Two of the four defects in section 12.4 were found by rendering a real product, not by a test.

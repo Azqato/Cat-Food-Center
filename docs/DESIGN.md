@@ -329,6 +329,8 @@ The single most important thing on the site, so its rules are strict.
 - **A partial score is marked as partial.** Where a pillar could not be computed, the page says which, because a 72 from three pillars and a 72 from one are different claims wearing the same number.
 - **Confidence is shown alongside the score**, not folded into it.
 - **An unscorable product shows no number at all.** It shows what is missing. There is no grey placeholder score and no zero.
+
+- **A score never appears without its confidence.** Since M18b the band pill under a product card reads "Good · medium confidence", not "Good", everywhere a card is drawn: search results, brand-filtered results and the recently-viewed list. The product page and the compare page had said it since M7 and M11; the cards were the surface that leaked. A 72 built from three pillars and a full label and a 72 built from an ingredient list alone are different claims wearing the same number, and the number is the part that travels. It is shown at every confidence level rather than only the poor ones, because a marker that appears selectively turns its absence into a claim of its own.
 - **A hard gate is stated as a gate.** Propylene glycol produces a callout saying it is prohibited in cat food in the United States, rather than a quietly lower number.
 - **A cached answer is labelled a saved copy, with its date.** This is a design requirement, not only a technical one: an old score presented as a current one is the worst failure the cache could cause.
 

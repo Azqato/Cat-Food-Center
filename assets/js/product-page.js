@@ -401,6 +401,9 @@ async function main() {
     score: result.scorable ? result.score : undefined,
     band: result.scorable ? result.band : undefined,
     bandLabel: result.scorable ? result.bandLabel : undefined,
+    // Stored with the score, because the home page prints the score and a
+    // number without its confidence is a claim this engine never made.
+    confidence: result.scorable ? result.confidence : undefined,
   });
 
   // A saved copy is labelled as one. The scoring engine and the database both

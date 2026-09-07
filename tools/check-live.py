@@ -226,6 +226,22 @@ async def main():
                 failures.append('results are about the query')
             print('%s %-44s %s' % ('PASS' if ok else 'FAIL', 'results are about what was typed',
                                    '%d of %d cards mention salmon' % (matching, len(hits))))
+            # M18b: the caveat has to travel with the number. Every card that
+            # prints a score prints its confidence beside it, so a score read
+            # in a list makes the same claim as the same score read on the
+            # product page. Asserted on the search cards because they are the
+            # surface that leaked: the product and compare pages have stated
+            # confidence since M7 and M11 respectively.
+            total += 1
+            scored = await page.evaluate(
+                "[...document.querySelectorAll('#results-list [data-scorable=\"yes\"]')]"
+                ".map(el => (el.textContent || ''))")
+            with_conf = len([t for t in scored if 'confidence' in t])
+            ok = bool(scored) and with_conf == len(scored)
+            if not ok:
+                failures.append('confidence travels with the score')
+            print('%s %-44s %s' % ('PASS' if ok else 'FAIL', 'every scored card states its confidence',
+                                   '%d of %d scored cards' % (with_conf, len(scored))))
             await page.close()
 
             total += 1
