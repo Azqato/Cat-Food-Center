@@ -1581,7 +1581,7 @@ Numbered so they can be answered by reference. Answering one folds the answer in
 8. **Should the tombstone mechanism in 23.3 be built before it is needed, or written when first used?** It is currently a policy with no implementation.
 9. **Is the six-language alias list the right stopping point?** It covers most of the database, but the honest-refusal path means every uncovered language is a product that cannot be fully scored.
 10. **Should `tests.html` be excluded from the sitemap and from crawling?** It is public and unlinked. It is currently omitted from `sitemap.xml` but not disallowed in `robots.txt`, since that file is deliberately fully open.
-11. **Should the product page build its own "On this page" rail?** Its headings exist only after the fetch returns, so the generator cannot index them. A client-side rail is a dozen lines in `cfc-docs.js`, and it is the only place in the site where chrome would be assembled in the browser.
+11. ~~**Should the product page build its own "On this page" rail?**~~ **Answered in M15d:** yes. `tools/site/build.py` ships the column empty, hidden and marked `data-client-toc`; `assets/cfc-docs.js` fills it from `.article h2[id]` when the page dispatches `cfc:content`, and hides it again when a draw produces no sections. It is the only chrome the browser assembles, and it stays optional: with JavaScript off the product page has no content either, so there is nothing the rail could have indexed. See docs/DESIGN.md section 6.4.
 
 ---
 

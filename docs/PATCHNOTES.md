@@ -21,6 +21,40 @@ punctuation rather than content.
 
 ---
 
+## [0.15.2] - 2026-09-06
+
+**The product page builds its own "On this page" rail (M15d).**
+
+Added
+* **A third column on `product.html`**, listing the sections of the breakdown
+  and highlighting the one in view, the same rail the guide and the methodology
+  page have had since M4. It is the only chrome on the site assembled in the
+  browser, and it is confined to the one page whose content is also assembled
+  in the browser.
+* **A third state in `build.py`'s `PAGES` table.** The rail column was a
+  boolean; it now takes `False`, `True` (the generator reads the headings out
+  of the fragment, and the build fails if there are none) and `'client'` (the
+  column ships empty, hidden and marked `data-client-toc`). A page still cannot
+  claim a rail it has nothing to put in.
+* A live check that the rail has one link per heading and one active link.
+  17 of 17.
+
+Changed
+* **The scroll spy in `cfc-docs.js` is re-runnable rather than one-shot.** It
+  used to bail on an empty rail and never look again, which is exactly the
+  state a client-rendered page is in at load. Each run now disconnects the
+  observer and scroll listener the previous one installed, so a redrawn article
+  cannot leave a spy watching elements that have been replaced.
+* **Every draw of the product article goes through one `paint()` function**,
+  which assigns the HTML and dispatches `cfc:content`. Routing all four draws
+  through it is what makes the "not found" case correct: that draw has no
+  sections, and the rail hides itself again rather than keeping the last
+  product's list.
+
+Closes PRD open question 11.
+
+---
+
 ## [0.15.1] - 2026-09-06
 
 **Ingredient rows that explain themselves (M15c).**

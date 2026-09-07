@@ -83,6 +83,14 @@ async () => {
 }
 """
 
+RAIL_JS = """() => ({
+  hidden: document.querySelector('.toc[data-client-toc]').hidden,
+  links: document.querySelectorAll('#toc-list a').length,
+  headings: document.querySelectorAll('.article h2[id]').length,
+  active: document.querySelectorAll('#toc-list a.is-active').length,
+})"""
+
+
 def serve():
     handler = lambda *a, **kw: http.server.SimpleHTTPRequestHandler(*a, directory=ROOT, **kw)
     httpd = socketserver.TCPServer(('127.0.0.1', 0), handler)
@@ -107,7 +115,7 @@ async def main():
     httpd, port = serve()
     base = 'http://127.0.0.1:%d' % port
     failures = []
-    # The twelve page loads below, plus the four multi-page checks after them.
+    # The twelve page loads below, plus the five behavioural checks after them.
     total = 12
 
     try:
@@ -218,6 +226,26 @@ async def main():
             print('%s %-44s %s' % ('PASS' if ok else 'FAIL', 'barcode decode round-trip',
                                    ', '.join('%s->%s' % (k, v['decoded'][:16])
                                              for k, v in roundtrip.items())))
+            await page.close()
+
+            total += 1
+            # The product page is the only one whose "On this page" rail is not
+            # in the HTML: the generator has no headings to index until the
+            # fetch returns, so cfc-docs.js builds the list from the DOM. That
+            # makes it the one rail that can silently ship empty.
+            page = await browser.new_page()
+            await page.goto(base + '/product.html?barcode=%s' % CASES[0][0])
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Loading')", timeout=25000)
+            await page.wait_for_timeout(600)
+            rail = await page.evaluate(RAIL_JS)
+            ok = (rail['links'] > 0 and rail['links'] == rail['headings']
+                  and not rail['hidden'] and rail['active'] == 1)
+            if not ok:
+                failures.append('product page rail')
+            print('%s %-44s %s' % ('PASS' if ok else 'FAIL', 'product page builds its own toc rail',
+                                   '%d links for %d headings, %d active'
+                                   % (rail['links'], rail['headings'], rail['active'])))
             await page.close()
 
             total += 2

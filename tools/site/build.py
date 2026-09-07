@@ -26,9 +26,17 @@ CONTENT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'content')
 # wants the top-bar search field.
 #
 # The two pages that carry a search input in the body do not repeat it in the
-# bar. The two that index their own headings get the third column; the rest
+# bar. The pages that index their own headings get the third column; the rest
 # collapse to one, rather than showing an empty rail. Both decisions are in
 # docs/DESIGN.md section 6.
+#
+# The toc column takes three values, not two:
+#   False      no rail, two columns.
+#   True       the generator reads the h2 ids out of the fragment and writes
+#              the list. The fragment must have some, or the build fails.
+#   'client'   the rail ships empty and hidden, and cfc-docs.js fills it from
+#              the DOM when the page dispatches "cfc:content". For a page whose
+#              headings do not exist until a fetch returns.
 PAGES = [
     ('index',       'Cat Food Center',
      'Scan a barcode or search to get an honest 0 to 100 score for any cat food, with the reasoning shown.',
@@ -39,11 +47,12 @@ PAGES = [
     ('brands',      'Browse by brand',
      'Every cat food brand in the database, A to Z, with the number of products for each.',
      './brands.html', 'brands-page.js', False, True),
-    # No toc rail: the product page's headings are written by product-page.js
-    # after the fetch returns, so there is nothing for the generator to index.
+    # A client-built rail: the product page's headings are written by
+    # product-page.js after the fetch returns, so the generator ships the
+    # column empty and the script fills it.
     ('product',     'Product',
      'The full breakdown for one cat food: score, ingredients, additive flags and nutrition.',
-     './search.html', 'product-page.js', False, True),
+     './search.html', 'product-page.js', 'client', True),
     ('scan',        'Scan a barcode',
      'Point your camera at the barcode on a tin of cat food to open its page.',
      './scan.html', 'scan-page.js', False, True),
@@ -78,16 +87,24 @@ def toc_items(body):
 
 def build(name, title, description, current, module, want_toc, want_search):
     body = io.open(os.path.join(CONTENT, name + '.html'), encoding='utf-8').read().rstrip()
-    items = toc_items(body) if want_toc else []
-    if want_toc and not items:
+    client_toc = want_toc == 'client'
+    items = toc_items(body) if want_toc is True else []
+    if want_toc is True and not items:
         raise SystemExit('%s wants a toc but its fragment has no h2 with an id' % name)
     toc = ''
-    if items:
+    if client_toc:
+        # Hidden until it has something in it, so a product that fails to load
+        # does not leave a labelled empty column standing there.
+        toc = ('\n  <aside class="toc" aria-label="On this page" data-client-toc hidden>\n'
+               '    <p class="toc-title">On this page</p>\n'
+               '    <nav><ul id="toc-list"></ul></nav>\n'
+               '  </aside>\n')
+    elif items:
         toc = ('\n  <aside class="toc" aria-label="On this page">\n'
                '    <p class="toc-title">On this page</p>\n'
                '    <nav><ul id="toc-list">\n%s\n    </ul></nav>\n'
                '  </aside>\n' % '\n'.join(items))
-    shell_class = 'shell shell-app-toc' if items else 'shell shell-app'
+    shell_class = 'shell shell-app-toc' if toc else 'shell shell-app'
     out = (
         chrome.head(title, description)
         + '<body>\n\n'

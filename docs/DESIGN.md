@@ -189,6 +189,8 @@ Breadcrumbs (`.crumbs`), `h1`, `.lede`, then body. `h2` carries a short accent r
 
 `.toc`, 240px, sticky, a left hairline rule with the active link marked by `.is-active` in accent. Scroll-spy is in `cfc-docs.js`. **Hidden entirely below 1180px**, which is the right call: a table of contents that is not visible alongside the text it indexes is a second navigation with no advantage over scrolling.
 
+The list itself is written at build time on every page but one. `product.html` ships the rail empty, hidden and marked `data-client-toc`, and `cfc-docs.js` fills it from `.article h2[id]` on the `cfc:content` event the page dispatches after each draw. Because the article can be redrawn, the spy is re-runnable rather than one-shot: each run disconnects the observer and the scroll listener the previous one installed, or a redraw would leave a spy watching elements that are no longer on the page. A draw with no sections (a barcode that is not in the database) leaves the rail hidden rather than showing an empty labelled column.
+
 ### 4.6 The footer
 
 `.site-footer`, four columns at `1.4fr 1fr 1fr 1fr`, collapsing to two below 900px and one below 560px. Brand, tagline, a dashed `.footer-cta`, three link columns, and a `.site-footer-base` strip. This is a full site footer and is the richest navigation the guide pages have.
@@ -217,7 +219,7 @@ chrome.footer()   the four-column footer
 chrome.scripts()  cfc-docs.js, the page module, pwa.js
 ```
 
-The shell is `.shell shell-app` for a page with no rail and `.shell shell-app-toc` for one with a rail. `build.py` picks between them from the content itself rather than from a flag, so a page cannot claim a rail it has nothing to put in.
+The shell is `.shell shell-app` for a page with no rail and `.shell shell-app-toc` for one with a rail. The rail column in the `PAGES` table takes three values, not two: `False` for no rail, `True` for a rail the generator builds by reading `<h2 id="...">` out of the fragment (and the build fails if it finds none), and `'client'` for a rail the browser fills. Only `product.html` uses the third, and only because its headings do not exist until a fetch returns.
 
 ### 5.2 What these pages have that the guide does not
 
@@ -228,7 +230,7 @@ The shell is `.shell shell-app` for a page with no rail and `.shell shell-app-to
 ### 5.3 What they still lack
 
 - A section list in the drawer. On a guide page the drawer holds the site menu and the guide's sections; on an application page it holds the site menu alone.
-- An "On this page" rail anywhere but `methodology.html`, which is the only one whose headings exist before the page loads. See section 6.4.
+- An "On this page" rail on the six pages whose content is a form, a list or a viewfinder rather than sections. `methodology.html` builds one at build time and `product.html` builds one in the browser. See section 6.4.
 
 ### 5.4 Rules that survive Tailwind
 
@@ -272,7 +274,9 @@ The nine per-page `<style>` blocks are gone with it. They defined the same type 
 
 ### 6.4 The two open questions, answered
 
-1. **What fills the third column on a page with no headings to index?** Nothing: the page collapses to one column. `build.py` reads the fragment for `<h2 id="...">` and emits the rail only where it finds some, so the answer is per page and cannot go stale. In practice `methodology.html` is the only application page with a rail. `product.html` would earn one, but its headings are written by `product-page.js` after the fetch returns, so there is nothing to index at build time; a client-side rail for it is not built. This closes PRD open question 5.
+1. **What fills the third column on a page with no headings to index?** Nothing: the page collapses to one column. `build.py` reads the fragment for `<h2 id="...">` and emits the rail only where it finds some, so the answer is per page and cannot go stale. This closes PRD open question 5.
+
+   `product.html` was the exception this could not answer, and M15d answered it separately: it earns a rail, but its headings are written by `product-page.js` after the fetch returns, so the generator ships the column empty and the browser fills it. That is the only chrome assembled client-side anywhere on the site, and it is deliberately confined to the one page whose content is also assembled client-side: a rail cannot be more static than the headings it indexes. This closes PRD open question 11.
 2. **Does the `/` search affordance stay on pages that already carry a search input in the body?** No. `index.html` and `search.html` pass `show_search=False`. Two routes to the same place inside one viewport is a papercut. This closes PRD open question 6.
 
 ### 6.5 Two defects the port exposed

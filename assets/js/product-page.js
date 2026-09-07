@@ -359,11 +359,22 @@ function renderNotFound(barcode, error) {
 /* ── Boot ── */
 
 const article = document.getElementById('product-article');
+
+/* Every draw of the article goes through here, because the "On this page" rail
+   is built from the headings this function writes. cfc-docs.js ships the rail
+   empty on this page (the generator has nothing to index at build time: the
+   headings do not exist until the fetch returns) and listens for this event to
+   fill it. A "not found" draw carries no sections, and the rail hides itself
+   again rather than keeping the last product's list. */
+function paint(html) {
+  article.innerHTML = html;
+  document.dispatchEvent(new CustomEvent('cfc:content'));
+}
 const barcode = new URLSearchParams(window.location.search).get('barcode') || '';
 
 async function main() {
   if (!barcode) {
-    article.innerHTML = renderNotFound('', 'No barcode was given. Try searching for a product by name.');
+    paint(renderNotFound('', 'No barcode was given. Try searching for a product by name.'));
     return;
   }
 
@@ -374,7 +385,7 @@ async function main() {
 
   if (!found || !product) {
     document.title = 'Product not found: Cat Food Center';
-    article.innerHTML = renderNotFound(barcode, error);
+    paint(renderNotFound(barcode, error));
     return;
   }
 
@@ -400,7 +411,7 @@ async function main() {
        + 'The score was worked out from that saved data and may not reflect the current record.']
     : [];
 
-  article.innerHTML = [
+  paint([
     renderHeader(product, result),
     renderNotice(cacheNotice, 'info'),
     renderNotice(result.warnings),
@@ -411,9 +422,9 @@ async function main() {
     renderNutrition(product),
     renderAdequacy(product),
     renderMeta(product),
-  ].filter(Boolean).join('');
+  ].filter(Boolean).join(''));
 }
 
 main().catch((err) => {
-  article.innerHTML = renderNotFound(barcode, 'Something went wrong loading this product. ' + err.message);
+  paint(renderNotFound(barcode, 'Something went wrong loading this product. ' + err.message));
 });
