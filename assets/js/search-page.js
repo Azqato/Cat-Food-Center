@@ -136,8 +136,14 @@ function renderPager(state, total, pageSize, shown) {
   const lastPage = Math.max(1, Math.ceil(total / pageSize));
   if (lastPage <= 1) { pager.hidden = true; return; }
 
+  /* The unavailable direction is a span rather than a link, and it is told
+     apart from the live one by having no border and no card: it does not need
+     to be faded as well. It used to carry opacity .45, which put it at 2.11:1
+     and made "Previous" on page 1 the one piece of text on the site below AA.
+     WCAG exempts genuinely inactive controls; this is a span of text, and
+     dimming text is not what makes a control read as unavailable anyway. */
   const button = (targetPage, text, disabled) => (disabled
-    ? `<span class="text-small text-ink-soft" style="padding:8px 14px;opacity:.45">${text}</span>`
+    ? `<span class="text-small text-ink-soft" style="padding:8px 14px">${text}</span>`
     : `<a href="${esc(urlFor({ ...state, page: targetPage }))}"
           class="btn-link text-small text-ink border border-hairline rounded-card"
           style="padding:8px 14px">${text}</a>`);

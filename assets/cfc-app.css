@@ -364,12 +364,31 @@
    ══════════════════════════════════════════════════════════════════════════ */
 .cmp-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
 @media (min-width: 620px) { .cmp-grid { grid-template-columns: 1fr 1fr; } }
-.cmp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+/* minmax(0, 1fr), not 1fr. A bare 1fr track will not shrink below its
+   content's minimum width, so at 320px the two cells kept their natural size
+   and the page scrolled sideways: a comparison you cannot see both halves of
+   at once is not a comparison. The columns stay side by side at every width,
+   because that is the page. */
+.cmp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+
+/* Below 380px the two cells cannot hold a photo, a name and a score tile side
+   by side, so the row stacks its own contents instead of overflowing. */
+@media (max-width: 380px) {
+  .cmp-cell { padding: 10px; }
+  .cmp-cell .thumb { width: 40px; height: 40px; }
+}
 .cmp-label {
   font-size: .75rem; color: var(--ink-soft); text-transform: uppercase;
   letter-spacing: .05em; margin: 18px 0 6px;
 }
-.cmp-cell { background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; padding: 12px 14px; }
+/* overflow-wrap: anywhere, because the text in these cells is a product name
+   from a community database and can be one unbroken token longer than the
+   cell. A word that cannot break is a word that pushes the page sideways, and
+   at 320px there is nowhere for it to go. */
+.cmp-cell {
+  background: var(--surface); border: 1px solid var(--hairline);
+  border-radius: 12px; padding: 12px 14px; overflow-wrap: anywhere;
+}
 /* Highlighted only where both products publish a figure. Where one is missing,
    neither is marked: that would be a comment on the database, not on the food. */
 .cmp-better { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -390,8 +409,17 @@
 .prose ul    { padding-left: 1.25rem; margin-bottom: 1rem; }
 .prose ul li { color: var(--ink); font-size: .9375rem; line-height: 1.7; margin-bottom: .375rem; }
 .prose h3    { font-family: 'Fraunces', Georgia, serif; font-size: 1.1rem; font-weight: 600; color: var(--ink); margin: 2rem 0 .75rem; }
-.prose-link  { color: var(--accent); text-decoration: none; }
-.prose-link:hover { text-decoration: underline; }
+/* Underlined for the same reason .article a is: see cfc.css. This class marks
+   a link that sits inside a sentence, which is exactly the case WCAG 1.4.1 is
+   about. .text-accent is deliberately not underlined here, because it marks
+   standalone links that are not embedded in a text block. */
+.prose-link  {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.prose-link:hover { text-decoration-thickness: 2px; }
 
 .band-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--hairline); }
 .band-row:last-child { border-bottom: none; }

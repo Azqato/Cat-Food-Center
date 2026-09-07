@@ -182,7 +182,7 @@ These are decisions, not gaps. Each is a thing the project has chosen not to do.
 |---|---|---|
 | Curated top-100 SKU catalogue | M12 | The only route to meaningful coverage of common United States products |
 | Analytics | M12 | Nothing is measured today. See section 14 |
-| Lighthouse CI and Core Web Vitals gates | M12 | Unblocked: M14 removed the Tailwind CDN, so the numbers are now stable enough to gate on |
+| Core Web Vitals gate | M12 | Unblocked: M14 removed the Tailwind CDN, so the numbers are now stable enough to gate on. Not Lighthouse: it needs Node, and ADR-001 keeps this project free of npm |
 | "Better alternatives" on a poor product | Backlog | Specified in the original PRD, never built. Needs a same-format query the API supports poorly |
 | Pre-generated per-barcode pages | Backlog | For search indexing. The generator pattern already exists |
 | EU and FEDIAF profiles | Backlog | Separate compliance effort |
@@ -512,6 +512,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M15b: Product photos on cards | 2026-09-06 | Complete |
 | M15c: Ingredient explanations | 2026-09-06 | Complete |
 | M15d: Client-built product page rail | 2026-09-06 | Complete |
+| M16a: WCAG 2.1 AA gate | 2026-09-06 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -621,9 +622,19 @@ words. The first build of this feature labelled that row "Beneficial" while the
 score was penalising it, which is the exact failure the page exists to avoid. It
 now reports the same call the engine made, and a test pins it.
 
+**M16a: the WCAG 2.1 AA gate.** `tools/check-a11y.py`, described in section 19.1. Four real defects, and a lesson about the tool rather than the site.
+
+*The defects:* every link in running text was accent-coloured with no underline, which is WCAG 1.4.1 and was on all 25 pages, because accent against body copy is 1.53:1 in light and 1.16:1 in dark and colour alone needs 3:1. The search pager's unavailable direction carried `opacity: .45`, putting it at 2.11:1, the one piece of text on the site below AA. The compare page needed 490 pixels at a 320px viewport, because a bare `1fr` grid track will not shrink below its content and a product name from a community database can be one unbroken token. And there was no site-wide focus ring or reduced-motion rule at all: both had been left to the browser on a site with two palettes and custom card components.
+
+*The lesson:* the first two runs of the tool reported failures that did not exist. Setting `data-theme` and auditing in the same tick measures colours part-way through a 150ms transition, so the whole top bar came back as a dark-mode contrast failure; tabbing and reading the skip link's box in the same tick catches it mid-slide, so it came back off-screen on every page. Both were the tool, not the site. A new gate's first red is as likely to be the gate as the code, and shipping a "fix" for either of those would have been a change made to satisfy a measurement error.
+
+*What the gate deliberately does not claim:* axe covers the machine-checkable third of WCAG. Section 19.1 lists what was checked by hand alongside it, with the answers, so that a green run is never read as "the site is accessible".
+
 ### Next
 
-**M12: public beta.** Lighthouse CI passing Core Web Vitals targets, WCAG AA validated, top-100 SKU coverage at 80% or better, and analytics instrumented.
+**M16b: Core Web Vitals.** A measured performance gate. Not Lighthouse, for the reason in 19.1.
+
+**M12: public beta.** Core Web Vitals targets met, WCAG AA validated (done, M16a), top-100 SKU coverage at 80% or better, and analytics instrumented.
 
 ### Explicitly deferred
 
@@ -759,9 +770,11 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 | Command | What it does |
 |---|---|
 | `python -m http.server 8000` | Serve the site locally |
-| `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 160 assertions. Exits non-zero on failure, so it works as a gate |
-| `python tools/check-live.py` | 16 end-to-end checks against the live API. Needs network. Not deterministic, so it is a smoke check rather than a gate |
+| `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 178 assertions. Exits non-zero on failure, so it works as a gate |
+| `python tools/check-live.py` | 17 end-to-end checks against the live API. Needs network. Not deterministic, so it is a smoke check rather than a gate |
 | `python tools/check-contrast.py` | Verify 38 foreground and background pairs against WCAG AA in both palettes |
+| `python tools/check-a11y.py` | WCAG 2.1 AA audit of all 25 page states in both themes, plus reflow at 320px and the skip link. 100 audits. Exits non-zero, so it works as a gate |
+| `python tools/check-a11y.py --report` | The same audit, printing every violation with its selector, and exiting 0 |
 | `python tools/site/build.py` | Regenerate the nine application pages |
 | `python tools/learn/build.py` | Regenerate the eleven Cat Care Guide pages |
 | `python tools/probe-opff.py` | Re-measure the database behind section 12 |
@@ -1239,9 +1252,29 @@ Playwright reaches it through `channel='msedge'` rather than its own bundled Chr
 browser = await p.chromium.launch(channel='msedge')
 ```
 
-Both `tools/run-tests.py` and `tools/check-live.py` do this, through the `EDGE_CHANNEL` constant each defines. Version verified working: Edge 152.
+`tools/run-tests.py`, `tools/check-live.py` and `tools/check-a11y.py` all do this, through the `EDGE_CHANNEL` constant each defines. Version verified working: Edge 152.
 
 The project targets no second engine. Safari and Firefox are not driven by any automated check, which is a real coverage gap and is recorded as such in section 25.
+
+### 19.1 The accessibility gate
+
+`tools/check-a11y.py` runs axe-core 4.10.2 against all 25 page states, each in both themes, and adds two checks axe does not perform: reflow at a 320px viewport (WCAG 1.4.10) and the skip link from a cold keyboard (2.4.1). 100 audits, all clean. It exits non-zero, so it is a gate rather than a report; `--report` prints every violation with its selector and exits 0.
+
+**Only WCAG 2.1 A and AA rules run.** axe ships best-practice rules alongside the standard. They are worth reading, but a gate that fails the build on them is failing it on somebody's style preference.
+
+**What this does not cover.** axe finds roughly a third to a half of WCAG issues, all of them the machine-checkable ones. It cannot tell whether alternative text is *correct*, whether the tab order is sensible, whether a heading structure matches the document's actual shape, or whether an error message helps. Those were checked by hand and are recorded below, because a green gate that is read as "the site is accessible" is worse than no gate.
+
+**Checked by hand, and the answers:**
+
+| Question | Answer |
+|---|---|
+| Is `alt=""` on product photos right? | Yes. The photo sits beside the product name in text. A screen reader that announced both would say the name twice, and the photograph carries no information the name does not. It is decorative *in that position*, which is what the empty alt says |
+| Is the focus ring visible on every surface? | It is now. There was no site-wide `:focus-visible` rule at all before this pass, only the browser default. The site has two palettes and custom card components, so it defines its own: 2px accent with a 2px offset |
+| Does the tab order match reading order? | Yes. Nothing on any page uses a positive `tabindex`, and the DOM order is the visual order in every layout, because the shell is a grid and the source is skip link, bar, drawer, article, rail, footer |
+| Is motion optional? | It is now. `prefers-reduced-motion: reduce` was honoured by exactly one component before this pass. It is now a blanket rule: smooth scrolling off, every transition and animation reduced to nothing. Nothing on the site conveys meaning through motion, so this costs the design nothing |
+| Are the two search inputs labelled? | Yes, and axe confirms it. They carry visible labels rather than placeholder text standing in for one |
+
+**Why not Lighthouse.** It requires Node, and ADR-001 keeps this project free of npm. axe-core is the engine Lighthouse's accessibility category wraps, and it loads from a CDN into a page Playwright already has open, so the standard is checked with the same tool and one less dependency.
 
 ---
 
@@ -1257,7 +1290,7 @@ Run the change on a local copy: the file opened from disk, `python -m http.serve
 
 **Two things that are easy to conflate:**
 
-- **Verifying functionality is local.** `python tools/run-tests.py`, `python tools/check-live.py` and `python tools/check-contrast.py` all run against a local server, including `check-live.py`, which reaches the live *API* but serves the *pages* from `127.0.0.1`.
+- **Verifying functionality is local.** `python tools/run-tests.py`, `python tools/check-live.py`, `python tools/check-contrast.py` and `python tools/check-a11y.py` all run against a local server, including `check-live.py`, which reaches the live *API* but serves the *pages* from `127.0.0.1`.
 - **Confirming a deploy landed is a separate step**, done against production after the push, and it is a comparison rather than a test: fetch the deployed artifact and check it matches what was verified locally. That is legitimate and is not an exception to this rule.
 
 **Never point a destructive or state-changing check at production.** In this project that mostly means never writing to Open Pet Food Facts from a test, and never seeding records there to exercise the submit flow. `submit.html` deep-links a human to the upstream form and writes nothing itself, which is the property that keeps this simple. If a future feature can only be exercised against a live system, stop and ask.

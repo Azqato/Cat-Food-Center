@@ -340,8 +340,10 @@ Target: **WCAG 2.1 AA**.
 
 - **Contrast is enforced, not asserted.** `tools/check-contrast.py` checks 38 foreground and background pairs across both palettes and fails the build if any falls below AA. It is the reason the chip inks are what they are.
 - **Colour is never the only signal.** Every band, tier and state carries text.
-- **Focus is always visible.** `input[type=search]:focus` takes a 2px accent outline; interactive elements keep a visible focus ring. Never set `outline: none` without a replacement.
-- **A skip link** is the first focusable element on guide pages.
+- **Focus is always visible.** One site-wide `:focus-visible` rule in `cfc.css`: 2px accent, 2px offset, 4px radius. On `:focus-visible` rather than `:focus`, so it appears for the keyboard and not for a mouse click. The browser default would nearly do, but this site has two palettes and custom card components, and the ring has to stay visible on a surface, on the page ground and on a score tile alike. Never set `outline: none` without a replacement.
+- **A skip link** is the first focusable element on every page, guide and application alike, and `check-a11y.py` tabs into it on all 25 to prove it.
+- **Links in running text are underlined**, not merely coloured. WCAG 1.4.1 allows colour alone only at 3:1 against the surrounding text; accent on body copy is 1.53:1 in light and 1.16:1 in dark. The underline is 1px at a 2px offset and thickens on hover. `.text-accent` is exempt because it marks standalone links, which are not inside a text block.
+- **Motion is optional.** A blanket `prefers-reduced-motion: reduce` block turns off smooth scrolling and reduces every transition and animation to nothing. Written as a blanket rule rather than a per-component list, because a list goes stale the next time a transition is added.
 - **Landmarks:** one `<header>`, one `<main>`, one `<footer>`, `<nav>` with an `aria-label` where more than one exists on a page.
 - **`aria-current="page"`** on the active navigation and sidebar link.
 - **Icon-only controls carry `aria-label`.** The theme toggle and the nav toggle both do.
@@ -349,7 +351,8 @@ Target: **WCAG 2.1 AA**.
 - **Headings descend in order.** One `h1` per page.
 - **Tables carry a `caption`**, and the wrapper scrolls rather than the page.
 - **Touch targets are at least 34px**, which is the height of every control in the top bar.
-- **Not tested:** no screen reader has been run against the site, and no automated accessibility audit runs in CI. Contrast is the only enforced dimension.
+- **Enforced, since M16a:** `tools/check-a11y.py` runs axe-core over all 25 page states in both themes, plus reflow at 320px and the skip link from a cold keyboard. 100 audits, and it exits non-zero. See PRD section 19.1 for what it covers and, more importantly, what it does not.
+- **Still not tested:** no screen reader has been run against the site. axe cannot hear one, and nothing in the gate should be read as a substitute for that.
 
 ---
 
@@ -364,7 +367,9 @@ Deliberately minimal. Transitions are 150 to 200ms and are limited to colour, bo
 | Drawer | `transform`, 200ms ease |
 | Anchors | `scroll-behavior: smooth` on `html` |
 
-**No `prefers-reduced-motion` block exists.** The smooth scroll in particular ignores that preference, which is a real gap and the one motion defect worth fixing. Everything else is a colour fade under 200ms and is unlikely to trouble anyone.
+**A blanket `prefers-reduced-motion: reduce` block exists in `cfc.css`** and covers everything above: `scroll-behavior` back to `auto`, and every animation and transition on the page reduced to .01ms. Nothing here conveys meaning through motion, so removing it costs the design nothing.
+
+One consequence worth knowing before writing a test: these transitions mean a computed colour read in the same tick as a theme switch is a colour part-way between the two palettes. `check-a11y.py` waits 400ms after switching, and the comment there explains why.
 
 Nothing animates in front of the score.
 
@@ -380,10 +385,14 @@ Breakpoints, from `cfc.css`:
 | **1180px** | `.toc` hidden; shell drops to sidebar plus article |
 | **900px** | Single column. `.nav-toggle` appears, `.topbar-search` hides, `.sidebar` becomes a drawer, `.compare` / `.card-grid` / `.pagination` go single-column, the footer drops to two columns, `h1` and `h2` step down |
 | **560px** | Top bar padding tightens, wordmark to .9375rem, footer to one column |
+| **400px** | `.topbar-cta` hides. It is the one thing in the bar the visitor did not come for, and it is what pushed the bar past a 320px viewport. The same link is in every footer |
+| **380px** | The compare cells tighten their padding and drop the thumbnail to 40px |
 
 Application pages use the same breakpoints as the guide, because they use the same shell. The one that matters is 900px, where the inline navigation folds into the drawer and the rail is dropped.
 
-**The hard rule:** nothing may scroll horizontally at 360px. Wide content scrolls inside its own container (`.table-wrap`), never the page. This is asserted by `tools/check-live.py` on every page it loads, at 1280px today; a 360px assertion would be a worthwhile addition.
+**The hard rule:** nothing may scroll horizontally at 320px, the narrowest viewport WCAG 1.4.10 names. Wide content scrolls inside its own container (`.table-wrap`), never the page. `tools/check-live.py` asserts this at 1280px and `tools/check-a11y.py` asserts it at 320px on all 25 page states.
+
+The compare page failed it until M16a, needing 490 pixels in a 320 viewport, and the cause is worth remembering: a bare `1fr` grid track has `min-width: auto` and will not shrink below its content's minimum. `.cmp-row` uses `minmax(0, 1fr)` now, and `.cmp-cell` sets `overflow-wrap: anywhere`, because a product name from a community database can be one unbroken token wider than the cell.
 
 A `@media print` block hides the top bar, sidebar, table of contents, pagination and footer, and collapses the shell to a block.
 

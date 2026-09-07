@@ -21,6 +21,59 @@ punctuation rather than content.
 
 ---
 
+## [0.16.0] - 2026-09-06
+
+**WCAG 2.1 AA, enforced (M16a).**
+
+Added
+* **`tools/check-a11y.py`.** axe-core over all 25 page states, each in both
+  themes, plus two checks axe does not do: reflow at a 320px viewport and the
+  skip link from a cold keyboard. 100 audits, all clean, exits non-zero.
+  `--report` prints every violation with its selector.
+* **One site-wide focus ring.** There was none before this: the site left it to
+  the browser while shipping two palettes and custom card components.
+  `:focus-visible`, 2px accent, 2px offset, so it appears for the keyboard and
+  not for a mouse click.
+* **A blanket `prefers-reduced-motion: reduce` block.** Exactly one component
+  honoured the preference before. Smooth scrolling off, every transition and
+  animation reduced to nothing.
+
+Fixed
+* **Links in running text are underlined.** Colour alone identifies a link
+  under WCAG 1.4.1 only at 3:1 against the surrounding text, and accent on body
+  copy is 1.53:1 in light, 1.16:1 in dark. This was on all 25 pages, in prose,
+  in the footer's closing sentence and on `.prose-link`. An underline that
+  appears only on hover is no use to somebody reading rather than pointing.
+* **The search pager's unavailable direction** carried `opacity: .45`, which
+  put it at 2.11:1: the one piece of text on the site below AA. It is told
+  apart from the live control by having no border and no card, which was always
+  the real signal.
+* **The compare page needed 490 pixels in a 320 viewport.** A bare `1fr` grid
+  track has `min-width: auto` and will not shrink below its content, so
+  `.cmp-row` uses `minmax(0, 1fr)`; `.cmp-cell` adds `overflow-wrap: anywhere`,
+  because a product name from a community database can be one unbroken token
+  wider than the cell. Below 380px the cells tighten and the thumbnail drops to
+  40px.
+* **The top bar's support button** pushed the bar past 320px. It hides below
+  400px. It is the one thing in the bar nobody came for, and the same link is
+  in every footer.
+
+Two failures the tool reported that were not real, kept here because the next
+person to add a gate will meet them: setting `data-theme` and auditing in the
+same tick measures colours part-way through a 150ms transition, which reported
+the entire top bar as a dark-mode contrast failure; and tabbing to the skip
+link and reading its box in the same tick catches it mid-slide, which reported
+it as off-screen on all 25 pages. Both were the tool. A new gate's first red is
+as likely to be the gate as the code.
+
+Documentation now says what the gate does not cover. axe finds the
+machine-checkable third of WCAG; PRD section 19.1 lists what was checked by
+hand alongside it, with the answers, so a green run is never read as "the site
+is accessible". No screen reader has been run against this site, and that is
+still true.
+
+---
+
 ## [0.15.3] - 2026-09-06
 
 **Stale claims swept out of the documentation and the source comments.**
