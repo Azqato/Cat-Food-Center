@@ -21,6 +21,45 @@ punctuation rather than content.
 
 ---
 
+## [0.18.3] - 2026-09-07
+
+**Six decisions recorded (no code).**
+
+Four open questions were answered and two rules were set for M19. None of this changes what
+the site does today; it changes what the next change is allowed to do.
+
+Answered
+* **Open question 1: a low-confidence score is shown, and never without its confidence.** The
+  problem was never that the caveat was too quiet, it was that it did not travel: the product
+  and compare pages state confidence and the search and brand cards print a bare number. M18b
+  will put it on every surface that prints a score, always rather than only when it is poor.
+  Not built yet.
+* **Open question 3: feeding-trial substantiation is deferred to M12.** The database has no
+  such field, so weighting it now would score how well a product was catalogued rather than
+  the food itself.
+* **Open question 8: the tombstone mechanism gets written when first used.** The first case
+  arrived the same day and declined to use one, which is the answer working rather than
+  dodging it.
+* **Open question 9 stays open, on purpose.** `tools/probe-opff.py` will be extended to report
+  the language distribution of ingredient lists first. Nothing is added to `MATCHED_LANGUAGES`
+  until that number exists.
+
+Added
+* **A pre-beta exception in PRD section 23.3.** An address may be retired without a tombstone
+  only when the site is pre-beta, no inbound link is known, the address is under a month old,
+  and the retirement is listed in the new section 24.6. It expires at public beta and is not
+  renewable, because a carve-out taken once on good grounds is exactly what gets cited a year
+  later on none. Used once: the nineteen addresses M19 retires.
+* **Section 24.6, deliberate departures from a written policy.** Not errors and not
+  discrepancies: rules this project wrote and then knowingly did not follow in a named case,
+  with the reason and the bound attached.
+* **A deploy rule in section 15.5.** A change whose intermediate states are broken ships as
+  one push, gated locally first. The usual rhythm here is commit-and-push per step so that
+  stopping anywhere leaves a working site; that assumes each step is independently correct,
+  and M19 is not divisible that way.
+
+---
+
 ## [0.18.2] - 2026-09-07
 
 **A policy for the repository root (M19, adopted).**

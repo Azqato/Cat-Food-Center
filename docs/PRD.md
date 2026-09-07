@@ -518,6 +518,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M17: Blink, Gecko and WebKit | 2026-09-07 | Complete |
 | M18: Search that searches | 2026-09-07 | Complete |
 | M18a: Crawl policy for the test page | 2026-09-07 | Complete |
+| M18b: Confidence travels with the score | 2026-09 | **Decided, not started** |
 | M19: The root policy, applied | 2026-09 | **Policy adopted, move not started** |
 | M12: Public beta | 2027-01 | Planned |
 
@@ -664,11 +665,17 @@ now reports the same call the engine made, and a test pins it.
 
 **M18a: the test page asks not to be listed.** `tests.html` is a wall of assertion output with no reader value, and a search result pointing at it under this site's name would be a worse answer than no result. It now carries `<meta name="robots" content="noindex, follow">`. `robots.txt` stays fully open, because a `Disallow` there would have been the wrong tool for the job: it withholds the fetch rather than the listing, and a URL nothing is allowed to read can still be indexed from a link, described by nothing. Closes open question 10, the last of the small ones.
 
+**M18b: confidence travels with the score.** *Decided 2026-09-07. Not built yet.* The engine has computed a high, medium or low confidence for every score since M7, and says which on the product page and on the compare page. The search and brand cards print the bare number. Those cards are the surface the number actually travels on: they are what gets scanned, remembered and repeated, and a caveat left behind on another page is a caveat that does not exist. Every surface that prints a score will print its confidence beside it, always rather than only when confidence is poor, because showing it selectively would make its absence the claim. Answers open question 1.
+
+*What was rejected:* withholding the number below a confidence threshold. It is the strictest reading of tenet 2 and it is defensible, but the engine already refuses outright when it knows too little (`scorable: false`), and a second, quieter refusal on top of that would make the site harder to use without making it more honest. A number that carries its own caveat is a better answer than no number.
+
 **M19: the root policy, applied.** *Adopted 2026-09-07. Nothing has moved yet.* Section 16.4 now states which files the repository root is permitted to hold and what requires each one, and everything else moves into a subfolder. In practice that is nineteen pages becoming directories served as `/search/`, `/learn/nutrition/` and so on, and `tests.html` joining the tool that runs it.
 
 *Why it is a milestone rather than tidying:* every page URL on the site changes, and this host has no redirect mechanism at all, so section 23.3 governs what happens to the old addresses. The move is worth doing now or not at all: the sitemap is a day old, there is no analytics and no established inbound link, and the cost of changing a URL only ever rises.
 
 *What it is not:* an SEO change. URL depth is not a ranking factor and the current filenames are already readable and keyword-bearing. The gain is a root that states its own rules and a structure that survives the guide growing past twenty pages.
+
+*Two decisions taken before the work started, 2026-09-07.* **The old addresses get no tombstones and will 404.** Section 23.3 requires one per retired address; nineteen of them at the root would have left the root holding twenty HTML files instead of twenty-one, and a tombstone protects a link somebody already holds, of which none is known. That is a departure from a written rule, so it is bounded by the pre-beta exception now in 23.3, which expires at M12 and is not renewable, and the retired addresses are listed in 24.6. **The move ships as a single push**, not as checkpoints, because every intermediate state is a broken site and `main` deploys on push; the rule this established is in section 15.5.
 
 ### Next
 
@@ -830,6 +837,10 @@ Every push to `main` triggers `.github/workflows/deploy.yml`:
 3. `actions/deploy-pages@v4`
 
 It builds nothing, so it cannot fail the way a build pipeline can. If a deploy fails, the cause is GitHub Pages or the workflow configuration, not the code.
+
+**A change whose intermediate states are broken ships as one push.** The normal rhythm here is small: change, document, commit, push, verify live, so that stopping at any point leaves a working site and a recorded state. That rhythm assumes each step is independently correct. Some changes are not divisible that way. M19 moved every page and rewrote roughly 140 paths, and between the first rename and the last fix every link on the site was broken; pushing each step would have put a broken site into production for the duration, because `main` deploys on push and there is no staging environment.
+
+The rule for those: **do the whole thing locally, run all six gates against it, and push once, when it passes.** Never split a change across pushes in a way that leaves production incorrect in between. If the change is large enough that you want it read before it goes live, put it on a branch; the gates are the same either way. Decided 2026-09-07, during M19.
 
 Live URL: **https://azqato.github.io/Cat-Food-Center/**
 Deploy log: **https://github.com/Azqato/Cat-Food-Center/actions**
@@ -1598,6 +1609,17 @@ Where a *parameter* is retired rather than a page, the page keeps reading the ol
 
 Compatibility entries, once created, are permanent. They are never chained: a tombstone points at a real page in one hop, never at another tombstone. They are never reused to point at different content later, because a reused address silently serves the wrong thing, which is worse than a broken link.
 
+**The pre-beta exception, added 2026-09-07.** A tombstone protects a link somebody already has. Before public beta this project has no such reader, and nineteen tombstones at the repository root would have defeated the milestone that created them (section 16.4). So an address may be retired without one, and only when **all four** of these hold:
+
+1. The site has not reached public beta (M12).
+2. No inbound link to the address is known, from any source.
+3. The address has been public for less than one month.
+4. The retirement is recorded in section 24.6, naming the addresses.
+
+**This exception expires at public beta and is not renewable.** After M12 every retirement takes a tombstone, without exception and without a further decision. The exception is written with its own end date because a carve-out taken once on good grounds is exactly the kind of thing that gets cited a year later on no grounds at all.
+
+It has been invoked once, for M19, whose nineteen addresses are listed in section 24.6. **At the time of writing M19 has not shipped**, so no address has actually been retired yet; the decision to retire them without tombstones is what has been taken.
+
 ### 23.4 Removing internal source
 
 A plain delete. No redirect, no alias, no stub file, no tombstone. Nothing external points at it, so there is no address to preserve, and a permanent compatibility entry would be maintenance in exchange for nothing.
@@ -1695,6 +1717,14 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 - `README.md` was written for developers, carrying the stack, prerequisites, commands and deploy steps. Rewritten for a general reader, with all of that moved here.
 - No `LICENSE.md`, `robots.txt` or `sitemap.xml` existed. All three created.
 
+### 24.6 Deliberate departures from a written policy
+
+Not errors, and not discrepancies of the kind the rest of section 24 records. Each of these is a rule this project wrote for itself and then knowingly did not follow in a named case. They are listed here so that the departure is a decision with a reason attached rather than something a reader has to discover. The status column says whether the departure has actually happened yet, because a decision to depart and a departure are not the same thing.
+
+| Policy | Where | Status | Why | Bound |
+|---|---|---|---|---|
+| Section 23.3, "a retired public address gets a tombstone" | **M19.** Nineteen page addresses to be retired with no tombstone, returning 404: `/search.html`, `/brands.html`, `/product.html`, `/scan.html`, `/submit.html`, `/compare.html`, `/methodology.html`, `/offline.html`, `/learn.html` and the ten `/learn-*.html` guide pages | **Decided 2026-09-07. Not yet done:** M19 has not shipped and all nineteen addresses still resolve | A tombstone protects a link somebody already holds, and there is no such holder: the sitemap is a day old, there is no analytics, and no inbound link is known. Nineteen stub files at the root would also leave the root holding twenty HTML files instead of twenty-one, which is the milestone achieving nothing | The pre-beta exception in section 23.3, which expires at M12 and is not renewable. After public beta this cannot happen again |
+
 ---
 
 ## 25. Risks and open questions
@@ -1740,15 +1770,15 @@ The working tree is clean and `main` is deployed. M14 and all four parts of M15 
 
 Numbered so they can be answered by reference. Answering one folds the answer into the relevant section and marks it answered here.
 
-1. **Should a low-confidence score be visually distinct from a high-confidence one, or withheld?** Currently it is shown with a warning. Tenet 2 might argue for withholding.
+1. ~~**Should a low-confidence score be visually distinct from a high-confidence one, or withheld?**~~ **Decided 2026-09-07, shipping in M18b:** shown, and never without its confidence. The defect was not that the caveat was too quiet, it was that the caveat did not travel: the product page and the compare page both state confidence, and the search and brand cards print a bare number. Every surface that prints a score will print its confidence, always rather than only when it is poor, since a marker that appears selectively makes its absence into a claim. Withholding was rejected because the engine already refuses outright where it knows too little, and a second quieter refusal would cost usability without buying honesty. **Not implemented at the time of writing.**
 2. **Is a curated local catalogue in scope for the MVP?** Section 12.5 says it is the only route to the M12 coverage target, which makes M12 unreachable without it.
-3. **How aggressively should feeding-trial substantiation outweigh formulation?** The original PRD raised this; the engine currently does not distinguish them at all.
+3. ~~**How aggressively should feeding-trial substantiation outweigh formulation?**~~ **Answered 2026-09-07:** deferred to M12, and deliberately not answered before it. The distinction is real and matters, and Open Pet Food Facts carries no feeding-trial field at all; `aafcoComplete` is absent from most records, which is why section 11 emits a warning telling the reader to check the packaging. Weighting it now would score how well a product was catalogued rather than the food, and would move a number on the strength of a database gap. If a curated local catalogue is built, substantiation is one of the fields it should carry, and this question is answered then with data behind it. Until then the engine saying nothing is the correct behaviour rather than a missing feature.
 4. ~~**Should the scorable-only filter page-hunt?**~~ **Answered in M18:** it scans, which is the bounded half of hunting. Five pages are fetched in parallel, deduped and filtered once; the page then states what it scanned rather than implying it saw everything. An unbounded hunt was rejected for the reason the question raised: the friendlier version is the one whose number cannot be stated honestly.
 5. ~~**What fills the guide shell's third column on a page with no headings?**~~ **Answered in M14:** nothing. The page collapses to one column, and `tools/site/build.py` decides per page by reading the fragment for headings rather than from a flag. See docs/DESIGN.md section 6.4.
 6. ~~**Does the `/` search affordance stay on pages that already have a search input?**~~ **Answered in M14:** no. `index.html` and `search.html` are built with `show_search=False`.
 7. ~~**Should Safari and Firefox be driven by any automated check?**~~ **Answered in M17:** yes, and they now are. `tools/check-engines.py` runs the unit suite, all 12 page states and the barcode decode round-trip in Blink, Gecko and WebKit. The answer to the `BarcodeDetector` worry is that neither Gecko nor WebKit has it at all, so ZXing is not a fallback on those engines, it is the only path scanning has, and the decode round-trip passes in all three. See section 19.3.
-8. **Should the tombstone mechanism in 23.3 be built before it is needed, or written when first used?** It is currently a policy with no implementation.
-9. **Is the six-language alias list the right stopping point?** It covers most of the database, but the honest-refusal path means every uncovered language is a product that cannot be fully scored.
+8. ~~**Should the tombstone mechanism in 23.3 be built before it is needed, or written when first used?**~~ **Answered 2026-09-07:** written when first used. The policy is the part that has to exist in advance; a mechanism built against an imagined case is built to the wrong shape. The first case arrived the same day, and did not use one: M19 retired nineteen addresses under the pre-beta exception now recorded in 23.3 and 24.6. So the mechanism still does not exist, which is the answer working rather than dodging it. Building it in advance would have meant building it for a case that then declined to use it.
+9. **Is the six-language alias list the right stopping point?** **Decided 2026-09-07: measure before answering, and the question stays open until the measurement exists.** The stopping point is currently a guess, and the cost of being wrong is invisible: an uncovered label is never scored wrongly, only capped at low confidence, denied the clean-additives bonus and warned about, so a badly chosen seventh language costs nothing and a badly chosen sixth silently under-serves a whole market. `tools/probe-opff.py` is to be extended to report the language distribution of ingredient lists across the cat food category, so the answer becomes how many products the next language would reach rather than an intuition about which languages matter. Nothing is added to `MATCHED_LANGUAGES` before that number exists, and the existing rule stands: aliases first, the constant after, never ahead of them.
 10. ~~**Should `tests.html` be excluded from the sitemap and from crawling?**~~ **Answered in M18a:** from the sitemap and from indexes, yes; from crawling, no. It stays out of `sitemap.xml`, `robots.txt` stays fully open, and the page itself carries `<meta name="robots" content="noindex, follow">`. A `Disallow` line was rejected as the wrong instrument: it prevents the fetch rather than the listing, and a disallowed URL can still be indexed from a link alone, with no description because nothing was permitted to read it. `noindex` is the directive that means what is meant here, and it works only because the crawler is let in to see it.
 11. ~~**Should the product page build its own "On this page" rail?**~~ **Answered in M15d:** yes. `tools/site/build.py` ships the column empty, hidden and marked `data-client-toc`; `assets/cfc-docs.js` fills it from `.article h2[id]` when the page dispatches `cfc:content`, and hides it again when a draw produces no sections. It is the only chrome the browser assembles, and it stays optional: with JavaScript off the product page has no content either, so there is nothing the rail could have indexed. See docs/DESIGN.md section 6.4.
 
