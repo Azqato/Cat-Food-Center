@@ -21,6 +21,25 @@ punctuation rather than content.
 
 ---
 
+## [0.18.1] - 2026-09-07
+
+**The test page asks not to be listed (M18a).**
+
+Added
+* `tests.html` carries `<meta name="robots" content="noindex, follow">`. It is a developer
+  artifact, and a search result pointing at a wall of assertion output under this site's name
+  is a worse answer than no result at all.
+
+Unchanged, deliberately
+* `robots.txt` is still fully open. A `Disallow` line is the wrong instrument here: it stops
+  the fetch rather than the listing, and a URL a crawler may not read can still be indexed
+  from a link alone, with no description because nothing was permitted to read it. `noindex`
+  says what is meant, and it works only because the crawler is let in to see it. The comment
+  in `robots.txt` now records that this is a decision rather than an omission. Closes PRD open
+  question 10.
+
+---
+
 ## [0.18.0] - 2026-09-07
 
 **Search that searches, and a filter that scans (M18).**

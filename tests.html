@@ -1,5 +1,15 @@
 <title>Cat Food Center Tests</title>
 <meta charset="UTF-8">
+<!-- Crawlable, not indexable. This page is a developer artifact: a wall of
+     assertion output with no reader value, and a search result pointing at it
+     under this site's name would be a worse answer than no result. robots.txt
+     stays fully open on purpose (LICENSE.md section 4), and a Disallow there
+     would be the wrong instrument anyway: it stops the fetch, not the listing,
+     and a URL disallowed from crawling can still be indexed from a link alone.
+     noindex is the one that actually says "do not list this", and it only
+     works because the crawler is allowed to read the page and find it.
+     Answers PRD open question 10. -->
+<meta name="robots" content="noindex, follow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="./favicon.svg">
 <script src="./assets/cfc-theme.js"></script>

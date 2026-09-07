@@ -517,6 +517,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M16b: Core Web Vitals gate | 2026-09-07 | Complete |
 | M17: Blink, Gecko and WebKit | 2026-09-07 | Complete |
 | M18: Search that searches | 2026-09-07 | Complete |
+| M18a: Crawl policy for the test page | 2026-09-07 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -659,6 +660,8 @@ now reports the same call the engine made, and a test pins it.
 *What testing it uncovered* is the larger finding. `zzzzqqq` returned 1578 products. `/api/v2/search` accepts `search_terms`, returns HTTP 200, and ignores the parameter: every query returned the entire cat-food category in the same order. Text search on this site had never searched anything since M6, and M15a diagnosed the symptoms of that as a ranking problem and a field-matching problem, which is what they look like from outside. Text queries now go to `/cgi/search.pl`, verified against the same three probes; brand-only browses stay on v2, whose tag filters were never affected.
 
 *Learned:* a well-formed 200 with plausible data is the hardest kind of wrong to notice. Six gates, 178 assertions and a live check all passed over this for eleven milestones, because every one of them asked whether results came back rather than whether they were the right results. The assertion that would have caught it is the one nobody writes: search for a string that cannot match, and require nothing back. `tools/check-live.py` now writes it, along with a second asking that a majority of the cards on a `salmon` search mention salmon. A result set that ignores the query lands nowhere near either bar, and no other check in this repository would have noticed.
+
+**M18a: the test page asks not to be listed.** `tests.html` is a wall of assertion output with no reader value, and a search result pointing at it under this site's name would be a worse answer than no result. It now carries `<meta name="robots" content="noindex, follow">`. `robots.txt` stays fully open, because a `Disallow` there would have been the wrong tool for the job: it withholds the fetch rather than the listing, and a URL nothing is allowed to read can still be indexed from a link, described by nothing. Closes open question 10, the last of the small ones.
 
 ### Next
 
@@ -1482,7 +1485,7 @@ A visible record of what has and has not been permitted suits a posture whose en
 
 ### 22.5 The machine-readable layer
 
-`robots.txt` is **fully open** (`User-agent: *`, `Allow: /`) and carries a comment marking that as deliberate, so a future tightening is a decision rather than an accident. It names `LICENSE.md` as authoritative if the two ever appear to disagree. A grants-nothing licence beside an open `robots.txt` is a contradiction a cautious crawler operator could resolve the wrong way, and the comment exists to stop that.
+`robots.txt` is **fully open** (`User-agent: *`, `Allow: /`) and carries a comment marking that as deliberate, so a future tightening is a decision rather than an accident. The single exception is `tests.html`, which asks not to be listed with a `noindex` meta tag in its own head rather than with a `Disallow` line here, for the reason given in open question 10. It names `LICENSE.md` as authoritative if the two ever appear to disagree. A grants-nothing licence beside an open `robots.txt` is a contradiction a cautious crawler operator could resolve the wrong way, and the comment exists to stop that.
 
 `sitemap.xml` sits at the repository root and lists every public page.
 
@@ -1525,6 +1528,7 @@ The distinction that matters: a name being derived from a source file does not m
 | `/assets/*.css`, `/assets/*.js`, `/assets/js/*` | Assets | Referenced by every page and precached by the worker |
 | `/assets/data/additives.json` | Data | Fetched at runtime |
 | `/robots.txt`, `/sitemap.xml`, `/LICENSE.md`, `/README.md`, `/docs/*` | Documents | |
+| `/tests.html` | The browser test suite. Unlinked, absent from the sitemap, and `noindex` since M18a | Public because there is no build step to exclude it from, and there is nothing in it worth hiding |
 
 **Query parameters are part of the public surface too.** A change that renames `?barcode=` breaks every shared link and every scan result in somebody's history, and is a breaking change in the sense this section means.
 
@@ -1687,7 +1691,7 @@ Numbered so they can be answered by reference. Answering one folds the answer in
 7. ~~**Should Safari and Firefox be driven by any automated check?**~~ **Answered in M17:** yes, and they now are. `tools/check-engines.py` runs the unit suite, all 12 page states and the barcode decode round-trip in Blink, Gecko and WebKit. The answer to the `BarcodeDetector` worry is that neither Gecko nor WebKit has it at all, so ZXing is not a fallback on those engines, it is the only path scanning has, and the decode round-trip passes in all three. See section 19.3.
 8. **Should the tombstone mechanism in 23.3 be built before it is needed, or written when first used?** It is currently a policy with no implementation.
 9. **Is the six-language alias list the right stopping point?** It covers most of the database, but the honest-refusal path means every uncovered language is a product that cannot be fully scored.
-10. **Should `tests.html` be excluded from the sitemap and from crawling?** It is public and unlinked. It is currently omitted from `sitemap.xml` but not disallowed in `robots.txt`, since that file is deliberately fully open.
+10. ~~**Should `tests.html` be excluded from the sitemap and from crawling?**~~ **Answered in M18a:** from the sitemap and from indexes, yes; from crawling, no. It stays out of `sitemap.xml`, `robots.txt` stays fully open, and the page itself carries `<meta name="robots" content="noindex, follow">`. A `Disallow` line was rejected as the wrong instrument: it prevents the fetch rather than the listing, and a disallowed URL can still be indexed from a link alone, with no description because nothing was permitted to read it. `noindex` is the directive that means what is meant here, and it works only because the crawler is let in to see it.
 11. ~~**Should the product page build its own "On this page" rail?**~~ **Answered in M15d:** yes. `tools/site/build.py` ships the column empty, hidden and marked `data-client-toc`; `assets/cfc-docs.js` fills it from `.article h2[id]` when the page dispatches `cfc:content`, and hides it again when a draw produces no sections. It is the only chrome the browser assembles, and it stays optional: with JavaScript off the product page has no content either, so there is nothing the rail could have indexed. See docs/DESIGN.md section 6.4.
 
 ---

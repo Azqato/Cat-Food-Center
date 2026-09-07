@@ -17,6 +17,14 @@
 # is correct if the site ever moves to its own domain, and because it records
 # the intent either way. The same limitation applies to the sitemap below.
 
+# One page asks not to be listed, and it asks in its own head rather than
+# here: tests.html carries <meta name="robots" content="noindex, follow">.
+# A Disallow line would have been the wrong instrument. It stops the fetch
+# rather than the listing, and a URL disallowed from crawling can still be
+# indexed from a link alone, with no description because nobody was allowed
+# to read it. noindex says what is actually meant, and it only works because
+# this file lets the crawler in to see it. See PRD open question 10.
+
 User-agent: *
 Allow: /
 
