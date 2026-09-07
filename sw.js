@@ -21,8 +21,13 @@
    ========================================================================== */
 
 /* Bump this to retire every old cache at once. It is the only lever that
-   reliably clears a bad deploy from a device we cannot reach. */
-const VERSION = 'v2';
+   reliably clears a bad deploy from a device we cannot reach.
+
+   v3: M16a rewrote cfc.css and cfc-app.css to fix accessibility defects. The
+   shell is served stale-while-revalidate, so a returning device would have
+   shown the old stylesheet once more before picking up the new one. A contrast
+   fix that arrives on the second visit has not really been deployed. */
+const VERSION = 'v3';
 const SHELL = `cfc-shell-${VERSION}`;
 const API = `cfc-api-${VERSION}`;
 const IMAGES = `cfc-images-${VERSION}`;

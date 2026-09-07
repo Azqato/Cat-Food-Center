@@ -202,6 +202,13 @@
    Brands
    ══════════════════════════════════════════════════════════════════════════ */
 .brand-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+/* The list arrives from a fetch and is always long, so while it is one
+   "Loading brands" row the note underneath it sits in the middle of the
+   viewport and then gets thrown down the page. That alone was a CLS of 0.57
+   against a 0.10 budget. Reserving a screen of height costs an empty column
+   for a moment and stops the only text on screen from jumping. The class comes
+   off in render(), so a short filtered list does not keep the reservation. */
+.brand-list.is-loading { min-height: 80vh; }
 .brand-count { color: var(--ink-soft); font-size: .75rem; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
 /* ══════════════════════════════════════════════════════════════════════════

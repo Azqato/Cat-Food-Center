@@ -476,6 +476,19 @@ ul.sources li:last-child { border-bottom: none; }
 /* Content starts below the fixed bar */
 .shell { padding-top: var(--topbar-h); }
 
+/* Tall enough that the footer starts below the fold on every page.
+
+   Six of the nine application pages render their body from a fetch, so they
+   are briefly a placeholder inside a short shell with the footer visible under
+   it. When the content arrives the footer drops, and that is a layout shift of
+   something the visitor was already looking at: the brand index scored 0.60
+   and the search page 0.34 against a 0.10 budget, entirely from this. Reserving
+   a viewport of height means the footer is never on screen to be moved.
+
+   min-height, not height: a page longer than the viewport is unaffected, and
+   the guide pages all are. */
+.shell { min-height: 100vh; }
+
 @media print {
   .topbar, .sidebar, .toc, .pagination, .site-footer { display: none; }
   .shell { display: block; padding: 0; }

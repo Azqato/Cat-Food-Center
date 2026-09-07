@@ -21,6 +21,48 @@ punctuation rather than content.
 
 ---
 
+## [0.16.1] - 2026-09-07
+
+**Core Web Vitals, measured under a throttle (M16b).**
+
+Added
+* **`tools/check-vitals.py`.** LCP, CLS and Total Blocking Time for 12 pages,
+  CPU slowed 4x on a slow-4G connection, 412px viewport, cold cache. Budgets
+  are 2500ms, 0.1 and 200ms. Exits non-zero. `--report` names the elements
+  that shifted.
+* **`preconnect` for the two Open Pet Food Facts origins**, so the handshake
+  overlaps with parsing on the pages that call the API. It costs nothing on the
+  pages that never do.
+
+Fixed
+* **Almost every page dropped its footer when the content arrived.** Six of the
+  nine application pages render their body from a fetch, so each is briefly a
+  placeholder in a short page with the footer visible under it. The brand index
+  measured a CLS of 0.60 against a 0.10 budget, a page of search results 0.86,
+  the product page 0.64. `.shell` now has `min-height: 100vh`, which keeps the
+  footer below the fold until there is content to push it there. The brand list
+  also reserves a screen of height while loading and gives it back in
+  `render()`, because its own list is what moves the note underneath it.
+  Every gated page is now at or below 0.07, and most read 0.000.
+
+Changed
+* **`sw.js` to `v3`.** The shell is served stale-while-revalidate, so M16a's
+  stylesheet fixes would have reached a returning device one visit late. A
+  contrast fix that arrives on the second visit has not really been deployed.
+
+Ten of the twelve pages are gated. `product.html` and a page of search results
+are measured and printed but cannot fail the build: neither can paint until
+Open Pet Food Facts answers, and no commit here controls how fast that is. The
+product page reads about 2.5s LCP under this throttle, essentially all of it
+the API round trip.
+
+Worth recording why this went eleven milestones unnoticed: CLS is invisible on
+a fast connection, because the placeholder and the content arrive close enough
+together that nothing appears to move. It takes a throttle to see, and there
+was no throttled measurement in this project until now.
+
+---
+
 ## [0.16.0] - 2026-09-06
 
 **WCAG 2.1 AA, enforced (M16a).**

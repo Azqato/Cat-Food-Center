@@ -182,7 +182,6 @@ These are decisions, not gaps. Each is a thing the project has chosen not to do.
 |---|---|---|
 | Curated top-100 SKU catalogue | M12 | The only route to meaningful coverage of common United States products |
 | Analytics | M12 | Nothing is measured today. See section 14 |
-| Core Web Vitals gate | M12 | Unblocked: M14 removed the Tailwind CDN, so the numbers are now stable enough to gate on. Not Lighthouse: it needs Node, and ADR-001 keeps this project free of npm |
 | "Better alternatives" on a poor product | Backlog | Specified in the original PRD, never built. Needs a same-format query the API supports poorly |
 | Pre-generated per-barcode pages | Backlog | For search indexing. The generator pattern already exists |
 | EU and FEDIAF profiles | Backlog | Separate compliance effort |
@@ -513,6 +512,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M15c: Ingredient explanations | 2026-09-06 | Complete |
 | M15d: Client-built product page rail | 2026-09-06 | Complete |
 | M16a: WCAG 2.1 AA gate | 2026-09-06 | Complete |
+| M16b: Core Web Vitals gate | 2026-09-07 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -630,11 +630,17 @@ now reports the same call the engine made, and a test pins it.
 
 *What the gate deliberately does not claim:* axe covers the machine-checkable third of WCAG. Section 19.1 lists what was checked by hand alongside it, with the answers, so that a green run is never read as "the site is accessible".
 
+**M16b: the Core Web Vitals gate.** `tools/check-vitals.py`, described in section 19.2. One defect, and it was on most of the site.
+
+*The defect:* six of the nine application pages render their body from a fetch, so each is briefly a placeholder in a short page with the footer visible underneath it. When the content arrived the footer dropped, and that is a layout shift of something the visitor was already looking at. The brand index measured 0.60 against a 0.10 budget, a page of search results 0.86, the product page 0.64. `.shell` now has `min-height: 100vh`, which keeps the footer below the fold until there is content to push it there, and the brand list reserves a screen of height while it loads and gives it back in `render()`. Every gated page is now at or below 0.07, and most are at 0.000.
+
+*Why this was invisible for eleven milestones:* CLS is not visible on a fast connection, because the placeholder and the content arrive close enough together that nothing appears to move. It needs a throttle to see at all, and the project had no throttled measurement until this one.
+
+*Also added:* `preconnect` for the two Open Pet Food Facts origins, so the handshake overlaps with parsing on the pages that call the API, and `sw.js` went to `v3` because M16a's stylesheet fixes were served stale-while-revalidate and would otherwise have reached returning devices one visit late. A contrast fix that arrives on the second visit has not really been deployed.
+
 ### Next
 
-**M16b: Core Web Vitals.** A measured performance gate. Not Lighthouse, for the reason in 19.1.
-
-**M12: public beta.** Core Web Vitals targets met, WCAG AA validated (done, M16a), top-100 SKU coverage at 80% or better, and analytics instrumented.
+**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), top-100 SKU coverage at 80% or better, and analytics instrumented. Coverage is the only one of the four that is still open, and it is the one the API cannot deliver on its own.
 
 ### Explicitly deferred
 
@@ -691,9 +697,10 @@ now reports the same call the engine made, and a test pins it.
 
 | Metric | Target | Method |
 |---|---|---|
-| Largest Contentful Paint | 2.5 s or less, mid-range phone on 4G | Lighthouse, Chrome UX Report |
-| Interaction to Next Paint | 200 ms or less | Core Web Vitals |
-| Cumulative Layout Shift | 0.1 or less | Core Web Vitals |
+| Largest Contentful Paint | 2.5 s or less, mid-range phone on 4G | `tools/check-vitals.py`, throttled. **Measured**, section 19.2 |
+| Total Blocking Time | 200 ms or less | `tools/check-vitals.py`. **Measured.** Stands in for INP, which needs a real session |
+| Interaction to Next Paint | 200 ms or less | Field data only. Nothing measures this; there is no analytics |
+| Cumulative Layout Shift | 0.1 or less | `tools/check-vitals.py`. **Measured**, section 19.2 |
 | Uptime | 99.9% or better | GitHub status |
 | Deploy success rate | 99% or better | GitHub Actions |
 
@@ -775,6 +782,8 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 | `python tools/check-contrast.py` | Verify 38 foreground and background pairs against WCAG AA in both palettes |
 | `python tools/check-a11y.py` | WCAG 2.1 AA audit of all 25 page states in both themes, plus reflow at 320px and the skip link. 100 audits. Exits non-zero, so it works as a gate |
 | `python tools/check-a11y.py --report` | The same audit, printing every violation with its selector, and exiting 0 |
+| `python tools/check-vitals.py` | LCP, CLS and TBT for 12 pages, CPU throttled 4x on a slow-4G connection. Exits non-zero, so it works as a gate |
+| `python tools/check-vitals.py --report` | The same run, naming the elements that shifted, and exiting 0 |
 | `python tools/site/build.py` | Regenerate the nine application pages |
 | `python tools/learn/build.py` | Regenerate the eleven Cat Care Guide pages |
 | `python tools/probe-opff.py` | Re-measure the database behind section 12 |
@@ -1108,9 +1117,8 @@ The shell precache is currently 29 entries. `tools/check-live.py` asserts it and
 
 ### 16.10 Performance requirements
 
-- Largest Contentful Paint at or below 2.5 s on a mid-range phone over 4G.
-- Cumulative Layout Shift at or below 0.1.
-- No page may scroll horizontally at 360px. `tools/check-live.py` asserts this on every page it loads.
+- Largest Contentful Paint at or below 2.5 s, Cumulative Layout Shift at or below 0.1, Total Blocking Time at or below 200 ms. Enforced by `tools/check-vitals.py` on every page the repository serves in full; see section 19.2 for which pages are gated and why the rest are not.
+- No page may scroll horizontally at 320px. `tools/check-a11y.py` asserts this on all 25 page states, and `tools/check-live.py` asserts the desktop case.
 - No bundle budget exists, because there is no bundle. The nearest equivalent is the shell precache size, which is asserted.
 
 ### 16.11 Known technical debt
@@ -1252,7 +1260,7 @@ Playwright reaches it through `channel='msedge'` rather than its own bundled Chr
 browser = await p.chromium.launch(channel='msedge')
 ```
 
-`tools/run-tests.py`, `tools/check-live.py` and `tools/check-a11y.py` all do this, through the `EDGE_CHANNEL` constant each defines. Version verified working: Edge 152.
+`tools/run-tests.py`, `tools/check-live.py`, `tools/check-a11y.py` and `tools/check-vitals.py` all do this, through the `EDGE_CHANNEL` constant each defines. Version verified working: Edge 152.
 
 The project targets no second engine. Safari and Firefox are not driven by any automated check, which is a real coverage gap and is recorded as such in section 25.
 
@@ -1276,6 +1284,24 @@ The project targets no second engine. Safari and Firefox are not driven by any a
 
 **Why not Lighthouse.** It requires Node, and ADR-001 keeps this project free of npm. axe-core is the engine Lighthouse's accessibility category wraps, and it loads from a CDN into a page Playwright already has open, so the standard is checked with the same tool and one less dependency.
 
+### 19.2 The performance gate
+
+`tools/check-vitals.py` loads 12 pages with the CPU slowed 4x and the network held to roughly a slow 4G connection, in a 412px viewport with a cold cache, and reads LCP, CLS and Total Blocking Time out of the browser's own performance timeline.
+
+**The throttling is the point.** From a loopback server on this machine every page renders in under 400ms, every budget passes, and the gate says nothing. The throttle is what makes a regression visible. It is not a claim about any particular visitor's device.
+
+**Budgets:** LCP 2500ms, CLS 0.1, TBT 200ms. The first two are Google's "good" thresholds and are what section 14 already stated; TBT has no official threshold, and 200ms is Lighthouse's own boundary. TBT stands in for INP, which cannot be measured without a real session.
+
+**Ten of the twelve pages are gated. Two are not**, and the distinction is the honest part of this tool. A page the repository serves in full is a property of the code, so a regression in it is real and fails the build. `product.html` and a page of search results cannot paint until Open Pet Food Facts answers, and no commit here controls how fast that is. They are measured and printed on every run, because the numbers are worth seeing, but they cannot fail the build for something outside the repository. The product page currently measures about 2.5s LCP under this throttle, essentially all of it the API round trip.
+
+**What it does not measure:**
+
+- **Time to first byte from GitHub Pages.** Pages are served from `127.0.0.1`, per section 20. Hosting latency is real and is not in these numbers.
+- **INP.** It needs real interaction over a real session, and there is no analytics. See section 14.
+- **Any real device.** A 4x CPU throttle on this machine is not a mid-range phone. It is a fixed, repeatable handicap, which is what a gate needs.
+
+**Why not Lighthouse:** the same reason as 19.1. Lighthouse reads these three numbers out of the same browser timeline.
+
 ---
 
 ## 20. Verification environment
@@ -1290,7 +1316,7 @@ Run the change on a local copy: the file opened from disk, `python -m http.serve
 
 **Two things that are easy to conflate:**
 
-- **Verifying functionality is local.** `python tools/run-tests.py`, `python tools/check-live.py`, `python tools/check-contrast.py` and `python tools/check-a11y.py` all run against a local server, including `check-live.py`, which reaches the live *API* but serves the *pages* from `127.0.0.1`.
+- **Verifying functionality is local.** `python tools/run-tests.py`, `python tools/check-live.py`, `python tools/check-contrast.py`, `python tools/check-a11y.py` and `python tools/check-vitals.py` all run against a local server, including `check-live.py`, which reaches the live *API* but serves the *pages* from `127.0.0.1`.
 - **Confirming a deploy landed is a separate step**, done against production after the push, and it is a comparison rather than a test: fetch the deployed artifact and check it matches what was verified locally. That is legitimate and is not an exception to this rule.
 
 **Never point a destructive or state-changing check at production.** In this project that mostly means never writing to Open Pet Food Facts from a test, and never seeding records there to exercise the submit flow. `submit.html` deep-links a human to the upstream form and writes nothing itself, which is the property that keeps this simple. If a future feature can only be exercised against a live system, stop and ask.

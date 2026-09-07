@@ -77,6 +77,12 @@ def head(title, description, page_css=True, extra=''):
         '  <link rel="stylesheet" href="./assets/cfc-tokens.css">\n'
         '  <link rel="preconnect" href="https://fonts.googleapis.com">\n'
         '  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+        # Six of the nine application pages cannot paint until Open Pet Food
+        # Facts answers, and on a slow connection the handshake is a real part
+        # of that wait. Opening it while the document is still parsing costs
+        # nothing on the pages that never call the API.
+        '  <link rel="preconnect" href="https://world.openpetfoodfacts.org" crossorigin>\n'
+        '  <link rel="preconnect" href="https://images.openpetfoodfacts.org" crossorigin>\n'
         '  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;'
         '9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">\n'
         '  <link rel="stylesheet" href="./assets/cfc.css">\n'

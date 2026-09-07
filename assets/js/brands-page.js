@@ -40,6 +40,9 @@ function tile(brand) {
 }
 
 function render(brands) {
+  // Whatever the outcome, the list is no longer waiting, and the height it
+  // reserved to keep the page from jumping is no longer wanted.
+  listEl.classList.remove('is-loading');
   if (!brands.length) {
     listEl.innerHTML = `<li style="list-style:none" class="text-small text-ink-soft py-6">
       No brand matches that. The list holds every brand with more than one cat food on record.

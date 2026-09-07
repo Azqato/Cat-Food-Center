@@ -373,6 +373,8 @@ One consequence worth knowing before writing a test: these transitions mean a co
 
 Nothing animates in front of the score.
 
+**Nothing may move once it is on screen, either.** `.shell` carries `min-height: 100vh` so the footer starts below the fold on every page. Six of the nine application pages render their body from a fetch, and without that reservation the footer sat in the middle of a short placeholder page and was thrown down when the content arrived: a layout shift of 0.60 on the brand index and 0.86 on a page of search results, against a 0.10 budget. The brand list additionally reserves `80vh` while it loads, under `.brand-list.is-loading`, and gives it back in `render()`. `tools/check-vitals.py` measures this under a 4x CPU throttle, which is the only way it is visible at all.
+
 ---
 
 ## 11. Responsive behaviour
