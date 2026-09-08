@@ -21,6 +21,71 @@ punctuation rather than content.
 
 ---
 
+## [0.21.0] - 2026-09-08
+
+**The curated catalogue, built (M20). Status colours get an ink (M20a).**
+
+Added
+* `assets/data/catalogue.json`, `assets/js/catalogue.js` and the disclosure on the product page.
+  Product data transcribed by hand where Open Pet Food Facts has none, merged over the
+  normalised record field by field, with every curated field named in words directly under the
+  score. `mergeCurated` is pure: a product and an entry in, a new product out. It neither
+  fetches nor scores.
+* `tools/check-catalogue.py`, the seventh gate. Schema, a source and a checked date on every
+  entry, the same plausibility bands the normaliser applies to upstream figures, and no unknown
+  keys. A misspelled key is rejected rather than ignored, because the merge would skip it in
+  silence and a curated figure that never reaches the page looks exactly like one nobody
+  transcribed.
+* `sourceKind` on every entry, which was not in the design. The first product attempted forced
+  it: for UPC 050000102068, two retailer listings gave incompatible ingredient lists for the
+  same tin, one with soy protein concentrate, added colour and Red 3, one with soy flour and
+  glycine and no colours. There is no way to tell from outside which is stale, so that product
+  got no entry and the disagreement became a rule. A retailer listing may fill a gap; only a
+  manufacturer panel may overwrite a figure the database already has.
+* `assets/js/catalogue.test.js`, seven suites. The unit suite is 198 assertions.
+* One seeded entry, `4008429158100`, supplying a Danish ingredient list to a record that has a
+  guaranteed analysis and no list. The additive matcher cannot read Danish, so the page says the
+  ingredients were not checked. That is section 11.5 working: an unnamed or unreadable language
+  is marked unknown rather than assumed to be English, which is exactly how section 12.4
+  happened.
+* `--excellent-ink`, `--good-ink`, `--poor-ink` and `--bad-ink`. The band colours are fills and
+  borders; the inks carry text. In dark the two are the same values, which already passed.
+
+Changed
+* **`tools/check-contrast.py` had never checked a status colour against a page background.** It
+  had run green over 38 pairs for six milestones while `--good` rendered as text at 2.72:1 on
+  `--bg` and 2.91:1 on `--surface`, `--poor` at 2.51:1 and 2.68:1, and `--warning-ink` at
+  4.28:1. The gate is 52 pairs now, 11 of them status inks against both backgrounds. Rendering
+  a band word inside the new disclosure exposed a failure that was already shipping.
+* `--warning-ink` darkened from `#A9660D` to `#9D5E0C`.
+* `sw.js` to `v5`, with `catalogue.js` and `catalogue.json` in `SHELL_ASSETS`. Not optional:
+  `opff.js` imports `catalogue.js`, so a device holding `v4` would fail offline without it.
+* `tools/check-live.py` is 23 checks, the newest loading the seeded barcode from the live API
+  and requiring the disclosure to name the field and its source.
+* PRD sections 13, 16.5, 16.5a, 15.4 and 26.4, and DESIGN sections 2.2, 7, 8 and 9.
+* PRD section 24.1 loses the row that said none of this existed. It was written to be deleted
+  the day the feature shipped, and not before.
+
+Fixed
+* A merge that changes nothing now claims no provenance. `ingredientsLang` had been counted as a
+  curated field, so an entry that only restated the language of a list already present announced
+  a curated origin for data that was entirely upstream. It is a modifier now, not data. Two
+  tests failed on this before anybody noticed it by reading.
+* The disclosure panel pushed the article to 454px at a 320px viewport, from a single unbroken
+  source URL. `overflow-wrap: anywhere`. The accessibility gate caught it; a desktop browser
+  never would have.
+
+Considered and rejected
+* Four gate rows requiring the band fills themselves to reach 3:1 against `--bg`. They were
+  added, they failed, and the reasoning was wrong: WCAG 1.4.11 governs graphics that carry
+  meaning on their own, and every chip here carries its own text while the 6px band rule is
+  `aria-hidden` beside the word "Good". The rows were replaced by a comment recording the
+  measurement and the condition that would require them.
+* Seeding the catalogue with a hundred products. The mechanism first, deliberately. See open
+  question 2.
+
+---
+
 ## [0.20.4] - 2026-09-07
 
 **The curated catalogue, designed (M20). Open question 2 answered.**

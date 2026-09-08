@@ -541,7 +541,8 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M18b: Confidence travels with the score | 2026-09-07 | Complete |
 | M19: The root policy, applied | 2026-09 | Complete |
 | M19a: Offline support reaches the guide | 2026-09 | Complete |
-| M20: The curated catalogue mechanism | 2026-09 | **Designed, not built** |
+| M20: The curated catalogue mechanism | 2026-09-08 | Complete |
+| M20a: Status colours get an ink | 2026-09-08 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -717,11 +718,23 @@ now reports the same call the engine made, and a test pins it.
 
 `tools/check-live.py` is 22 checks. The scope check now registers from `/learn/nutrition/`, the deepest page on the site, and a new check reads a guide page, goes offline, and requires that page back and a different one to fall through to the offline page.
 
+**M20: the curated catalogue mechanism.** *2026-09-08.* Designed on 2026-09-07 in section 16.5a and built the next day: `assets/data/catalogue.json`, the pure merge in `assets/js/catalogue.js`, the per-field disclosure on the product page, and `tools/check-catalogue.py` as a seventh gate. It ships with one entry, deliberately.
+
+*Why one entry.* The decision recorded against open question 2 was to build the mechanism before the products, and the first product tried is why. For UPC 050000102068, two retailer listings gave incompatible ingredient lists for the same tin: one with soy protein concentrate, added colour and Red 3, one with soy flour and glycine and no colours. There is no way to tell from the outside which is stale. Had a hundred records been transcribed first, that case would have been discovered at scale, as a hundred quietly wrong pages, instead of designed for. The product got no entry and the disagreement became `sourceKind`: a retailer listing may fill a gap, only a manufacturer panel may overwrite the database.
+
+*What the seeded entry demonstrates, including the part that looks like a failure.* Open Pet Food Facts holds a guaranteed analysis for `4008429158100` but no ingredient list; the listing supplies the list, and its analysis matches the record's figures, which is corroboration rather than a second source. The list is Danish, so the additive matcher cannot read it and the page says the ingredients were not checked. That is section 11.5 working, not a defect in the entry: the alternative, treating an unnamed or unreadable language as English, is exactly how section 12.4 happened. `mergeCurated` therefore marks a list with no stated language `unknown` rather than assuming.
+
+*What keeps it from becoming laundering.* A merge that changes nothing sets no `curated` block, so no page ever announces a curated origin for data that is entirely upstream. That rule has a test because two tests failed without it: `ingredientsLang` had been listed as a curated field, and an entry that only restated the language of an existing list still claimed provenance. It is a modifier now, not data.
+
+**M20a: status colours were never checked against a background.** *2026-09-08.* Adding the disclosure panel meant rendering band words as text, which exposed that `--good` at 2.9:1 had been unreadable text wherever it was already used. The palette now carries an ink for each status colour, and `check-contrast.py` checks all of them.
+
+*The gap was in the instrument.* `tools/check-contrast.py` had run green for six milestones over 38 pairs and had never once checked a status colour against a page background: the callout rows tested text on a tinted surface, and nothing tested `--good`, `--poor` or `--excellent` as a foreground. Measured, `--good` was 2.72:1 on `--bg` and 2.91:1 on `--surface`, `--poor` 2.51:1 and 2.68:1, and `--warning-ink` 4.28:1 on `--bg`, all below AA. Four new tokens, `--excellent-ink`, `--good-ink`, `--poor-ink` and `--bad-ink`, carry the text weight; the originals stay what they always were, fills and borders. The dark palette needed no new values, so its inks equal its fills. `--warning-ink` was darkened from `#A9660D` to `#9D5E0C`. The gate is 52 pairs, and 11 of them are status inks against both backgrounds.
+
+*One over-correction, recorded because the reasoning is the useful part.* Four rows requiring the fills themselves to reach 3:1 against `--bg` were added and failed. WCAG 1.4.11 governs graphics that carry meaning on their own; the band chips carry their own text, and the 6px rule beside the word "Good" is `aria-hidden` decoration next to the same information in words. The rows were replaced with a comment in the gate recording the measurement and the condition under which they would be needed: a status colour becoming the only carrier of its meaning.
+
 ### Next
 
-**M20: the curated catalogue mechanism.** *Designed 2026-09-07, in section 16.5a. Not built yet.* One file at `assets/data/catalogue.json`, merged over the normalised API record field by field, with every curated field named on the page that shows it. The governing rule is that a curated figure is never presented as an Open Pet Food Facts figure and neither is silently preferred: a local file that quietly overwrote upstream data would break this project's one real claim in the least visible way available. It ships with `tools/check-catalogue.py` as a seventh gate and a small seed, not a hundred products.
-
-**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open**, and it is the one the API cannot deliver on its own: of 1000 products sampled, 338 carry an ingredient list. Section 12.5 item 7 says a curated local catalogue is the only route, which makes open question 2 the decision M12 waits on.
+**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open**, and it is the one the API cannot deliver on its own: of 1000 products sampled, 338 carry an ingredient list. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built it, and what M12 now waits on is entries in it, transcribed one at a time against the rules in section 16.5a. The mechanism is no longer the question, the volume is.
 
 *The fourth criterion, "analytics instrumented", was removed on 2026-09-07 rather than met.* It had been written before section 12 was measured and it contradicted section 14, which gives "no analytics means no visitor data to protect" as the reason for having none. A milestone cannot require closing a gap the same document defends. Section 14 now says which targets are therefore never going to be reported, instead of describing them as pending.
 
@@ -749,7 +762,7 @@ The criterion this replaces said "analytics instrumented" and had sat in the M12
 
 **What that costs, stated plainly rather than left implicit.** Every target in the acquisition, engagement and retention tables below is unmeasured and will stay unmeasured. They are not deferred, they are not "pending instrumentation": nothing in the plan will ever report them. They are kept because they say what this project would consider success, which is worth writing down even when nothing counts it, and every row now names what would be needed to know. Interaction to Next Paint is the one performance target in the same position, since it needs a real session and only field data can supply it.
 
-**What is measured**, and it is not nothing: six gates run against the real site before every push, covering 178 unit assertions, 22 live checks against the live API, contrast, 100 accessibility audits, Core Web Vitals against a stated budget on a throttled mid-range phone, and three browser engines agreeing. Section 19 has the detail. That is a claim about whether the product works, not about whether anyone is using it, and this project can honestly make only the first.
+**What is measured**, and it is not nothing: seven gates run against the real site before every push, covering 198 unit assertions, 23 live checks against the live API, contrast, the curated catalogue, 100 accessibility audits, Core Web Vitals against a stated budget on a throttled mid-range phone, and three browser engines agreeing. Section 19 has the detail. That is a claim about whether the product works, not about whether anyone is using it, and this project can honestly make only the first.
 
 ### North star
 
@@ -871,9 +884,10 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 | Command | What it does |
 |---|---|
 | `python -m http.server 8000` | Serve the site locally |
-| `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 178 assertions. Exits non-zero on failure, so it works as a gate |
-| `python tools/check-live.py` | 20 end-to-end checks against the live API, two of them added in M18 to ask whether the search searches and one in M18b to ask whether the caveat travels with the score. Needs network. Not deterministic, so it is a smoke check rather than a gate |
-| `python tools/check-contrast.py` | Verify 38 foreground and background pairs against WCAG AA in both palettes |
+| `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 198 assertions. Exits non-zero on failure, so it works as a gate |
+| `python tools/check-live.py` | 23 end-to-end checks against the live API, two of them added in M18 to ask whether the search searches, one in M18b to ask whether the caveat travels with the score, and one in M20 to ask whether a curated field says so on the page. Every page-load check asserts a string that only the right page contains. Needs network. Not deterministic, so it is a smoke check rather than a gate |
+| `python tools/check-contrast.py` | Verify 52 foreground and background pairs against WCAG AA in both palettes |
+| `python tools/check-catalogue.py` | Validate `assets/data/catalogue.json`: schema, source and date on every entry, plausibility bands, no unknown keys. Offline, instant, and a gate |
 | `python tools/check-a11y.py` | WCAG 2.1 AA audit of all 25 page states in both themes, plus reflow at 320px and the skip link. 100 audits. Exits non-zero, so it works as a gate |
 | `python tools/check-a11y.py --report` | The same audit, printing every violation with its selector, and exiting 0 |
 | `python tools/check-vitals.py` | LCP, CLS and TBT for 12 pages, CPU throttled 4x on a slow-4G connection. Exits non-zero, so it works as a gate |
@@ -895,7 +909,7 @@ It builds nothing, so it cannot fail the way a build pipeline can. If a deploy f
 
 **A change whose intermediate states are broken ships as one push.** The normal rhythm here is small: change, document, commit, push, verify live, so that stopping at any point leaves a working site and a recorded state. That rhythm assumes each step is independently correct. Some changes are not divisible that way. M19 moved every page and rewrote roughly 140 paths, and between the first rename and the last fix every link on the site was broken; pushing each step would have put a broken site into production for the duration, because `main` deploys on push and there is no staging environment.
 
-The rule for those: **do the whole thing locally, run all six gates against it, and push once, when it passes.** Never split a change across pushes in a way that leaves production incorrect in between. If the change is large enough that you want it read before it goes live, put it on a branch; the gates are the same either way. Decided 2026-09-07, during M19.
+The rule for those: **do the whole thing locally, run all seven gates against it, and push once, when it passes.** Never split a change across pushes in a way that leaves production incorrect in between. If the change is large enough that you want it read before it goes live, put it on a branch; the gates are the same either way. Decided 2026-09-07, during M19.
 
 Live URL: **https://azqato.github.io/Cat-Food-Center/**
 Deploy log: **https://github.com/Azqato/Cat-Food-Center/actions**
@@ -1123,8 +1137,9 @@ Cat-Food-Center/
 │   ├── cfc-app.css          # Components only the application pages use
 │   ├── cfc-docs.js          # Drawer and scroll spy. Every page
 │   ├── icons/               # PWA icons, 192, 512, maskable
-│   ├── js/                  # 16 application ES modules
+│   ├── js/                  # 17 application ES modules
 │   │   ├── opff.js          #   API client, normaliser, brand facet
+│   │   ├── catalogue.js     #   Curated entries, merged over the API record. Pure merge
 │   │   ├── scoring.js       #   The CFC Score. Pure: no network, no DOM
 │   │   ├── scanner.js       #   Camera, BarcodeDetector/ZXing, checksums
 │   │   ├── history.js       #   Recently viewed, localStorage only
@@ -1133,12 +1148,14 @@ Cat-Food-Center/
 │   │   ├── test-runner.js   #   Minimal assertion runner
 │   │   └── *.test.js        #   Tests, loaded by tools/tests.html
 │   └── data/
-│       └── additives.json   # Additive knowledge base, v1.1.0
+│       ├── additives.json   # Additive knowledge base, v1.1.0
+│       └── catalogue.json   # Curated products, keyed by barcode. Observations, never verdicts
 ├── tools/
 │   ├── tests.html           # Browser-hosted test suite. Not a page: noindex, unlinked
 │   ├── run-tests.py         # Drives tests.html headlessly in Edge
-│   ├── check-live.py        # 20 end-to-end checks against the live API
+│   ├── check-live.py        # 23 end-to-end checks against the live API
 │   ├── check-contrast.py    # WCAG AA audit of both palettes
+│   ├── check-catalogue.py   # Schema, sourcing and plausibility gate for catalogue.json
 │   ├── probe-opff.py        # Regenerates the numbers in section 12
 │   ├── site/                # Application page generator: chrome.py, build.py, content/
 │   └── learn/               # Guide generator: shell.py, bits.py, c_*.py
@@ -1170,6 +1187,12 @@ interface Product {
   nutrition: Nutrition;
   dataCompleteness: 'full' | 'partial' | 'minimal';
   lastModified?: number;
+  curated?: {                     // Present only where a catalogue entry changed something
+    fields: string[];             // Exactly the fields it changed, so the page can name them
+    source: string;
+    sourceKind: 'manufacturer' | 'retailer-listing';
+    checked: string;              // ISO date
+  };
 }
 
 interface Nutrition {
@@ -1206,7 +1229,7 @@ interface Brand {                 // From the facet, after merging case variants
 
 ### 16.5a The curated catalogue
 
-**Adopted 2026-09-07, as the route to the M12 coverage target. The mechanism is being built in M20; this section describes it before it exists, and section 24 is where the gap is recorded until it does.**
+**Adopted 2026-09-07 as the route to the M12 coverage target, and built in M20 on 2026-09-08. The mechanism exists and is gated; it is seeded with one entry, and the coverage target needs many more.**
 
 Section 12.5 item 7 is the reason: the API alone will not carry a top-100 SKU catalogue. Of 1000 products sampled, 338 have an ingredient list and 246 a protein figure. Waiting for a crowd-sourced database to fill in is not a plan with a date on it.
 
@@ -1222,23 +1245,32 @@ Every entry carries, and the validator rejects it without:
 |---|---|
 | `barcode` | The key. Must match the object key and be 6 to 14 digits |
 | `source` | Where the data was read. A URL, or a plain description such as "packaging photograph, 500g tin" |
+| `sourceKind` | `manufacturer` for the maker's own published panel, `retailer-listing` for a shop or aggregator repeating it |
 | `checked` | ISO date the entry was last verified against that source |
 | At least one data field | An entry that overrides nothing has no reason to exist |
+
+`ingredientsLang` is not a data field. It says what language the list beside it is in, and an entry carrying only that carries nothing. It is required wherever `ingredientsText` is present, because a list with no language is read as unreadable, which would be a silent omission rather than a stated one.
+
+**`sourceKind` was not in the design of 2026-09-07. The first product attempted forced it.** For UPC 050000102068, one retailer listing gave an ingredient list containing soy protein concentrate, added colour and Red 3; another gave soy flour and glycine and no colours at all. Both claimed to describe the same tin. One is out of date and there is no way to tell which from the outside, so that product got no entry, and the disagreement became a rule instead.
 
 #### Merge
 
 `fetchProduct` merges the curated entry over the normalised API product, field by field, and records what it did:
 
-1. **A curated field wins**, because it was read off a package by a person, and the API field it replaces was typed in by a stranger with no obligation to be right.
-2. **The product gains `curated: { fields, source, checked }`**, naming every field that came from the catalogue. The product page states it in words, next to the data, not in a footnote.
-3. **A barcode in the catalogue but not in the API still resolves.** This is the case that raises coverage, and it means the "not in the database" page is reached only when neither source has the product.
-4. **Curated guaranteed-analysis figures carry `source: 'guaranteed-analysis'`**, so they can reach high confidence. That is the point of transcribing them, and it is only sound because item 2 makes the provenance visible.
-5. **The plausibility gate in section 12.5 item 2 applies to curated figures too.** A transcription error is as wrong as a data-entry error, and being ours does not make it truer.
+1. **A curated field fills a gap.** An empty field is filled by any entry, because a list of unknown vintage with its source named beside it is better than no list.
+2. **Only a manufacturer entry overwrites a figure the database already has.** A retailer listing never does. Where two sources disagree, the weaker one must not win in silence, and the rule above is what stops it.
+3. **The product gains `curated: { fields, source, sourceKind, checked }`**, naming every field that came from the catalogue. The product page states it in words, next to the data, not in a footnote. A merge that changes nothing sets no `curated` at all, so the page cannot announce a provenance for data that is entirely upstream.
+4. **A barcode in the catalogue but not in the API still resolves.** This is the case that raises coverage, and it means the "not in the database" page is reached only when neither source has the product.
+5. **A transcribed manufacturer panel reaches high confidence; a shop listing does not.** That is the point of transcribing a panel, and it is only sound because item 3 makes the provenance visible. Without the disclosure this rule would be laundering.
+6. **The plausibility gate in section 12.5 item 2 applies to curated figures too.** A transcription error is as wrong as a data-entry error, and being ours does not make it truer.
+
+`mergeCurated` is pure: a product and an entry in, a new product out, no fetching and no scoring. That is what makes the rules above testable, and `assets/js/catalogue.test.js` tests each of them, including the one most likely to be simplified away later by somebody who reads item 2 without its reason.
 
 #### What keeps it honest
 
-- `tools/check-catalogue.py`, a gate: schema, the required fields above, plausibility bands, barcode format, no unknown keys, and no entry whose `checked` date is in the future.
-- The disclosure on the product page is asserted by `tools/check-live.py` rather than left to review.
+- `tools/check-catalogue.py`, the seventh gate: schema, the required fields above, plausibility bands, barcode format, no unknown keys, and no entry whose `checked` date is in the future. An unknown key is rejected rather than ignored, because the merge would skip it in silence and a curated figure that never reaches the page looks exactly like one nobody transcribed.
+- The disclosure on the product page is asserted by `tools/check-live.py` rather than left to review: it loads the seeded barcode from the live API and requires the words that name the curated field and its source.
+- Both new files are in `SHELL_ASSETS`, so the catalogue is available offline like everything else it feeds.
 - **The catalogue is not a place to put a score.** It carries observations (ingredients, analysis, adequacy statements), never verdicts. The engine scores; the catalogue only feeds it, and section 6 stays the only description of how a number is reached.
 
 ### 16.6 API design
@@ -1758,7 +1790,6 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | "Ingredient list, each item expandable for an explanation" | PRD §7, DESIGN §10 | **The chevron was never rendered.** Both documents said it was built and inert; the string never appears in any commit's code. The claim was wrong twice over | Built in M15c, for the rows the knowledge base can actually speak to. The documentation error is left here because a document that said "inert" for three milestones is the more useful record |
 | "Submit queue processing, 50 or fewer waiting, internal queue dashboard" | METRICS | No queue exists, so the metric is unmeasurable | Deleted. It measured a feature that was cancelled |
 | Score reveal count-up, ingredient expand transition, route transition fades, skeleton loaders, tier glyphs, Open Graph image | DESIGN §8, §9, §10, §12, all marked "planned" | None built | Kept, still marked as not built, in DESIGN.md |
-| The curated catalogue: `assets/data/catalogue.json`, the merge, `product.curated`, the disclosure on the product page, `tools/check-catalogue.py` | PRD §16.5a, §16.6, §13 (M20) | **None of it exists yet.** §16.5a was written on 2026-09-07 as a design, before any of it was built | Deliberate, and the section says so in its first line. It is here because §24 is where this project keeps documented-but-unbuilt features, and a design document is exactly the kind of thing that quietly becomes a description of reality. This row is deleted when M20 ships, not before |
 | Scan button "disabled with tooltip in MVP", `role="tooltip"` on it | DESIGN §7, §10 | The scanner shipped in M8. There is no disabled button and no tooltip | Trusted the code. Removed |
 | "Search by brand or product name", and every count and ranking claim that followed from it | PRD §6 and §13, DESIGN §5, PATCHNOTES M6 onward | **Text search never searched.** `/api/v2/search` ignored `search_terms` and returned the whole cat-food category for every query, including one that cannot match anything. The feature existed, was tested, and was documented; what it did was unrelated to what was typed | Fixed in M18 by moving text queries to `/cgi/search.pl`. The M15a entry that misread this as a ranking defect is left standing in §13 and in PATCHNOTES, with the correction recorded here |
 
@@ -1929,12 +1960,13 @@ Concrete instructions for whoever works on this next, human or model.
 
 ### 26.4 How to verify a change
 
-Run all three locally, in this order. All are local; none touches production.
+Run these locally, in this order. All are local; none touches production.
 
 ```bash
-python tools/run-tests.py        # 160 assertions. Must be green. This is the gate
-python tools/check-contrast.py   # 38 pairs, both palettes. Required after any token change
-python tools/check-live.py       # 20 end-to-end checks. Needs network. A smoke check, not a gate
+python tools/run-tests.py        # 198 assertions. Must be green. This is the gate
+python tools/check-contrast.py   # 52 pairs, both palettes. Required after any token change
+python tools/check-catalogue.py  # Required after any edit to assets/data/catalogue.json
+python tools/check-live.py       # 23 end-to-end checks. Needs network. A smoke check, not a gate
 ```
 
 Then look at the page in a browser at `http://localhost:8000`. Two of the four defects in section 12.4 were found by rendering a real product, not by a test.

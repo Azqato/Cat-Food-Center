@@ -61,7 +61,7 @@ Tokens are named for their **role**, never their value. There is no `--orange`.
 
 ### 2.2 Score palette
 
-Used as **text and border** colours, so they must contrast against `--bg` and `--surface`.
+**Fills and borders, and an ink for every one of them.** The table below says which is which, and the distinction is load-bearing: a band colour is never used as text.
 
 | Token | Light | Dark | Band |
 |---|---|---|---|
@@ -69,7 +69,13 @@ Used as **text and border** colours, so they must contrast against `--bg` and `-
 | `--good` | `#5FA855` | `#86C46F` | 50 to 74 |
 | `--poor` | `#E08A1E` | `#F0B45E` | 25 to 49 |
 | `--bad` | `#C0392B` | `#F1786A` | 0 to 24 |
-| `--warning-ink` | `#A9660D` | `#F0B45E` | A darkened `--poor` for callout text, because `--poor` is a fill colour and is too light to read as text on cream |
+| `--excellent-ink` | `#1B7A4B` | `#4ADE80` | The text weight of each band. In dark they equal the fills, which already pass |
+| `--good-ink` | `#44783D` | `#86C46F` | |
+| `--poor-ink` | `#9A5F14` | `#F0B45E` | |
+| `--bad-ink` | `#C0392B` | `#F1786A` | |
+| `--warning-ink` | `#9D5E0C` | `#F0B45E` | A darkened `--poor` for callout text, because `--poor` is a fill colour and is too light to read as text on cream |
+
+**The inks were added in M20a, and the reason is worth keeping.** `--good` had been rendering as text at 2.72:1 on `--bg` and 2.91:1 on `--surface`, `--poor` at 2.51:1 and 2.68:1, and `--warning-ink` at 4.28:1 on `--bg`: all below AA, for six milestones, while `check-contrast.py` reported zero failing pairs. The gate had never checked a status colour against a page background at all. The lesson is the same one M18 and M19 taught in other places: a green result only means what the check actually asked.
 
 ### 2.3 Chip tokens
 
@@ -307,6 +313,7 @@ Defined in `cfc.css` and available to every page, since every page loads it. The
 | **Skip link** | `.skip-link` | Off-screen until focused, then 8px from the top |
 | **Visually hidden** | `.sr-only` | |
 | **Ingredient row** | `.ingredient-row`, `.ingredient-row-open`, `.ingredient-tier`, `.ingredient-detail` | A plain `<li>` where the knowledge base has nothing to say, an `<li>` wrapping a `<details>` where it does. The separator sits on the list item so the two look identical until one is opened. The disclosure chevron is a rotated CSS border on `summary::after`, and the native marker is suppressed in both its spellings |
+| **Curated disclosure** | A surface panel of utility classes, drawn by `renderCurated` in `product-page.js` | Present only where a catalogue entry actually changed something. It sits directly under the score, not in the footer, and names the fields ("the ingredient list", "crude protein") rather than saying something vague about additional sources. `overflow-wrap: anywhere` on the source line, because a source is usually a long unbroken URL and 320px has nowhere to put one |
 | **Product thumbnail** | `.thumb`, `.thumb-empty` | 56px box on every card, photo or not. `object-fit: contain` on `--bg`, never `cover`: these are contributor photographs at whatever aspect ratio their phone produced, and cropping to fill a square is how the product name ends up outside the frame |
 
 **Buttons** are `.btn` in `cfc-app.css`, with `.btn-accent` for the filled variant and `.btn-text` for the quiet one, plus `.topbar-cta` and `.footer-cta` in `cfc.css` for the two chrome pills. The chrome pills are deliberately separate: they are part of the bar and the footer, not of a page.
@@ -331,6 +338,7 @@ The single most important thing on the site, so its rules are strict.
 - **An unscorable product shows no number at all.** It shows what is missing. There is no grey placeholder score and no zero.
 
 - **A score never appears without its confidence.** Since M18b the band pill under a product card reads "Good · medium confidence", not "Good", everywhere a card is drawn: search results, brand-filtered results and the recently-viewed list. The product page and the compare page had said it since M7 and M11; the cards were the surface that leaked. A 72 built from three pillars and a full label and a 72 built from an ingredient list alone are different claims wearing the same number, and the number is the part that travels. It is shown at every confidence level rather than only the poor ones, because a marker that appears selectively turns its absence into a claim of its own.
+- **A figure that did not come from the database says so, by name.** Since M20 a product page carrying curated data states which fields they are and where they were read, immediately under the score. A score built partly on transcribed data is not a worse score, but presenting it as an Open Pet Food Facts score would be a worse claim.
 - **A hard gate is stated as a gate.** Propylene glycol produces a callout saying it is prohibited in cat food in the United States, rather than a quietly lower number.
 - **A cached answer is labelled a saved copy, with its date.** This is a design requirement, not only a technical one: an old score presented as a current one is the worst failure the cache could cause.
 
@@ -342,7 +350,8 @@ On the compare page, a cell is highlighted only where both products publish a fi
 
 Target: **WCAG 2.1 AA**.
 
-- **Contrast is enforced, not asserted.** `tools/check-contrast.py` checks 38 foreground and background pairs across both palettes and fails the build if any falls below AA. It is the reason the chip inks are what they are.
+- **Contrast is enforced, not asserted.** `tools/check-contrast.py` checks 52 foreground and background pairs across both palettes and fails the build if any falls below AA. It is the reason the chip inks are what they are, and since M20a it covers every status ink against both `--bg` and `--surface`, which is the pairing it had silently never tested.
+- **The fills themselves are not held to 3:1, deliberately.** WCAG 1.4.11 governs graphics that carry meaning alone. Every band chip carries its own text and the 6px band rule is `aria-hidden` beside the word "Good", so nothing here is colour-only. A gate row would be required the moment a status colour became the only carrier of its meaning, and `check-contrast.py` records that condition where the rows would go.
 - **Colour is never the only signal.** Every band, tier and state carries text.
 - **Focus is always visible.** One site-wide `:focus-visible` rule in `cfc.css`: 2px accent, 2px offset, 4px radius. On `:focus-visible` rather than `:focus`, so it appears for the keyboard and not for a mouse click. The browser default would nearly do, but this site has two palettes and custom card components, and the ring has to stay visible on a surface, on the page ground and on a score tile alike. Never set `outline: none` without a replacement.
 - **A skip link** is the first focusable element on every page, guide and application alike, and `check-a11y.py` tabs into it on all 25 to prove it.

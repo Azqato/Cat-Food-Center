@@ -266,11 +266,11 @@ h2[id], h3[id], section[id] { scroll-margin-top: calc(var(--topbar-h) + 20px); }
 .callout-note    { border-left-color: var(--accent); }
 .callout-note    .callout-icon, .callout-note    .callout-title { color: var(--accent); }
 .callout-tip     { border-left-color: var(--excellent); }
-.callout-tip     .callout-icon, .callout-tip     .callout-title { color: var(--excellent); }
+.callout-tip     .callout-icon, .callout-tip     .callout-title { color: var(--excellent-ink); }
 .callout-warning { border-left-color: var(--poor); }
 .callout-warning .callout-icon, .callout-warning .callout-title { color: var(--warning-ink); }
 .callout-danger  { border-left-color: var(--bad); }
-.callout-danger  .callout-icon, .callout-danger  .callout-title { color: var(--bad); }
+.callout-danger  .callout-icon, .callout-danger  .callout-title { color: var(--bad-ink); }
 
 /* ── Panel (formula / worked example / quoted block) ── */
 .panel {

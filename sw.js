@@ -33,11 +33,16 @@
    changelog, and pulling it re-downloads the shell on every device for
    nothing.
 
+   v5: M20 added assets/js/catalogue.js, which opff.js imports, and
+   assets/data/catalogue.json, which it reads. A v4 device has neither in its
+   shell, so offline it would fail to load a module the product page cannot
+   run without. This is the case the lever is for.
+
    v4: M19 moved every page. A device holding a v3 cache has nine documents
    precached under addresses that no longer exist, and would serve them from
    the shell cache indefinitely. Every one of those entries has to go, and
    bumping the version is the only lever that reaches a device we cannot. */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const SHELL = `cfc-shell-${VERSION}`;
 const API = `cfc-api-${VERSION}`;
 const IMAGES = `cfc-images-${VERSION}`;
@@ -63,6 +68,7 @@ const SHELL_ASSETS = [
   './assets/cfc-app.css',
   './assets/cfc-docs.js',
   './assets/js/site.js',
+  './assets/js/catalogue.js',
   './assets/js/opff.js',
   './assets/js/scoring.js',
   './assets/js/scanner.js',
@@ -77,6 +83,7 @@ const SHELL_ASSETS = [
   './assets/js/home-page.js',
   './assets/js/pwa.js',
   './assets/data/additives.json',
+  './assets/data/catalogue.json',
   './manifest.webmanifest',
   './assets/icons/icon-192.png',
 ];

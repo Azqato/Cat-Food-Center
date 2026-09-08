@@ -25,10 +25,47 @@ CHECKS = [
     ('accent on accent-sub', 'accent',     'accent-sub', 4.5),
     ('on-accent on accent',  'on-accent',  'accent',  4.5),
     ('hairline vs bg',       'hairline',   'bg',      1.2),
-    ('tip callout text',     'excellent',  'surface', 4.5),
-    ('warning callout text', 'warning-ink','surface', 4.5),
-    ('danger callout text',  'bad',        'surface', 4.5),
-    ('warn banner text',     'warn-ink',   'warn-bg', 4.5),
+    # Status text, on both backgrounds, added 2026-09-08 in M20a.
+    #
+    # These rows are the gate's own bug fix. It used to check 'excellent' and
+    # 'bad' against 'surface' alone, under the names of the callouts that
+    # happened to use them, and it never checked 'good' or 'poor' as text at
+    # all. So --good at 2.7:1 and --poor at 2.5:1 sat in the light theme for
+    # six milestones while both were being rendered as words, and this file
+    # reported zero failing pairs the whole time. It also missed --warning-ink
+    # failing on --bg while passing on --surface, because only one of the two
+    # was ever asked about.
+    #
+    # Every status colour is now checked as text under its own name, against
+    # both backgrounds. A pair that is not listed here is a pair nobody is
+    # checking, which is the only way this gate can be wrong.
+    ('excellent text',       'excellent-ink', 'bg',      4.5),
+    ('excellent on surface', 'excellent-ink', 'surface', 4.5),
+    ('good text',            'good-ink',      'bg',      4.5),
+    ('good on surface',      'good-ink',      'surface', 4.5),
+    ('poor text',            'poor-ink',      'bg',      4.5),
+    ('poor on surface',      'poor-ink',      'surface', 4.5),
+    ('bad text',             'bad-ink',       'bg',      4.5),
+    ('bad on surface',       'bad-ink',       'surface', 4.5),
+    ('warning callout text', 'warning-ink',   'bg',      4.5),
+    ('warning on surface',   'warning-ink',   'surface', 4.5),
+    ('warn banner text',     'warn-ink',      'warn-bg', 4.5),
+    # The fills are deliberately NOT listed, and the reason is worth writing
+    # down because the obvious row is the wrong one.
+    #
+    # Measured 2026-09-08: against --bg, --good is 2.72:1 and --poor is 2.51:1,
+    # both under the 3:1 that WCAG 1.4.11 asks of a graphic. Adding those rows
+    # was the first instinct and it was wrong. 1.4.11 covers graphics that are
+    # *required to understand the content*, and neither of these is. Every chip
+    # carries its own text on top, and that text is what is judged and what
+    # states the band. The 6px rule above the score is aria-hidden and sits
+    # directly beside the word "Good", so nothing is conveyed by that colour
+    # alone. Asserting 3:1 here would force a palette change that buys no
+    # reader anything, and a gate that fails for a reason nobody believes is a
+    # gate people start editing to make quiet.
+    #
+    # The rule this leaves behind: if a status fill ever becomes the only thing
+    # saying which band a product is in, it needs 3:1 and it needs a row here.
     ('chip excellent',       'chip-excellent-ink', 'chip-excellent-bg', 4.5),
     ('chip good',            'chip-good-ink',      'chip-good-bg',      4.5),
     ('chip poor',            'chip-poor-ink',      'chip-poor-bg',      4.5),

@@ -15,8 +15,13 @@
 
    Three token groups need explanation:
 
-     * Status colours (--excellent/--good/--poor/--bad) are used as TEXT and
-       BORDER colours. They must contrast against --bg / --surface.
+     * Status colours (--excellent/--good/--poor/--bad) are FILL and BORDER
+       colours. They are not text colours, whatever their names suggest: in the
+       light theme --good and --poor sit around 2.6:1 on the background.
+     * Every status colour has an ink (--good-ink and so on) which IS a text
+       colour and clears 4.5:1 on both --bg and --surface. Text uses the ink,
+       always, even where the fill would have passed: a rule with two
+       exceptions is a rule nobody applies.
      * Chip tokens are used as FILLS with text on top, so each fill carries its
        own ink. Amber and mid-green cannot carry white text at AA, which is why
        those two chips use dark ink in the light theme.
@@ -42,7 +47,29 @@
   --good:      #5FA855;
   --poor:      #E08A1E;
   --bad:       #C0392B;
-  --warning-ink: #A9660D;
+
+  /* Text-safe variants, added 2026-09-08 in M20a.
+
+     The status colours above are FILLS and BORDERS. Two of the four cannot be
+     read as text on this background: --good is 2.7:1 and --poor is 2.5:1
+     against --bg, where AA asks for 4.5. They were being used as text anyway,
+     on the product page band label and the "Beneficial" ingredient tag, and
+     nothing caught it for six milestones because check-contrast.py never
+     checked a status colour against a background. It surfaced only when a
+     curated ingredient list made one more product scorable and axe finally saw
+     the word "Good" rendered as text.
+
+     So every status colour has an ink. Where the fill already passes as text
+     the ink is the same value, which keeps "text uses the ink" true
+     everywhere rather than true in the two places somebody remembered. */
+  --excellent-ink: #1B7A4B;
+  --good-ink:      #44783D;
+  --poor-ink:      #9A5F14;
+  --bad-ink:       #C0392B;
+
+  /* Was #A9660D: 4.57 on --surface and 4.28 on --bg. A colour legible on a
+     card and not on the page behind it is what an unchecked pair looks like. */
+  --warning-ink: #9D5E0C;
 
   --chip-excellent-bg:  #1B7A4B;  --chip-excellent-ink: #FFFFFF;
   --chip-good-bg:       #5FA855;  --chip-good-ink:      #0E2109;
@@ -79,6 +106,14 @@
   --good:      #86C46F;
   --poor:      #F0B45E;
   --bad:       #F1786A;
+
+  /* Dark: every status colour clears 6.3:1 as text, so each ink is its own
+     fill. They exist so the rule about text can be stated once. */
+  --excellent-ink: #4ADE80;
+  --good-ink:      #86C46F;
+  --poor-ink:      #F0B45E;
+  --bad-ink:       #F1786A;
+
   --warning-ink: #F0B45E;
 
   --chip-excellent-bg:  #4ADE80;  --chip-excellent-ink: #06240F;
@@ -113,6 +148,12 @@
     --good:      #86C46F;
     --poor:      #F0B45E;
     --bad:       #F1786A;
+
+    --excellent-ink: #4ADE80;
+    --good-ink:      #86C46F;
+    --poor-ink:      #F0B45E;
+    --bad-ink:       #F1786A;
+
     --warning-ink: #F0B45E;
 
     --chip-excellent-bg:  #4ADE80;  --chip-excellent-ink: #06240F;

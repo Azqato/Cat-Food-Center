@@ -1,0 +1,189 @@
+/* ==========================================================================
+   The curated catalogue.
+
+   Product data transcribed by hand where Open Pet Food Facts has none. The
+   design is docs/PRD.md section 16.5a; the rule the whole thing is built
+   around is one sentence:
+
+     A curated figure is never presented as an Open Pet Food Facts figure, and
+     neither is silently preferred over the other.
+
+   This project's only real claim is that a number can be traced back to where
+   it came from. A local file that quietly overwrote upstream data would break
+   that claim in the least visible way available, which is the same shape of
+   failure as the English-only additive matcher in section 12.4: confidently
+   wrong, with nothing about it looking wrong. So every merge records what it
+   changed, and the page says so next to the data.
+
+   Pure, and deliberately so: mergeCurated takes a product and an entry and
+   returns a new product. Nothing here fetches, and nothing here scores.
+   ========================================================================== */
+
+const CATALOGUE_URL = new URL('../data/catalogue.json', import.meta.url).href;
+
+/* Fields an entry may carry. Anything else is a typo or a misunderstanding,
+   and tools/check-catalogue.py rejects the file rather than letting a
+   misspelled key be silently ignored, which is how a curated figure would go
+   missing without anybody noticing. */
+/* `ingredientsLang` is deliberately absent: it is not data in its own right,
+   it says what language the list beside it is in, and it travels with that
+   list below. Listing it here made it a curated "field" of its own, so an
+   entry that changed nothing still announced a curated origin on the page. */
+export const DATA_FIELDS = [
+  'ingredientsText',
+  'crudeProteinPct', 'crudeFatPct', 'crudeFibrePct', 'ashPct', 'moisturePct',
+  'kcalPer100g', 'taurinePresent',
+  'name', 'brand', 'quantity', 'format', 'lifeStage', 'aafcoComplete',
+];
+
+/* Where an entry's data was read.
+
+   'manufacturer' is the maker's own published panel. 'retailer-listing' is a
+   shop or aggregator repeating it.
+
+   The distinction is not pedantry, it was forced by the first product tried.
+   For UPC 050000102068, one retailer listing gave an ingredient list
+   containing soy protein concentrate, added colour and Red 3; another gave one
+   containing soy flour and glycine and no colours at all. Both claimed to
+   describe the same tin. One of them is out of date and there is no way to
+   tell which from the outside, so that product got no entry.
+
+   Hence the rule in mergeCurated: a retailer listing may fill a gap, because a
+   list of unknown vintage is still better than no list when the page says
+   where it came from. It may never overwrite a figure the database already
+   has, because then two sources disagree and the weaker one would win in
+   silence. Only a manufacturer entry outranks upstream data. */
+export const SOURCE_KINDS = ['manufacturer', 'retailer-listing'];
+
+let cache = null;
+
+/**
+ * The catalogue, fetched once.
+ *
+ * A missing or malformed file is not an error the visitor should ever see: it
+ * means the site behaves exactly as it did before the catalogue existed, which
+ * is a working site. So this resolves to an empty catalogue rather than
+ * throwing, and the gate is what stops a bad file being deployed.
+ *
+ * @returns {Promise<object>} barcode-keyed entries, possibly empty
+ */
+export async function loadCatalogue(url = CATALOGUE_URL) {
+  if (cache) return cache;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(String(response.status));
+    const data = await response.json();
+    cache = (data && typeof data === 'object' && data.products) || {};
+  } catch {
+    cache = {};
+  }
+  return cache;
+}
+
+/** Test seam. */
+export function _resetCatalogue() {
+  cache = null;
+}
+
+function isPresent(value) {
+  return value !== undefined && value !== null && value !== '';
+}
+
+/**
+ * Merge one curated entry over a normalised product.
+ *
+ * Returns a new product carrying `curated`, which names every field this
+ * changed and where it came from. A merge that changes nothing sets no
+ * `curated` at all, so the page cannot end up announcing a provenance for data
+ * that is entirely upstream.
+ *
+ * @param {object} product a Product per section 16.5, or null if the API had none
+ * @param {object} entry a catalogue entry
+ * @returns {object} a new Product
+ */
+export function mergeCurated(product, entry) {
+  if (!entry) return product;
+  const base = product || {};
+  const fromApi = base.nutrition || {};
+  const merged = { ...base, nutrition: { ...fromApi } };
+  const changed = [];
+
+  // A retailer listing fills gaps only; a manufacturer panel outranks the
+  // database. See SOURCE_KINDS for the product that forced this.
+  const mayOverwrite = entry.sourceKind === 'manufacturer';
+
+  for (const field of DATA_FIELDS) {
+    if (!isPresent(entry[field])) continue;
+    const target = field in fromApi || NUTRITION_FIELDS.includes(field) ? merged.nutrition : merged;
+    if (isPresent(target[field]) && !mayOverwrite) continue;
+    if (isPresent(target[field]) && target[field] === entry[field]) continue;
+    target[field] = entry[field];
+    changed.push(field);
+  }
+
+  if (changed.includes('ingredientsText')) {
+    merged.ingredients = splitList(entry.ingredientsText);
+    // An entry that supplies a list without saying what language it is in is
+    // treated as unreadable rather than as English. Assuming English is how
+    // section 12.4 happened.
+    merged.ingredientsLang = entry.ingredientsLang || 'unknown';
+  }
+
+  if (!changed.length) return product;
+
+  // A transcribed guaranteed analysis is a guaranteed analysis: it was read off
+  // the panel, which is the distinction `confidence` exists to draw. It only
+  // earns that because `curated` below makes the provenance visible on the
+  // page; without the disclosure this line would be laundering.
+  if (changed.some((f) => NUTRITION_FIELDS.includes(f))) {
+    merged.nutrition.confidence = merged.nutrition.confidence === 'high' ? 'high'
+      : entry.sourceKind === 'manufacturer' ? 'high' : 'low';
+  }
+
+  const knownFigures = Object.values(merged.nutrition)
+    .filter((v) => typeof v === 'number').length;
+  merged.dataCompleteness =
+    (merged.ingredients || []).length > 0 && knownFigures >= 3 ? 'full'
+      : (merged.ingredients || []).length > 0 || knownFigures > 0 ? 'partial'
+        : 'minimal';
+
+  merged.barcode = merged.barcode || entry.barcode;
+  merged.name = merged.name || 'Unnamed product';
+  merged.curated = {
+    fields: changed,
+    source: entry.source,
+    sourceKind: entry.sourceKind,
+    checked: entry.checked,
+  };
+  return merged;
+}
+
+const NUTRITION_FIELDS = [
+  'crudeProteinPct', 'crudeFatPct', 'crudeFibrePct', 'ashPct',
+  'moisturePct', 'kcalPer100g', 'taurinePresent',
+];
+
+/* The same splitting rule opff.js applies to an upstream list. Duplicated
+   rather than imported because opff.js imports this file, and a cycle between
+   the two would be a worse problem than eight lines. */
+function splitList(text) {
+  const out = [];
+  let depth = 0;
+  let current = '';
+  for (const ch of String(text || '')) {
+    if ('(['.includes(ch)) depth += 1;
+    if (')]'.includes(ch)) depth = Math.max(0, depth - 1);
+    if ((ch === ',' || ch === ';') && depth === 0) {
+      out.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  out.push(current);
+  return out
+    .map((s) => s.replace(/\s+/g, ' ').trim().replace(/[.;]+$/, '').trim())
+    .filter(Boolean);
+}
+
+export const _internal = { splitList };

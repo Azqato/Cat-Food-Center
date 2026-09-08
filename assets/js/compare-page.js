@@ -100,7 +100,7 @@ function setSlot(index, value) {
 function scoreTile(entry) {
   if (!entry) return '<div class="cmp-cell"><p class="text-small text-ink-soft">Not selected.</p></div>';
   if (entry.error) {
-    return `<div class="cmp-cell"><p class="text-small" style="color:var(--bad)">${esc(entry.error)}</p></div>`;
+    return `<div class="cmp-cell"><p class="text-small" style="color:var(--bad-ink)">${esc(entry.error)}</p></div>`;
   }
   const { product, result } = entry;
   const [bg, ink] = result.scorable ? BAND_TOKEN[result.band] : ['var(--hairline)', 'var(--ink-soft)'];
@@ -278,5 +278,5 @@ async function run() {
 
 renderPickers();
 run().catch((err) => {
-  body.innerHTML = `<p class="text-small" style="color:var(--bad)">${esc(err.message)}</p>`;
+  body.innerHTML = `<p class="text-small" style="color:var(--bad-ink)">${esc(err.message)}</p>`;
 });

@@ -15,11 +15,15 @@ import { fetchProduct } from './opff.js';
 import { scoreProduct, loadKnowledgeBase, toDryMatter, explainIngredient } from './scoring.js';
 import { recordView } from './history.js';
 
+/* `color` is the fill: the rule above the score, where it is a block of colour
+   and nothing is read off it. `ink` is for the label and its glyph, which are
+   text. In the light theme --good and --poor are around 2.6:1 and cannot carry
+   a word; see the note in assets/cfc-tokens.css. */
 const BAND = {
-  excellent: { color: 'var(--excellent)', label: 'Excellent', glyph: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-  good: { color: 'var(--good)', label: 'Good', glyph: 'M5 13l4 4L19 7' },
-  poor: { color: 'var(--poor)', label: 'Poor', glyph: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.539-1.333-3.11 0L3.268 16c-.77 1.333.192 3 1.732 3z' },
-  bad: { color: 'var(--bad)', label: 'Bad', glyph: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z' },
+  excellent: { color: 'var(--excellent)', ink: 'var(--excellent-ink)', label: 'Excellent', glyph: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+  good: { color: 'var(--good)', ink: 'var(--good-ink)', label: 'Good', glyph: 'M5 13l4 4L19 7' },
+  poor: { color: 'var(--poor)', ink: 'var(--poor-ink)', label: 'Poor', glyph: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.539-1.333-3.11 0L3.268 16c-.77 1.333.192 3 1.732 3z' },
+  bad: { color: 'var(--bad)', ink: 'var(--bad-ink)', label: 'Bad', glyph: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z' },
 };
 
 const TIER = {
@@ -81,7 +85,7 @@ function renderHeader(product, result) {
   const scoreBlock = result.scorable
     ? `<div class="flex items-end gap-3">
          <span class="font-display text-display text-ink leading-none" style="font-variant-numeric:tabular-nums">${result.score}</span>
-         <div class="flex items-center gap-1.5 pb-1">${icon(band.glyph, band.color, 6)}<span class="font-medium text-small" style="color:${band.color}">${band.label}</span></div>
+         <div class="flex items-center gap-1.5 pb-1">${icon(band.glyph, band.ink, 6)}<span class="font-medium text-small" style="color:${band.ink}">${band.label}</span></div>
        </div>`
     : `<div class="flex items-end gap-3"><span class="font-display text-h1 text-ink-soft leading-none">Not scored</span></div>`;
 
@@ -111,7 +115,7 @@ function renderVerdict(result) {
 
   const gates = result.hardGates.length
     ? `<ul class="flex flex-col gap-2 mb-4" style="list-style:none;padding:0">${result.hardGates
-      .map((g) => `<li class="text-small" style="color:var(--bad);font-weight:500">${esc(g)}</li>`).join('')}</ul>`
+      .map((g) => `<li class="text-small" style="color:var(--bad-ink);font-weight:500">${esc(g)}</li>`).join('')}</ul>`
     : '';
 
   const reasons = result.reasons
@@ -176,7 +180,7 @@ function tierChip(info) {
   }
   // Tier 0, the beneficial entries. Named, because a row that opens with no
   // label on it looks like a warning the reader has not read yet.
-  return '<span class="ingredient-tier" style="border:1px solid var(--hairline);color:var(--good)">Beneficial</span>';
+  return '<span class="ingredient-tier" style="border:1px solid var(--hairline);color:var(--good-ink)">Beneficial</span>';
 }
 
 function explanation(info) {
@@ -289,7 +293,7 @@ function renderNutrition(product) {
   };
 
   const taurine = n.taurinePresent
-    ? `<div class="nutrition-card"><p class="nutrition-label">Taurine</p><div style="display:flex;align-items:center;gap:8px;margin-top:8px">${icon('M5 13l4 4L19 7', 'var(--excellent)', 5)}<span class="text-small font-medium" style="color:var(--excellent)">Declared</span></div></div>`
+    ? `<div class="nutrition-card"><p class="nutrition-label">Taurine</p><div style="display:flex;align-items:center;gap:8px;margin-top:8px">${icon('M5 13l4 4L19 7', 'var(--excellent)', 5)}<span class="text-small font-medium" style="color:var(--excellent-ink)">Declared</span></div></div>`
     // Not "absent": 4% of records carry a taurine figure at all, so its absence
     // says something about the database, not about the food.
     : '<div class="nutrition-card"><p class="nutrition-label">Taurine</p><p class="text-small text-ink-soft" style="margin:8px 0 0">Not recorded; this does not mean it is absent from the food</p></div>';
@@ -323,6 +327,55 @@ function renderAdequacy(product) {
       <p class="text-small text-ink" style="margin:0 0 8px">Not recorded.</p>
       <p class="text-small text-ink-soft" style="margin:0">Open Pet Food Facts does not capture the AAFCO complete-and-balanced statement, so we cannot report it here, and its absence from this page is not evidence that the food lacks one. It is the single most important sentence on a cat food label: <a href="${SITE}learn/labels/#aafco">what to look for and why</a>.</p>
     </div>`);
+}
+
+/* The curated disclosure (PRD 16.5a).
+ *
+ * It sits directly under the score rather than in the footer, and it names the
+ * fields rather than saying something vague about "additional sources",
+ * because the whole justification for keeping a local data file is that a
+ * reader can see which numbers came from where. A disclosure nobody reads in a
+ * place nobody looks would leave this project quietly presenting transcribed
+ * data as database data, which is the one thing section 16.5a forbids. */
+const FIELD_LABELS = {
+  ingredientsText: 'the ingredient list',
+  crudeProteinPct: 'crude protein',
+  crudeFatPct: 'crude fat',
+  crudeFibrePct: 'crude fibre',
+  ashPct: 'ash',
+  moisturePct: 'moisture',
+  kcalPer100g: 'energy',
+  taurinePresent: 'the taurine declaration',
+  name: 'the product name',
+  brand: 'the brand',
+  quantity: 'the pack size',
+  format: 'the wet or dry format',
+  lifeStage: 'the life stage',
+  aafcoComplete: 'the AAFCO adequacy statement',
+};
+
+function renderCurated(product) {
+  const curated = product.curated;
+  if (!curated || !curated.fields || !curated.fields.length) return '';
+
+  const names = curated.fields.map((f) => FIELD_LABELS[f] || f);
+  const list = names.length === 1 ? names[0]
+    : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  const kind = curated.sourceKind === 'manufacturer'
+    ? 'the manufacturer’s own published information'
+    : 'a retailer listing, not the manufacturer';
+  // overflow-wrap:anywhere on the paragraph below, because a source is often a
+  // long unbroken URL and a 320px viewport has nowhere to put one. It pushed
+  // the whole article to 454px wide the first time this shipped, which the
+  // accessibility gate caught and a desktop browser never would have.
+  const link = /^https?:/.test(curated.source || '')
+    ? `<a href="${esc(curated.source)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">${esc(curated.source)}</a>`
+    : esc(curated.source || 'an unrecorded source');
+
+  return `<div class="bg-surface border border-hairline rounded-card p-4 mb-6">
+    <p class="text-small text-ink" style="margin:0 0 6px"><strong>Not everything here came from Open Pet Food Facts.</strong> On this page, ${esc(list)} ${names.length === 1 ? 'was' : 'were'} recorded by Cat Food Center from ${esc(kind)}${curated.checked ? `, checked on ${esc(curated.checked)}` : ''}.</p>
+    <p class="text-micro text-ink-soft" style="margin:0;overflow-wrap:anywhere">Source: ${link}. Everything else on this page is from the Open Pet Food Facts record. The score is worked out the same way either way; see the methodology.</p>
+  </div>`;
 }
 
 function renderMeta(product) {
@@ -417,6 +470,7 @@ async function main() {
 
   paint([
     renderHeader(product, result),
+    renderCurated(product),
     renderNotice(cacheNotice, 'info'),
     renderNotice(result.warnings),
     renderVerdict(result),

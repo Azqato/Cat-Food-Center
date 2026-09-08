@@ -1,0 +1,32 @@
+{
+  "_readme": [
+    "The curated catalogue. Product data transcribed by hand where Open Pet Food Facts",
+    "has none. The design and the rules are docs/PRD.md section 16.5a; the merge is",
+    "assets/js/catalogue.js; tools/check-catalogue.py rejects an entry that breaks any",
+    "of them.",
+    "",
+    "Every entry names one retrievable source and the date it was read. sourceKind is",
+    "'manufacturer' for a maker's own published panel and 'retailer-listing' for a shop",
+    "or aggregator repeating it. A retailer listing may fill a gap in the database; only",
+    "a manufacturer panel may overwrite a figure the database already has. The reason is",
+    "in catalogue.js, and it is not theoretical: the first product attempted here had two",
+    "retailer listings giving different ingredient lists for the same tin.",
+    "",
+    "This file carries observations, never verdicts. No score, no band, no judgement.",
+    "The engine scores; this only feeds it.",
+    "",
+    "It is seeded, not complete. One entry is enough to prove the mechanism and to keep",
+    "the gates honest; the coverage target in section 14 needs many more."
+  ],
+  "products": {
+    "4008429158100": {
+      "barcode": "4008429158100",
+      "source": "https://www.zooplus.dk/shop/kat/kattesnacks/dreamies/dreamies/680933",
+      "sourceKind": "retailer-listing",
+      "checked": "2026-09-07",
+      "note": "Open Pet Food Facts holds this record's guaranteed analysis but no ingredient list, so this entry supplies the list alone. The analysis on the listing (protein 22%, fat 22%, fibre 2%, ash 8%, 416 kcal/100 g) matches the figures already on the record, which is corroboration rather than a second source: it is why this listing is trusted enough to quote for the ingredients. The list is Danish, which the additive matcher cannot read, so the page will say the ingredients were not checked. That is the correct outcome and not a defect in this entry.",
+      "ingredientsText": "Kød og animalske biprodukter (herunder 4 % kylling), korn, olier og fedtstoffer, vegetabilske biprodukter, vegetabilske proteinekstrakter, mineraler",
+      "ingredientsLang": "da"
+    }
+  }
+}

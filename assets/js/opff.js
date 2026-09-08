@@ -29,6 +29,8 @@
    client-side fetch. It is sent by tools/probe-opff.py, which is not a browser.
    ========================================================================== */
 
+import { loadCatalogue, mergeCurated } from './catalogue.js';
+
 const API = 'https://world.openpetfoodfacts.org/api/v2';
 
 /* The legacy CGI search endpoint, and the only one on this database that
@@ -326,6 +328,21 @@ export async function fetchProduct(barcode, { signal } = {}) {
     if (err.name === 'AbortError') throw err;
     // Do not cache a network failure; the next attempt may well succeed.
     return { found: false, error: 'Could not reach Open Pet Food Facts.' };
+  }
+
+  /* The curated catalogue, merged over whatever the API returned (PRD 16.5a).
+     A catalogue entry can also rescue a barcode the database does not have at
+     all, which is the case that raises coverage: `found` becomes true on the
+     strength of the local file, and `product.curated` says every field came
+     from there. A failure to load the catalogue leaves this untouched, so the
+     site behaves exactly as it did before the file existed. */
+  const catalogue = await loadCatalogue();
+  const entry = catalogue[code];
+  if (entry) {
+    const merged = mergeCurated(result.found ? result.product : null, entry);
+    if (merged && merged.curated) {
+      result = { ...result, found: true, product: merged };
+    }
   }
   cache.set(code, result);
   return result;

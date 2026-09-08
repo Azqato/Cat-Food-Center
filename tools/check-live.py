@@ -382,6 +382,34 @@ async def main():
                                    'unvisited page falls back to "%s"' % unknown_title))
             await context.close()
 
+            total += 1
+            # The curated catalogue, end to end (PRD 16.5a).
+            #
+            # 4008429158100 is the case the catalogue was seeded for: Open Pet
+            # Food Facts holds this record's guaranteed analysis and no
+            # ingredient list, so before M20 the page said it could not be
+            # scored on its ingredients, and now it has a list. The check is
+            # not that the list appears. It is that the page says where the
+            # list came from, in the same view as the data, because the whole
+            # justification for a local data file is that a reader can tell the
+            # two apart.
+            page = await browser.new_page()
+            await page.goto(base + '/product/?barcode=4008429158100')
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Loading')", timeout=25000)
+            await page.wait_for_timeout(800)
+            article = await page.evaluate("document.querySelector('main').textContent || ''")
+            disclosed = ('Not everything here came from Open Pet Food Facts' in article
+                         and 'the ingredient list' in article
+                         and 'retailer listing' in article
+                         and 'kylling' in article)
+            if not disclosed:
+                failures.append('curated disclosure')
+            print('%s %-44s %s' % ('PASS' if disclosed else 'FAIL',
+                                   'a curated page says which data is curated',
+                                   'list present and attributed=%s' % disclosed))
+            await page.close()
+
             total += 2
             # Scope, and the guide pages.
             #
