@@ -506,21 +506,27 @@ The third and fourth were live in English too. They had never fired because no E
 
 **Decided 2026-09-08.** M12 has required "top-100 SKU coverage at 80%" since the roadmap was first written, and until this section existed no document said which hundred SKUs. The criterion could not be met or missed, only asserted, which put it in the same family as the features section 24.1 catalogues.
 
-**What defines the hundred.** Two published rankings, captured together rather than either alone:
+**What defines the hundred.** Published best-seller rankings, captured into `tools/data/top-skus.json` by `python tools/capture-rankings.py`, which drives Edge at each storefront exactly as every other tool here does. A row is a name and a rank. It says a product is worth covering; it is not a catalogue entry, because no storefront publishes a UPC and the catalogue is keyed by barcode.
 
-| Source | What it contributes |
+**Which storefronts can be read, measured 2026-09-08 by pointing a real browser at each:**
+
+| Storefront | Result |
 |---|---|
-| Amazon Best Sellers, cat food and its dry and wet subcategories | Online volume, refreshed hourly by Amazon, and the broadest brand mix |
-| Chewy's cat food category, sorted by popularity | The pet-specialist channel, where premium brands sell that barely rank on Amazon |
+| Amazon Best Sellers, in cat food, dry and wet | **Loads, with real rank numbers.** 300 rows captured across the three lists |
+| Target | Loads and sorts by best selling, but its link text runs the promotional line, the price, the product name and the star rating together. Disabled rather than half-cleaned, because a half-cleaned name looks usable and is not |
+| PetSmart | Loads, and its grid carries no usable product name in any anchor. Contributes nothing until somebody writes a selector against the card structure |
+| Chewy | HTTP 403 to a real browser, with a bot-detection reference number |
+| Walmart | A "Robot or human?" interstitial |
+| Petco | HTTP 403 to every category and search URL tried |
 
-Rank is taken from each source, the two are merged, and a SKU appearing on both outranks one appearing on either. Transcription order is **by manufacturer, largest first**, which in practice means Purina before anyone else: it is the largest US brand family and, as below, the only one publishing a machine-readable panel. Coverage is measured against the merged list, not against transcription order.
+**The capture is automated, which reverses what this section said when it was written.** The original text concluded that a person had to paste the rankings by hand, on the evidence that Amazon returned 503 and Chewy 429. That evidence was about the fetching tool rather than about the storefronts: a real browser, sending a full header set and running the page's own JavaScript, is served normally by Amazon. Three of the six still refuse a browser outright, so the conclusion was half right, and the half that was wrong was the half that mattered.
 
-**The capture is manual, and that is a finding rather than a preference.** Both retailers refuse automated fetches: Amazon returns HTTP 503 to the best-seller pages and Chewy returns HTTP 429, on the first request, with no crawl in progress. Search results paraphrase the rankings but do not carry positions, and a rank invented from a paraphrase would be exactly the kind of documented-but-untrue artefact this project keeps section 24 for. So a person opens the two pages in a browser and pastes the list, and the file records the date and the URL it came from.
+**The known bias, stated rather than papered over.** Chewy was named in this section because a pet-specialist channel ranks premium brands that barely register on a supermarket-weighted list. Chewy, Petco and Walmart all refuse, and PetSmart yields nothing, so the capture is Amazon-only and the list under-represents premium and specialist food. Anything picked purely off these rankings will be supermarket food. That is why Dr. Elsey's is a milestone of its own rather than something the rankings were expected to surface.
 
-**Refresh procedure.** Quarterly, and after any month in which two or more entries fail their `checked` re-verification:
+**Refresh procedure.** Quarterly, and after any month in which two or more curated entries fail their `checked` re-verification:
 
-1. Open both ranking pages and capture the top 100 from each, with the date.
-2. Update the list file, keeping the previous capture in place rather than overwriting it: a SKU dropping off the list is information about the market, and a list with no history cannot show it.
+1. `python tools/capture-rankings.py`. Every previous capture is kept: a product falling off a best-seller list is information about the market, and a file that overwrites its history cannot show it.
+2. Re-read the storefront table above. If a source has started refusing, record that here and drop it. Never work around a refusal.
 3. Re-run the coverage measurement and record the number.
 4. Re-verify the oldest curated entries against their sources, oldest `checked` date first. A manufacturer reformulates without renaming, so an entry is a claim with an expiry date rather than a fact.
 
@@ -587,6 +593,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M20a: Status colours get an ink | 2026-09-08 | Complete |
 | M21: The catalogue grows, and a tool to fill it | 2026-09-08 | Complete |
 | M21a: The additive pill that could never wrap | 2026-09-08 | Complete |
+| M22: The product library, captured | 2026-09-08 | **Partial**, see below |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -794,11 +801,21 @@ now reports the same call the engine made, and a test pins it.
 
 *It was not caused by the catalogue, only found by it.* Every product flagging that additive has been failing reflow since the additive cards shipped. The accessibility gate audits 25 fixed page states and none of them was a product carrying that flag, which is the same gap M18, M19 and M20a each found somewhere else: the gate answers exactly the question it was pointed at.
 
+**M22: the product library, captured.** *2026-09-08. Partial.* `tools/capture-rankings.py` and 300 ranked rows in `tools/data/top-skus.json`, which is the first time this project has had a written answer to "which products should the site cover?".
+
+*The part that shipped* is the list and the tool that refreshes it. *The part that did not* is the coverage number, because a captured row is a product name and the catalogue is keyed by barcode. Nothing published by any storefront closes that gap, so M12's criterion is defined and still unmeasured. That is an improvement on undefined, and it is not the finish line.
+
+*A conclusion from the previous checkpoint was wrong and is corrected here.* Section 12.7 was written saying the capture had to be done by hand, on the evidence that Amazon returned HTTP 503 and Chewy 429. Those were facts about the fetching tool, not about the storefronts: driven through Edge, the way every other tool in this repository drives a browser, Amazon serves its best-seller pages normally. Three storefronts do refuse a real browser, so the original reading was half right, and the half that was wrong was the half that decided the design. The lesson is the same one section 24 keeps collecting: an instrument's failure was read as a fact about the world.
+
+*What the list is biased toward, said plainly.* Chewy, Petco and Walmart refuse a browser outright, and PetSmart's grid yields no usable product name, so the capture is Amazon-only. A pet-specialist channel is where premium brands rank, and without one the list is supermarket food. Anything chosen purely from these rankings will inherit that, which is the argument for M23 being its own milestone rather than a row in a ranking.
+
+*Target was captured and then dropped.* Its link text runs the promotional line, the price, the product name and the star rating into one string: "Buy 14 for $12 Purina Friskies cat foodFriskies Purina Friskies Pate with Fish ... 1.1oz4.74.66 out". A partly cleaned name looks usable and is not, and the name is the only thing a person can match against a manufacturer's label deck. Twenty-four rows were deleted rather than shipped.
+
 ### Next
 
 **M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open**, and it is the one the API cannot deliver on its own: of 1000 products sampled, 338 carry an ingredient list. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built it, M21 put four products in it, and what M12 now waits on is volume. Two things have to happen before the number can even be reported: the hundred SKUs have to be captured from the two rankings in section 12.7, which needs a person and a browser, and the coverage measurement has to be written. Until then the criterion is defined but unmeasured, which is still an improvement on being undefined.
 
-**M22: the top-100 list and a coverage measurement.** *Next.* Capture the Amazon and Chewy rankings per section 12.7, commit the merged list with its dates and sources, and write the tool that reports what fraction of it this site can score. That number is M12's only remaining criterion and nothing currently computes it.
+**M22, finishing it: a coverage number.** *Open.* The ranked list exists and nothing measures against it. The blocker is that a captured row is a product name while the catalogue is keyed by barcode, so this waits on the barcode problem in section 12.8. Until then M12's only remaining criterion is defined and unmeasured, which is still better than the undefined it was on 2026-09-07.
 
 **M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the Dr. Elsey's range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and a catalogue drawn only from best-seller lists would be a catalogue of supermarket food. **Measured 2026-09-08, and it is blocked on something other than the panel.** Dr. Elsey’s publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC, and Open Pet Food Facts holds exactly one Dr. Elsey’s record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription, and section 12.8 records this as a separate class of blocker.
 
@@ -955,6 +972,7 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 | `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 198 assertions. Exits non-zero on failure, so it works as a gate |
 | `python tools/check-live.py` | 23 end-to-end checks against the live API, two of them added in M18 to ask whether the search searches, one in M18b to ask whether the caveat travels with the score, and one in M20 to ask whether a curated field says so on the page. Every page-load check asserts a string that only the right page contains. Needs network. Not deterministic, so it is a smoke check rather than a gate |
 | `python tools/check-contrast.py` | Verify 52 foreground and background pairs against WCAG AA in both palettes |
+| `python tools/capture-rankings.py [source]` | Capture retailer best-seller rankings into `tools/data/top-skus.json`, appending rather than replacing. Drives Edge. Needs network |
 | `python tools/label-deck.py <pdf-url> [barcode]` | Read a manufacturer label deck and print a proposed catalogue entry for review. Needs PyMuPDF (`pip install pymupdf`), the only library dependency any tool here has. A maintenance aid; nothing the site loads uses it |
 | `python tools/check-catalogue.py` | Validate `assets/data/catalogue.json`: schema, source and date on every entry, plausibility bands, no unknown keys. Offline, instant, and a gate |
 | `python tools/check-a11y.py` | WCAG 2.1 AA audit of all 25 page states in both themes, plus reflow at 320px and the skip link. 100 audits. Exits non-zero, so it works as a gate |
@@ -1226,6 +1244,8 @@ Cat-Food-Center/
 │   ├── check-contrast.py    # WCAG AA audit of both palettes
 │   ├── check-catalogue.py   # Schema, sourcing and plausibility gate for catalogue.json
    ├── label-deck.py        # Manufacturer PDF panel to a proposed catalogue entry
+   ├── capture-rankings.py  # Retailer best-seller rankings, appended with their dates
+   ├── data/top-skus.json   # What the library should cover. Names and ranks, never barcodes
 │   ├── probe-opff.py        # Regenerates the numbers in section 12
 │   ├── site/                # Application page generator: chrome.py, build.py, content/
 │   └── learn/               # Guide generator: shell.py, bits.py, c_*.py
@@ -1861,7 +1881,7 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | "Ingredient list, each item expandable for an explanation" | PRD §7, DESIGN §10 | **The chevron was never rendered.** Both documents said it was built and inert; the string never appears in any commit's code. The claim was wrong twice over | Built in M15c, for the rows the knowledge base can actually speak to. The documentation error is left here because a document that said "inert" for three milestones is the more useful record |
 | "Submit queue processing, 50 or fewer waiting, internal queue dashboard" | METRICS | No queue exists, so the metric is unmeasurable | Deleted. It measured a feature that was cancelled |
 | Score reveal count-up, ingredient expand transition, route transition fades, skeleton loaders, tier glyphs, Open Graph image | DESIGN §8, §9, §10, §12, all marked "planned" | None built | Kept, still marked as not built, in DESIGN.md |
-| The top-100 SKU list itself, and any coverage number derived from it | PRD §12.7, §13 (M12) | **The list does not exist as a file.** §12.7 defines what goes in it and how it is refreshed; nothing has been captured yet, because both ranking sources refuse automated fetches and a person has to paste them | Deliberate. The section was written when the decision was taken, and the capture is M22. This row is deleted when the file exists and the coverage tool reports a number |
+| A coverage number: what share of the top-100 list this site can actually score | PRD §12.7, §13 (M12) | **Nothing computes it.** The ranked list now exists, 300 rows in `tools/data/top-skus.json`, but its rows carry names and no barcodes, and coverage cannot be measured until something resolves one per SKU | Deliberate, and narrower than this row was on 2026-09-08, when the list did not exist either. Barcode resolution is §12.8 and the measurement is M22. Deleted when the tool reports a number |
 | Scan button "disabled with tooltip in MVP", `role="tooltip"` on it | DESIGN §7, §10 | The scanner shipped in M8. There is no disabled button and no tooltip | Trusted the code. Removed |
 | "Search by brand or product name", and every count and ranking claim that followed from it | PRD §6 and §13, DESIGN §5, PATCHNOTES M6 onward | **Text search never searched.** `/api/v2/search` ignored `search_terms` and returned the whole cat-food category for every query, including one that cannot match anything. The feature existed, was tested, and was documented; what it did was unrelated to what was typed | Fixed in M18 by moving text queries to `/cgi/search.pl`. The M15a entry that misread this as a ranking defect is left standing in §13 and in PATCHNOTES, with the correction recorded here |
 

@@ -21,6 +21,47 @@ punctuation rather than content.
 
 ---
 
+## [0.23.0] - 2026-09-08
+
+**The product library, captured (M22, partial).**
+
+Added
+* `tools/capture-rankings.py` and `tools/data/top-skus.json`: 300 ranked rows from Amazon's cat
+  food, dry cat food and wet cat food best-seller lists. The first written answer this project
+  has had to "which products should the site cover?". Every capture is dated and appended, never
+  replaced, because a product falling off a best-seller list is information about the market.
+
+Changed
+* **Section 12.7 said the capture had to be done by hand. It was wrong, and the correction is
+  the interesting part.** That conclusion rested on Amazon returning HTTP 503 and Chewy 429,
+  which were facts about the fetching tool rather than about the storefronts. Driven through
+  Edge, the way every other tool here drives a browser, Amazon serves its best-seller pages
+  normally. An instrument's failure had been read as a fact about the world, which is the same
+  error section 24 has been collecting since M18.
+* Storefront access, measured by pointing a real browser at each: Amazon loads with real rank
+  numbers. Chewy returns 403 with a bot-detection reference, Walmart serves a "Robot or human?"
+  interstitial, and Petco returns 403 to every URL tried. PetSmart loads but carries no usable
+  product name in any anchor.
+* Section 24.1's row is narrower: the list exists now, and what is still missing is the coverage
+  number.
+
+Removed
+* Twenty-four Target rows, captured and then deleted. Target's link text runs the promotional
+  line, the price, the product name and the star rating into one string. A partly cleaned name
+  looks usable and is not, and the name is the only thing a person can match against a
+  manufacturer's label deck.
+
+Known and stated
+* **The list is Amazon-only, so it is supermarket food.** Chewy was named in section 12.7
+  precisely because a pet-specialist channel ranks premium brands that barely register
+  elsewhere, and every specialist source refuses. Anything chosen purely from these rankings
+  inherits that bias, which is why Dr. Elsey's is a milestone rather than a ranking row.
+* **A captured row cannot become a catalogue entry.** Rows carry names; the catalogue is keyed
+  by barcode; no storefront publishes a UPC. Amazon hides it, and Target's pages do not show it
+  either. M12's coverage criterion is defined and still unmeasured.
+
+---
+
 ## [0.22.0] - 2026-09-08
 
 **The catalogue grows (M21). An additive pill that could never wrap (M21a).**
