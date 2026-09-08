@@ -541,6 +541,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M18b: Confidence travels with the score | 2026-09-07 | Complete |
 | M19: The root policy, applied | 2026-09 | Complete |
 | M19a: Offline support reaches the guide | 2026-09 | Complete |
+| M20: The curated catalogue mechanism | 2026-09 | **Designed, not built** |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -717,6 +718,8 @@ now reports the same call the engine made, and a test pins it.
 `tools/check-live.py` is 22 checks. The scope check now registers from `/learn/nutrition/`, the deepest page on the site, and a new check reads a guide page, goes offline, and requires that page back and a different one to fall through to the offline page.
 
 ### Next
+
+**M20: the curated catalogue mechanism.** *Designed 2026-09-07, in section 16.5a. Not built yet.* One file at `assets/data/catalogue.json`, merged over the normalised API record field by field, with every curated field named on the page that shows it. The governing rule is that a curated figure is never presented as an Open Pet Food Facts figure and neither is silently preferred: a local file that quietly overwrote upstream data would break this project's one real claim in the least visible way available. It ships with `tools/check-catalogue.py` as a seventh gate and a small seed, not a hundred products.
 
 **M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open**, and it is the one the API cannot deliver on its own: of 1000 products sampled, 338 carry an ingredient list. Section 12.5 item 7 says a curated local catalogue is the only route, which makes open question 2 the decision M12 waits on.
 
@@ -1200,6 +1203,43 @@ interface Brand {                 // From the facet, after merging case variants
   count: number;                  // Summed across variants
 }
 ```
+
+### 16.5a The curated catalogue
+
+**Adopted 2026-09-07, as the route to the M12 coverage target. The mechanism is being built in M20; this section describes it before it exists, and section 24 is where the gap is recorded until it does.**
+
+Section 12.5 item 7 is the reason: the API alone will not carry a top-100 SKU catalogue. Of 1000 products sampled, 338 have an ingredient list and 246 a protein figure. Waiting for a crowd-sourced database to fill in is not a plan with a date on it.
+
+**The rule that governs the whole design: a curated figure is never presented as an Open Pet Food Facts figure, and neither is ever silently preferred over the other.** This project's entire claim is that a number can be traced back to where it came from. A local file that quietly overwrites upstream data would break that claim in the least visible way possible, which is the same failure as the English-only matcher in section 12.4: confidently wrong, with nothing about it looking wrong.
+
+#### Shape
+
+One file, `assets/data/catalogue.json`, fetched once and cached, alongside `additives.json`. Entries are keyed by barcode and carry the *Product* field names from section 16.5, not the API's raw keys, because a curated record is not an Open Pet Food Facts record and should not have to imitate one.
+
+Every entry carries, and the validator rejects it without:
+
+| Field | Meaning |
+|---|---|
+| `barcode` | The key. Must match the object key and be 6 to 14 digits |
+| `source` | Where the data was read. A URL, or a plain description such as "packaging photograph, 500g tin" |
+| `checked` | ISO date the entry was last verified against that source |
+| At least one data field | An entry that overrides nothing has no reason to exist |
+
+#### Merge
+
+`fetchProduct` merges the curated entry over the normalised API product, field by field, and records what it did:
+
+1. **A curated field wins**, because it was read off a package by a person, and the API field it replaces was typed in by a stranger with no obligation to be right.
+2. **The product gains `curated: { fields, source, checked }`**, naming every field that came from the catalogue. The product page states it in words, next to the data, not in a footnote.
+3. **A barcode in the catalogue but not in the API still resolves.** This is the case that raises coverage, and it means the "not in the database" page is reached only when neither source has the product.
+4. **Curated guaranteed-analysis figures carry `source: 'guaranteed-analysis'`**, so they can reach high confidence. That is the point of transcribing them, and it is only sound because item 2 makes the provenance visible.
+5. **The plausibility gate in section 12.5 item 2 applies to curated figures too.** A transcription error is as wrong as a data-entry error, and being ours does not make it truer.
+
+#### What keeps it honest
+
+- `tools/check-catalogue.py`, a gate: schema, the required fields above, plausibility bands, barcode format, no unknown keys, and no entry whose `checked` date is in the future.
+- The disclosure on the product page is asserted by `tools/check-live.py` rather than left to review.
+- **The catalogue is not a place to put a score.** It carries observations (ingredients, analysis, adequacy statements), never verdicts. The engine scores; the catalogue only feeds it, and section 6 stays the only description of how a number is reached.
 
 ### 16.6 API design
 
@@ -1718,6 +1758,7 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | "Ingredient list, each item expandable for an explanation" | PRD §7, DESIGN §10 | **The chevron was never rendered.** Both documents said it was built and inert; the string never appears in any commit's code. The claim was wrong twice over | Built in M15c, for the rows the knowledge base can actually speak to. The documentation error is left here because a document that said "inert" for three milestones is the more useful record |
 | "Submit queue processing, 50 or fewer waiting, internal queue dashboard" | METRICS | No queue exists, so the metric is unmeasurable | Deleted. It measured a feature that was cancelled |
 | Score reveal count-up, ingredient expand transition, route transition fades, skeleton loaders, tier glyphs, Open Graph image | DESIGN §8, §9, §10, §12, all marked "planned" | None built | Kept, still marked as not built, in DESIGN.md |
+| The curated catalogue: `assets/data/catalogue.json`, the merge, `product.curated`, the disclosure on the product page, `tools/check-catalogue.py` | PRD §16.5a, §16.6, §13 (M20) | **None of it exists yet.** §16.5a was written on 2026-09-07 as a design, before any of it was built | Deliberate, and the section says so in its first line. It is here because §24 is where this project keeps documented-but-unbuilt features, and a design document is exactly the kind of thing that quietly becomes a description of reality. This row is deleted when M20 ships, not before |
 | Scan button "disabled with tooltip in MVP", `role="tooltip"` on it | DESIGN §7, §10 | The scanner shipped in M8. There is no disabled button and no tooltip | Trusted the code. Removed |
 | "Search by brand or product name", and every count and ranking claim that followed from it | PRD §6 and §13, DESIGN §5, PATCHNOTES M6 onward | **Text search never searched.** `/api/v2/search` ignored `search_terms` and returned the whole cat-food category for every query, including one that cannot match anything. The feature existed, was tested, and was documented; what it did was unrelated to what was typed | Fixed in M18 by moving text queries to `/cgi/search.pl`. The M15a entry that misread this as a ranking defect is left standing in §13 and in PATCHNOTES, with the correction recorded here |
 
@@ -1826,7 +1867,7 @@ The working tree is clean and `main` is deployed. M14 and all four parts of M15 
 Numbered so they can be answered by reference. Answering one folds the answer into the relevant section and marks it answered here.
 
 1. ~~**Should a low-confidence score be visually distinct from a high-confidence one, or withheld?**~~ **Answered in M18b:** shown, and never without its confidence. The defect was not that the caveat was too quiet, it was that the caveat did not travel: the product page and the compare page both state confidence, and the search and brand cards print a bare number. Every surface that prints a score will print its confidence, always rather than only when it is poor, since a marker that appears selectively makes its absence into a claim. Withholding was rejected because the engine already refuses outright where it knows too little, and a second quieter refusal would cost usability without buying honesty. A card that had no confidence stored before M18b says so rather than guessing.
-2. **Is a curated local catalogue in scope for the MVP?** Section 12.5 says it is the only route to the M12 coverage target, which makes M12 unreachable without it.
+2. ~~**Is a curated local catalogue in scope for the MVP?**~~ **Answered 2026-09-07: yes, and it is the mechanism that gets built first rather than the hundred products.** Section 12.5 item 7 made this the only route to the M12 coverage target, and the measurement in 12.4 confirmed the shortage is structural rather than temporary. What was decided is the shape of it: build the schema, the merge rules, the per-field provenance and the gate, seed it with a small number of carefully transcribed products, and grow it. A hundred hand-entered records before any mechanism exists to check them would publish wrong scores under this site's name, and the interesting case, a curated figure and an API figure disagreeing, would be discovered at scale rather than designed. Section 16.5a is the design. M20 builds it.
 3. ~~**How aggressively should feeding-trial substantiation outweigh formulation?**~~ **Answered 2026-09-07:** deferred to M12, and deliberately not answered before it. The distinction is real and matters, and Open Pet Food Facts carries no feeding-trial field at all; `aafcoComplete` is absent from most records, which is why section 11 emits a warning telling the reader to check the packaging. Weighting it now would score how well a product was catalogued rather than the food, and would move a number on the strength of a database gap. If a curated local catalogue is built, substantiation is one of the fields it should carry, and this question is answered then with data behind it. Until then the engine saying nothing is the correct behaviour rather than a missing feature.
 4. ~~**Should the scorable-only filter page-hunt?**~~ **Answered in M18:** it scans, which is the bounded half of hunting. Five pages are fetched in parallel, deduped and filtered once; the page then states what it scanned rather than implying it saw everything. An unbounded hunt was rejected for the reason the question raised: the friendlier version is the one whose number cannot be stated honestly.
 5. ~~**What fills the guide shell's third column on a page with no headings?**~~ **Answered in M14:** nothing. The page collapses to one column, and `tools/site/build.py` decides per page by reading the fragment for headings rather than from a flag. See docs/DESIGN.md section 6.4.

@@ -21,6 +21,32 @@ punctuation rather than content.
 
 ---
 
+## [0.20.4] - 2026-09-07
+
+**The curated catalogue, designed (M20). Open question 2 answered.**
+
+Added
+* PRD section 16.5a: the design for `assets/data/catalogue.json`, the file that carries product
+  data transcribed by hand where Open Pet Food Facts has none. The schema, the merge rules, the
+  required source and checked-date on every entry, and the gate that enforces them.
+* The governing rule, which shaped everything else: a curated figure is never presented as an
+  Open Pet Food Facts figure, and neither is silently preferred over the other. A local file
+  that quietly overwrote upstream data would break this project's one real claim, that a number
+  can be traced to where it came from, in the least visible way available.
+* PRD section 24.1 carries a row saying none of it is built. Section 16.5a says the same in its
+  first line. A design document is exactly the kind of thing that quietly becomes a description
+  of reality, and this project has a history of that, which is what section 24 exists for.
+
+Changed
+* Open question 2, whether a curated catalogue is in scope for the MVP, is answered: yes, and
+  the mechanism gets built before the hundred products. A hundred hand-entered records with
+  nothing to check them would publish wrong scores under this site's name, and the interesting
+  case, a curated figure disagreeing with an API figure, would be met at scale rather than
+  designed for.
+* M20 is on the roadmap as designed and not built. M12 waits on it.
+
+---
+
 ## [0.20.3] - 2026-09-07
 
 **No analytics, decided rather than pending.**
