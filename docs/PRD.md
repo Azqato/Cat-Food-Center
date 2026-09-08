@@ -594,6 +594,9 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M21: The catalogue grows, and a tool to fill it | 2026-09-08 | Complete |
 | M21a: The additive pill that could never wrap | 2026-09-08 | Complete |
 | M22: The product library, captured | 2026-09-08 | **Partial**, see below |
+| M25: Curated products become discoverable | | **Next.** Found 2026-09-08, see 16.5b |
+| M23: Dr. Elsey’s | | Queued, blocked on barcodes |
+| M24: Premix groups | | Queued, see 16.11 |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -813,15 +816,31 @@ now reports the same call the engine made, and a test pins it.
 
 ### Next
 
-**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open**, and it is the one the API cannot deliver on its own: of 1000 products sampled, 338 carry an ingredient list. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built it, M21 put four products in it, and what M12 now waits on is volume. Two things have to happen before the number can even be reported: the hundred SKUs have to be captured from the two rankings in section 12.7, which needs a person and a browser, and the coverage measurement has to be written. Until then the criterion is defined but unmeasured, which is still an improvement on being undefined.
+**The queue, in order.** Milestone numbers are allocation order, not priority order, and they are not renumbered when the order changes: PATCHNOTES entries already name them and section 23.6 says those are never rewritten. The order is stated here instead, and this table is what "next" means.
 
-**M22, finishing it: a coverage number.** *Open.* The ranked list exists and nothing measures against it. The blocker is that a captured row is a product name while the catalogue is keyed by barcode, so this waits on the barcode problem in section 12.8. Until then M12's only remaining criterion is defined and unmeasured, which is still better than the undefined it was on 2026-09-07.
+| Order | Milestone | Why it sits here |
+|---|---|---|
+| 1 | **M25: curated products become discoverable** | Everything downstream is worth less until it is done. A prerequisite for M22, not a refinement of it |
+| 2 | **M22, finishing it: a coverage number** | M12's only open criterion. Needs M25 first, and needs a barcode per SKU |
+| 3 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
+| 4 | **M24: premix groups** | A real defect, but it degrades a page rather than hiding a product. It moves scores, so it wants a quiet slot |
+| - | **M12: public beta** | Not work of its own. It is the gate the three above roll up to |
 
-**M25: curated products become discoverable.** *Open, and it outranks the rest of this list.* A curated-only product resolves on its product page and cannot be found by searching or by browsing brands, because the catalogue is read inside `fetchProduct` and nowhere else. Section 16.5b has the detail. It is a prerequisite for M22's coverage number rather than a refinement of it: a hundred entries nobody can reach would move "the site can score this product" to 100% and leave "a visitor can find this product" exactly where it started.
+**1. M25: curated products become discoverable.** *Next.* A curated-only product resolves on its product page and cannot be found by searching or by browsing brands, because the catalogue is read inside `fetchProduct` and nowhere else. Section 16.5b has the detail and the table of which routes work.
 
-**M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the Dr. Elsey's range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and a catalogue drawn only from best-seller lists would be a catalogue of supermarket food. **Measured 2026-09-08, and it is blocked on something other than the panel.** Dr. Elsey’s publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC, and Open Pet Food Facts holds exactly one Dr. Elsey’s record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription, and section 12.8 records this as a separate class of blocker.
+*Why it leads the queue.* A hundred curated entries nobody can reach would take "the site can score this product" to 100% and leave "a visitor can find this product" exactly where it started. M12's criterion means the second. Transcribing first would be building inventory for a shop with no door.
 
-**M24: premix groups.** *Deferred from M21, recorded in 16.11.* A bracketed premix arrives as one ingredient and wears the flag its worst component earns. Its own milestone because the fix moves ingredient counts, and ingredient counts move scores.
+*What it involves:* a local name match over the catalogue, merged into the search result list with its provenance shown the way the product page already shows it, and catalogue brands added to the brand index. The merge rules in 16.5a do not change; what changes is how many places consult them.
+
+**2. M22, finishing it: a coverage number.** *After M25.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
+
+**3. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
+
+*Blocked on something other than the panel.* Dr. Elsey's publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC; Amazon and Target do not show one either; and Open Pet Food Facts holds exactly one Dr. Elsey's record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription. It shares that blocker with M22, which is the argument for taking them together.
+
+**4. M24: premix groups.** *Deferred from M21, recorded in 16.11.* A bracketed premix arrives as one ingredient and wears the flag its worst component earns, so a twelve-item vitamin premix reads as high risk because it contains menadione. The flag is true and its placement is not. Its own milestone because the fix moves ingredient counts, and ingredient counts move scores, so the tests are written before the change rather than after.
+
+**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open.** The API cannot deliver it: of 1000 products sampled, 338 carry an ingredient list, and the whole United States cat-food category is 86 records. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list of what to cover, and what remains is M25 to make entries reachable, a barcode source, and volume.
 
 *The fourth criterion, "analytics instrumented", was removed on 2026-09-07 rather than met.* It had been written before section 12 was measured and it contradicted section 14, which gives "no analytics means no visitor data to protect" as the reason for having none. A milestone cannot require closing a gap the same document defends. Section 14 now says which targets are therefore never going to be reported, instead of describing them as pending.
 
@@ -1352,7 +1371,7 @@ Every entry carries, and the validator rejects it without:
 1. **A curated field fills a gap.** An empty field is filled by any entry, because a list of unknown vintage with its source named beside it is better than no list.
 2. **Only a manufacturer entry overwrites a figure the database already has.** A retailer listing never does. Where two sources disagree, the weaker one must not win in silence, and the rule above is what stops it.
 3. **The product gains `curated: { fields, source, sourceKind, checked }`**, naming every field that came from the catalogue. The product page states it in words, next to the data, not in a footnote. A merge that changes nothing sets no `curated` at all, so the page cannot announce a provenance for data that is entirely upstream.
-4. **A barcode in the catalogue but not in the API still resolves.** This is the case that raises coverage, and it means the "not in the database" page is reached only when neither source has the product. **It resolves, and nothing leads anybody to it.** The catalogue is read in one place, `fetchProduct`, so a curated-only product can be reached by scanning its barcode or by following a direct link, and cannot be found by searching or by browsing brands: both of those ask the API and the API has never heard of it. Recorded 2026-09-08, on being asked why a brand was missing from the brand index. See 16.5c.
+4. **A barcode in the catalogue but not in the API still resolves.** This is the case that raises coverage, and it means the "not in the database" page is reached only when neither source has the product. **It resolves, and nothing leads anybody to it.** The catalogue is read in one place, `fetchProduct`, so a curated-only product can be reached by scanning its barcode or by following a direct link, and cannot be found by searching or by browsing brands: both of those ask the API and the API has never heard of it. Recorded 2026-09-08, on being asked why a brand was missing from the brand index. See 16.5b.
 5. **A transcribed manufacturer panel reaches high confidence; a shop listing does not.** That is the point of transcribing a panel, and it is only sound because item 3 makes the provenance visible. Without the disclosure this rule would be laundering.
 6. **The plausibility gate in section 12.5 item 2 applies to curated figures too.** A transcription error is as wrong as a data-entry error, and being ours does not make it truer.
 
