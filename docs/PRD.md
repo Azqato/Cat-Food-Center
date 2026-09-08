@@ -237,7 +237,7 @@ A product-level definition of working. Section 14 carries the measurable targets
 - Where the engine cannot score, the page says what is missing, and no such product is ever presented with a number.
 - No product with a Tier 3 additive can display an Excellent or Good band, regardless of its nutrition.
 - The additive knowledge base and the Cat Care Guide agree on every tier. A disagreement between them is a bug.
-- The site is usable with no network for any product already viewed, and every cached answer is labelled as a saved copy.
+- The site is usable with no network for any page already visited, product or guide, and every cached answer is labelled as a saved copy.
 - Nothing about the product's presentation depends on a payment, a partnership, or a brand relationship, because none exist.
 
 ---
@@ -520,6 +520,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M18a: Crawl policy for the test page | 2026-09-07 | Complete |
 | M18b: Confidence travels with the score | 2026-09-07 | Complete |
 | M19: The root policy, applied | 2026-09 | Complete |
+| M19a: Offline support reaches the guide | 2026-09 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -682,6 +683,18 @@ now reports the same call the engine made, and a test pins it.
 *What it is not:* an SEO change. URL depth is not a ranking factor and the current filenames are already readable and keyword-bearing. The gain is a root that states its own rules and a structure that survives the guide growing past twenty pages.
 
 *Two decisions taken before the work started, 2026-09-07.* **The old addresses get no tombstones and will 404.** Section 23.3 requires one per retired address; nineteen of them at the root would have left the root holding twenty HTML files instead of twenty-one, and a tombstone protects a link somebody already holds, of which none is known. That is a departure from a written rule, so it is bounded by the pre-beta exception now in 23.3, which expires at M12 and is not renewable, and the retired addresses are listed in 24.6. **The move ships as a single push**, not as checkpoints, because every intermediate state is a broken site and `main` deploys on push; the rule this established is in section 15.5.
+
+**M19a: offline support reaches the guide.** *2026-09-07.* The eleven guide pages now register the service worker, and a guide page that has been read stays readable with no connection.
+
+*What was wrong:* the two generators had drifted. `tools/site/chrome.py` emitted the `pwa.js` script tag and `tools/learn/shell.py` never had, so a visitor whose first page was a guide got no worker and no offline banner until they happened to open an application page. Nobody chose that. It was found while writing M19's service worker scope check, which had to register from `/search/` because no guide page would, and it was recorded in section 24.6 rather than fixed inside a milestone about where files live.
+
+*Why the registration alone was only half of it:* navigations are network-first and wrote nothing to the cache, so even with a worker running, a guide someone had just read was gone the moment the signal went. Successful navigations are now kept, but only where the address carries no query string. That condition is the design, not a detail: every product is the same document under a different query, so caching those would add one byte-identical entry per product viewed and grow the shell cache without bound, which is why nothing was cached here in the first place. Guide pages have no query, so they are covered, and so is any page added later.
+
+*Why not precache all eleven instead:* about 290 kB on install, on a connection this project assumes is bad, for pages the visitor may never open. Keeping the ones actually read costs nothing until they are read, and it is the same promise the product pages already make.
+
+*`sw.js` was not bumped past `v4`.* The version lever retires content that has become wrong, and nothing cached under `v4` is wrong. Pulling it as a changelog entry would re-download the shell on every device for nothing.
+
+`tools/check-live.py` is 22 checks. The scope check now registers from `/learn/nutrition/`, the deepest page on the site, and a new check reads a guide page, goes offline, and requires that page back and a different one to fall through to the offline page.
 
 ### Next
 
@@ -1732,7 +1745,7 @@ Not errors, and not discrepancies of the kind the rest of section 24 records. Ea
 | Policy | Where | Status | Why | Bound |
 |---|---|---|---|---|
 | Section 23.3, "a retired public address gets a tombstone" | **M19.** Nineteen page addresses retired with no tombstone, returning 404: `/search.html`, `/brands.html`, `/product.html`, `/scan.html`, `/submit.html`, `/compare.html`, `/methodology.html`, `/offline.html`, `/learn.html` and the ten `/learn-*.html` guide pages | **Done 2026-09-07.** M19 shipped; none of the nineteen resolves any more | A tombstone protects a link somebody already holds, and there is no such holder: the sitemap is a day old, there is no analytics, and no inbound link is known. Nineteen stub files at the root would also leave the root holding twenty HTML files instead of twenty-one, which is the milestone achieving nothing | The pre-beta exception in section 23.3, which expires at M12 and is not renewable. After public beta this cannot happen again |
-| Section 9, "offline support is site-wide" | **The eleven guide pages do not load `assets/js/pwa.js`.** Arriving on one registers no service worker and shows no offline banner; reaching any application page afterwards does both, and the worker then controls the guide pages too | **Long-standing.** Found while writing the M19 scope check, which had to register from `/search/` because no guide page would | Nobody decided this; the guide generator simply never picked up the script tag the application generator has. It is recorded rather than fixed inside M19 because M19's subject is where files live, and adding a worker registration to eleven pages is a behaviour change wearing a restructure's clothes | Until it is fixed. It is a one-line addition to `tools/learn/shell.py`, and it needs its own gate run rather than a ride on somebody else's |
+| Section 9, "offline support is site-wide" | **The eleven guide pages did not load `assets/js/pwa.js`**, so arriving on one registered no service worker and showed no offline banner, and no guide page was ever written to a cache | **Closed 2026-09-07 by M19a**, the same day it was recorded. It is left in this table rather than deleted, because a departure that vanishes once fixed teaches nobody anything | Nobody decided it; the guide generator simply never picked up the script tag the application generator has. It was recorded rather than fixed inside M19 because M19's subject was where files live | Closed. The registration is in `tools/learn/shell.py`, and a live check now registers from `/learn/nutrition/`, the deepest page on the site, so the gap cannot reopen unnoticed |
 
 ---
 
@@ -1861,7 +1874,7 @@ If you added, renamed or removed any file the site loads, update `SHELL_ASSETS` 
 1. **Update `docs/PATCHNOTES.md`** with a versioned entry: Added, Changed, Fixed, Removed, each line one change in past tense.
 2. **Update this document** where the change alters behaviour, architecture, the public surface, or a stated rule. Section 13 for direction, 16 for architecture, 23.2 for a new address, 23.5 for a removal.
 3. **Update `docs/DESIGN.md`** for anything visual.
-4. **Update `sitemap.xml`** if you added or removed a public page.
+4. **Rerun `python tools/site/build.py`** if you added or removed a public page. It regenerates `sitemap.xml` from the same page lists that write the pages, so the file is never edited by hand; it had gone stale twice that way before M19.
 5. **Commit** in the house style: a `feat:`/`fix:`/`docs:` prefix, an imperative subject, and a body explaining why rather than what.
 6. **Push to `main`**, which deploys.
 7. **Confirm the deploy landed** by fetching the deployed file and comparing it to the local one. That is a comparison, not a test, and it is the one thing that legitimately happens against production.

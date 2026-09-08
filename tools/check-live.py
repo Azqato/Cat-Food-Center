@@ -382,31 +382,28 @@ async def main():
                                    'unvisited page falls back to "%s"' % unknown_title))
             await context.close()
 
-            total += 1
-            # Scope.
+            total += 2
+            # Scope, and the guide pages.
             #
             # A worker controls its own directory and everything below it, and
             # nothing above. Registering the wrong path is therefore not an
             # error: it succeeds, and offline support silently narrows to one
             # subtree with nothing logged anywhere. Before M19 every page sat at
             # the root, so any relative path was the root and this could not go
-            # wrong; nothing checked it because nothing could. Now /search/ is a
-            # directory, './sw.js' from there would mean /search/sw.js, and the
-            # difference between that and working correctly is invisible until
-            # somebody is offline.
+            # wrong; nothing checked it because nothing could.
             #
-            # Registration happens from /search/ rather than from the deepest
-            # page on the site because the guide pages do not load pwa.js at
-            # all; see the note in that file. /search/ is the deepest page that
-            # registers, and one level is all it takes for a relative path to be
-            # wrong.
+            # It registers from /learn/nutrition/, the deepest page on the site,
+            # which is also the page that would register /learn/nutrition/sw.js
+            # if pwa.js ever went back to guessing. In M19 this check had to
+            # settle for /search/, because no guide page loaded pwa.js at all.
+            # M19a fixed that, and this is the check that would have caught it.
             context = await browser.new_context()
             page = await context.new_page()
-            await page.goto(base + '/search/')
+            await page.goto(base + '/learn/nutrition/')
             scope = await page.evaluate(
                 "navigator.serviceWorker.ready.then((r) => r.scope)")
-            # Registered from a subdirectory, controlling the root: the half
-            # that a scope-narrowed worker would fail.
+            # Registered from two levels down, controlling the root: the half a
+            # scope-narrowed worker would fail.
             await page.goto(base + '/')
             await page.wait_for_timeout(600)
             controlled = await page.evaluate("!!navigator.serviceWorker.controller")
@@ -415,8 +412,29 @@ async def main():
                 failures.append('service worker scope')
             print('%s %-44s %s' % ('PASS' if scope_ok else 'FAIL',
                                    'service worker scope is the whole site',
-                                   'registered from /search/ with scope %s, home controlled=%s'
-                                   % (scope, controlled)))
+                                   'registered from /learn/nutrition/ with scope %s, '
+                                   'home controlled=%s' % (scope, controlled)))
+
+            # A guide page that was read stays readable, and one that was not
+            # says so. The guide pages are not precached: they are kept when
+            # visited, so the two halves of this check are the whole behaviour.
+            await page.goto(base + '/learn/toxic/')
+            await page.wait_for_timeout(800)
+            await context.set_offline(True)
+            await page.goto(base + '/learn/toxic/')
+            await page.wait_for_timeout(600)
+            read_again = await page.evaluate(
+                "(document.querySelector('main') || {}).textContent || ''")
+            await page.goto(base + '/learn/feeding/')
+            await page.wait_for_timeout(600)
+            unread_title = await page.title()
+            guide_ok = 'chocolate' in read_again.lower() and 'Offline' in unread_title
+            if not guide_ok:
+                failures.append('guide pages offline')
+            print('%s %-44s %s' % ('PASS' if guide_ok else 'FAIL',
+                                   'a guide page that was read survives offline',
+                                   'read page returned %d chars, unread falls back to "%s"'
+                                   % (len(read_again), unread_title)))
             await context.close()
             await browser.close()
     finally:

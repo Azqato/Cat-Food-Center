@@ -244,6 +244,11 @@ TEMPLATE = """<!DOCTYPE html>
 %(footer)s
 
 <script src="{{root}}assets/cfc-docs.js"></script>
+<!-- The same registration the nine application pages carry. It was missing
+     here until M19a, for no reason anybody chose: the two generators grew
+     apart. A visitor whose first page was a guide got no service worker and no
+     offline banner until they happened to open an application page. -->
+<script src="{{root}}assets/js/pwa.js"></script>
 </body>
 </html>
 """

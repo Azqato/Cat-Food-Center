@@ -28,6 +28,11 @@
    shown the old stylesheet once more before picking up the new one. A contrast
    fix that arrives on the second visit has not really been deployed.
 
+   Not bumped for M19a, which changed how navigations are cached but left
+   every v4 entry correct. The lever retires wrong content; it is not a
+   changelog, and pulling it re-downloads the shell on every device for
+   nothing.
+
    v4: M19 moved every page. A device holding a v3 cache has nine documents
    precached under addresses that no longer exist, and would serve them from
    the shell cache indefinitely. Every one of those entries has to go, and
@@ -186,21 +191,37 @@ self.addEventListener('fetch', (event) => {
   }
 
   /* Navigations: straight to the network, so a deploy is picked up
-     immediately, falling back to the precached page and then to the offline
-     page.
+     immediately, falling back to the cached page and then to the offline page.
 
-     Deliberately not cached here. Every product is a different query string on
-     the same document, product/?barcode=X, so caching the response would
-     add one entry per product viewed, all of them byte-identical, and grow the
-     shell cache without bound. The document is already precached, so
-     `ignoreSearch` finds it whatever the query, and the barcode is read from
-     the URL by the page itself. Without that flag an offline product page
-     would fall through to the offline page even though it was cached. */
+     A successful navigation is kept, but only when the address carries no
+     query string. That condition is the whole design. Every product is the
+     same document under a different query, product/?barcode=X, so caching
+     those would add one byte-identical entry per product viewed and grow the
+     shell cache without bound; the document itself is precached, and
+     `ignoreSearch` below finds it whatever the query. Without that flag an
+     offline product page would fall through to the offline page even though it
+     was cached.
+
+     What this reaches, and the reason for it (M19a): the eleven guide pages.
+     They are not in SHELL_ASSETS, and until now nothing ever put them in a
+     cache, so a guide someone had read was unavailable the moment the signal
+     went. They are also the pages least in need of a network and most likely
+     to be wanted without one. Precaching all eleven at install would have cost
+     roughly 290 kB on a connection this project assumes is bad; keeping the
+     ones actually read costs nothing until they are read, and is the same
+     promise the product pages already make. It generalises too: a page added
+     later is covered without editing a list. */
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       const cache = await caches.open(SHELL);
       try {
-        return await fetch(request);
+        const response = await fetch(request);
+        if (response.ok && url.origin === self.location.origin && !url.search) {
+          // Not awaited: the visitor should not wait on a cache write for a
+          // page the network already delivered.
+          cache.put(request, response.clone());
+        }
+        return response;
       } catch {
         return (await cache.match(request, { ignoreSearch: true }))
           || (await cache.match('./offline/'))

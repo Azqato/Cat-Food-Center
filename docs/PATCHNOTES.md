@@ -21,6 +21,38 @@ punctuation rather than content.
 
 ---
 
+## [0.20.1] - 2026-09-07
+
+**Offline support reaches the Cat Care Guide (M19a).**
+
+Fixed
+* **The eleven guide pages register the service worker.** They never loaded `assets/js/pwa.js`,
+  because the guide generator and the application generator had drifted apart, so a visitor whose
+  first page was a guide got no worker and no offline banner until they opened an application
+  page. Recorded in PRD section 24.6 during M19 and closed the same day.
+* **A guide page that has been read stays readable offline.** Registering the worker was only
+  half of it: navigations were network-first and wrote nothing to any cache, so a guide read a
+  minute ago vanished with the signal. A successful navigation is now kept when its address
+  carries no query string. That condition is deliberate. Every product is the same document under
+  a different query, so caching those would add a byte-identical entry per product viewed and
+  grow the shell cache without bound, which is why navigations were not cached at all before.
+  Guide pages have no query string, and neither will most pages added later.
+
+Changed
+* `tools/check-live.py` is 22 checks. The scope check registers from `/learn/nutrition/` now,
+  the deepest page on the site, rather than from `/search/`, which was as deep as M19 could
+  manage because no guide page would register anything. A new check reads a guide page, goes
+  offline, and requires that page back and an unread one to fall through to the offline page.
+
+Not changed
+* `sw.js` stays at `v4`. The version lever exists to retire cached content that has become
+  wrong, and nothing under `v4` is wrong. Bumping it as a changelog gesture would re-download
+  the shell on every device for nothing.
+* The guide pages are still not precached. Eleven documents is about 290 kB on install, on a
+  connection this project assumes is bad, for pages a visitor may never open.
+
+---
+
 ## [0.20.0] - 2026-09-07
 
 **Every page is a directory now (M19).**
