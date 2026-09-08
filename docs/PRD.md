@@ -718,7 +718,9 @@ now reports the same call the engine made, and a test pins it.
 
 ### Next
 
-**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), top-100 SKU coverage at 80% or better, and analytics instrumented. Coverage is the only one of the four that is still open, and it is the one the API cannot deliver on its own.
+**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open**, and it is the one the API cannot deliver on its own: of 1000 products sampled, 338 carry an ingredient list. Section 12.5 item 7 says a curated local catalogue is the only route, which makes open question 2 the decision M12 waits on.
+
+*The fourth criterion, "analytics instrumented", was removed on 2026-09-07 rather than met.* It had been written before section 12 was measured and it contradicted section 14, which gives "no analytics means no visitor data to protect" as the reason for having none. A milestone cannot require closing a gap the same document defends. Section 14 now says which targets are therefore never going to be reported, instead of describing them as pending.
 
 ### Explicitly deferred
 
@@ -738,7 +740,13 @@ now reports the same call the engine made, and a test pins it.
 
 ## 14. Metrics
 
-**Nothing on this list is currently instrumented.** The site has no analytics, no error reporting and no uptime monitor. Every target below is a stated intention for M12, not a measurement, and this section should not be read as reporting on anything. That gap is deliberate for now (no analytics means no visitor data to protect) but it does mean the product's actual usage is unknown.
+**This site has no analytics, and that is now a decision rather than a gap.** *Decided 2026-09-07.* It has no analytics, no error reporting and no uptime monitor, and public beta will not add any.
+
+The criterion this replaces said "analytics instrumented" and had sat in the M12 list since before section 12 was measured. It contradicted the paragraph directly above it: this section already gave "no analytics means no visitor data to protect" as the reason for the gap, while the roadmap treated closing that gap as a condition of shipping. One of the two had to go, and the privacy position is the one with a tenet behind it. Analytics here would also mean a third-party script on every page, sending each visitor's activity to a company neither this project nor its readers control, and a new pinned runtime dependency two milestones after M14 removed the last one.
+
+**What that costs, stated plainly rather than left implicit.** Every target in the acquisition, engagement and retention tables below is unmeasured and will stay unmeasured. They are not deferred, they are not "pending instrumentation": nothing in the plan will ever report them. They are kept because they say what this project would consider success, which is worth writing down even when nothing counts it, and every row now names what would be needed to know. Interaction to Next Paint is the one performance target in the same position, since it needs a real session and only field data can supply it.
+
+**What is measured**, and it is not nothing: six gates run against the real site before every push, covering 178 unit assertions, 22 live checks against the live API, contrast, 100 accessibility audits, Core Web Vitals against a stated budget on a throttled mid-range phone, and three browser engines agreeing. Section 19 has the detail. That is a claim about whether the product works, not about whether anyone is using it, and this project can honestly make only the first.
 
 ### North star
 
@@ -746,30 +754,36 @@ now reports the same call the engine made, and a test pins it.
 
 ### Acquisition
 
-| Metric | Target | Timeframe | Method |
-|---|---|---|---|
-| Weekly active users | 500 | 3 months post-launch | Plausible or equivalent |
-| Organic search traffic | 40% of sessions | 6 months | Google Search Console |
-| Direct and shared traffic | 20% of sessions | 3 months | Analytics |
-| PWA installs | 100 | 3 months | `beforeinstallprompt` event |
+**Unmeasured, permanently.** Kept as a statement of what success would look like, not as a plan.
+
+| Metric | Target | What would be needed to know |
+|---|---|---|
+| Weekly active users | 500 | An analytics service. Not adopted; see above |
+| Organic search traffic | 40% of sessions | Google Search Console, which reports on the site rather than tracking visitors, and is the one item here that could be adopted without contradicting the decision above |
+| Direct and shared traffic | 20% of sessions | An analytics service |
+| PWA installs | 100 | The `beforeinstallprompt` event, reported somewhere. Observable in the page, but there is nowhere to send it |
 
 ### Engagement
 
-| Metric | Target | Timeframe | Method |
-|---|---|---|---|
-| Scan-to-verdict completions | 1,000 per week | 3 months | Product page views with a score |
-| Scan success rate | 90% or better | Post-launch | Custom event |
-| Time to verdict | 30 seconds or less, median | Post-launch | Custom timing event |
-| Search-to-result rate | 60% or better | 3 months | Search to product funnel |
-| Product pages per session | 1.5 or better | 3 months | Analytics |
+**Unmeasured, permanently.** The north star above is in this position too: nothing counts scan-to-verdict completions, and nothing will.
+
+| Metric | Target | What would be needed to know |
+|---|---|---|
+| Scan-to-verdict completions | 1,000 per week | Product page views with a score, counted somewhere |
+| Scan success rate | 90% or better | A custom event. The decode round-trip in `tools/check-live.py` proves the decoder works on a clean frame, which is a different claim from how often a real camera in a real aisle succeeds |
+| Time to verdict | 30 seconds or less, median | A timing event over a real session |
+| Search-to-result rate | 60% or better | A funnel |
+| Product pages per session | 1.5 or better | Sessions, which are an analytics concept |
 
 ### Retention
 
-| Metric | Target | Timeframe | Method |
-|---|---|---|---|
-| Week-1 retention | 20% or better | 3 months | Analytics cohort |
-| Pre-purchase return visits | 15% of weekly actives | 6 months | Session patterns |
-| PWA session rate | 10% of mobile sessions | 6 months | `display-mode: standalone` |
+**Unmeasured, permanently.**
+
+| Metric | Target | What would be needed to know |
+|---|---|---|
+| Week-1 retention | 20% or better | An analytics cohort |
+| Pre-purchase return visits | 15% of weekly actives | Session patterns across visits |
+| PWA session rate | 10% of mobile sessions | `display-mode: standalone`, reported somewhere |
 
 ### Performance
 
@@ -777,7 +791,7 @@ now reports the same call the engine made, and a test pins it.
 |---|---|---|
 | Largest Contentful Paint | 2.5 s or less, mid-range phone on 4G | `tools/check-vitals.py`, throttled. **Measured**, section 19.2 |
 | Total Blocking Time | 200 ms or less | `tools/check-vitals.py`. **Measured.** Stands in for INP, which needs a real session |
-| Interaction to Next Paint | 200 ms or less | Field data only. Nothing measures this; there is no analytics |
+| Interaction to Next Paint | 200 ms or less | **Unmeasurable here.** It needs a real session, and only field data can supply it. Total Blocking Time is gated instead and stands in for it |
 | Cumulative Layout Shift | 0.1 or less | `tools/check-vitals.py`. **Measured**, section 19.2 |
 | Uptime | 99.9% or better | GitHub status |
 | Deploy success rate | 99% or better | GitHub Actions |
@@ -792,10 +806,9 @@ now reports the same call the engine made, and a test pins it.
 
 | Group | Cadence |
 |---|---|
-| North star and engagement | Weekly |
-| Acquisition and retention | Monthly |
-| Performance | Monthly, automated once Lighthouse CI exists |
-| Coverage | Monthly |
+| North star, acquisition, engagement, retention | Never. Nothing reports them; see the note at the top of this section |
+| Performance | Every push. `tools/check-vitals.py` is a gate, not a report |
+| Coverage | Monthly, by `tools/probe-opff.py` and a manual audit against the curated catalogue |
 | Documentation against reality | Every audit; see section 24 |
 
 ---
@@ -1507,7 +1520,7 @@ The local and production differences that can hide a bug are tabulated in sectio
 | Camera frames | Processed in-page, never stored, never uploaded | On-device only. The video stream is stopped and released on stop, on tab hide and on navigation |
 | Submitted products | Not held. The submit page hands off upstream | There is no queue and no database |
 
-**No personally identifiable information is collected or stored, anywhere, by any part of this project.** There is no database, no analytics and no logging.
+**No personally identifiable information is collected or stored, anywhere, by any part of this project.** There is no database, no analytics and no logging. Since 2026-09-07 that is a settled position rather than a current state: public beta will not add analytics, and section 14 records what that costs in metrics nobody will ever report.
 
 ### 21.4 Environment variables and secrets
 

@@ -21,6 +21,33 @@ punctuation rather than content.
 
 ---
 
+## [0.20.3] - 2026-09-07
+
+**No analytics, decided rather than pending.**
+
+Changed
+* **"Analytics instrumented" is no longer a condition of public beta.** The criterion had sat in
+  the M12 list since before the data in PRD section 12 was measured, and it contradicted section
+  14 directly, which gave "no analytics means no visitor data to protect" as the reason for
+  having none. A milestone cannot require closing a gap the same document defends. M12 now has
+  three criteria, two of them met, and coverage is the only one still open.
+* Section 14 says what that costs instead of leaving it implicit. Every acquisition, engagement
+  and retention target, and the north star with them, is marked unmeasured permanently: not
+  deferred, not pending instrumentation, but never going to be reported. Each row now names what
+  would be needed to know it. They are kept because they still say what this project would count
+  as success.
+* Interaction to Next Paint is marked unmeasurable here rather than merely unmeasured. It needs
+  a real session; Total Blocking Time is gated and stands in for it.
+* The reporting cadence table stopped promising weekly and monthly reports that nothing produces.
+  Performance is every push, coverage is monthly by probe and audit, and the rest is never.
+
+Not changed
+* No third-party script was added, and none will be. It would put every visitor's activity into
+  the hands of a company neither this project nor its readers control, and add a pinned runtime
+  dependency two milestones after M14 removed the last one.
+
+---
+
 ## [0.20.2] - 2026-09-07
 
 **The probe measures language, and open question 9 gets a number.**
