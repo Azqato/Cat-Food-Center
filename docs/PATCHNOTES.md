@@ -21,6 +21,40 @@ punctuation rather than content.
 
 ---
 
+## [0.20.2] - 2026-09-07
+
+**The probe measures language, and open question 9 gets a number.**
+
+Added
+* `tools/probe-opff.py` reports which languages the ingredient lists are written in, using the
+  rule from `assets/js/opff.js` rather than a rule of its own, so it measures what the site
+  believes rather than something adjacent to it. It ranks the languages the engine cannot read
+  by how many lists each would reach, which is the shape open question 9 asked for on
+  2026-09-07: how many products the next language buys, rather than an intuition about which
+  languages matter.
+* The findings, in PRD section 12.4. The six languages in `MATCHED_LANGUAGES` read 90.2% of the
+  ingredient lists that exist. The seventh candidate is Norwegian, 20 lists, which would take
+  coverage to 96.2%; every language after that is worth four lists or fewer. French is the
+  largest single language at 47.9%, nearly twice English.
+* A note in section 12.6: anonymous pagination stops after page 10. `page=11` answers HTTP 401
+  with an HTML login page, which reads as a credentials failure and is a paging limit, since the
+  endpoint takes no key. The largest sample obtainable is therefore 1000 products of about 1580,
+  in the API's own order rather than at random.
+
+Changed
+* The probe clamps to page 10 and says so, pauses a second between pages against an API this
+  project pays nothing for, and retries only genuinely transient codes. It now prints the sample
+  size beside the percentages it derives, because a percentage with an unstated denominator is
+  the kind of figure that gets quoted later as a fact about the database.
+
+Not changed
+* `MATCHED_LANGUAGES` is still six languages. The standing rule decides the order: aliases
+  first, the constant after, never ahead of them. Adding `nb` without Norwegian aliases would
+  make the engine report twenty labels as read when it had read none of them, which is the exact
+  failure section 12.4 exists to describe.
+
+---
+
 ## [0.20.1] - 2026-09-07
 
 **Offline support reaches the Cat Care Guide (M19a).**
