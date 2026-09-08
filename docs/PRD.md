@@ -817,6 +817,8 @@ now reports the same call the engine made, and a test pins it.
 
 **M22, finishing it: a coverage number.** *Open.* The ranked list exists and nothing measures against it. The blocker is that a captured row is a product name while the catalogue is keyed by barcode, so this waits on the barcode problem in section 12.8. Until then M12's only remaining criterion is defined and unmeasured, which is still better than the undefined it was on 2026-09-07.
 
+**M25: curated products become discoverable.** *Open, and it outranks the rest of this list.* A curated-only product resolves on its product page and cannot be found by searching or by browsing brands, because the catalogue is read inside `fetchProduct` and nowhere else. Section 16.5b has the detail. It is a prerequisite for M22's coverage number rather than a refinement of it: a hundred entries nobody can reach would move "the site can score this product" to 100% and leave "a visitor can find this product" exactly where it started.
+
 **M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the Dr. Elsey's range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and a catalogue drawn only from best-seller lists would be a catalogue of supermarket food. **Measured 2026-09-08, and it is blocked on something other than the panel.** Dr. Elsey’s publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC, and Open Pet Food Facts holds exactly one Dr. Elsey’s record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription, and section 12.8 records this as a separate class of blocker.
 
 **M24: premix groups.** *Deferred from M21, recorded in 16.11.* A bracketed premix arrives as one ingredient and wears the flag its worst component earns. Its own milestone because the fix moves ingredient counts, and ingredient counts move scores.
@@ -1350,7 +1352,7 @@ Every entry carries, and the validator rejects it without:
 1. **A curated field fills a gap.** An empty field is filled by any entry, because a list of unknown vintage with its source named beside it is better than no list.
 2. **Only a manufacturer entry overwrites a figure the database already has.** A retailer listing never does. Where two sources disagree, the weaker one must not win in silence, and the rule above is what stops it.
 3. **The product gains `curated: { fields, source, sourceKind, checked }`**, naming every field that came from the catalogue. The product page states it in words, next to the data, not in a footnote. A merge that changes nothing sets no `curated` at all, so the page cannot announce a provenance for data that is entirely upstream.
-4. **A barcode in the catalogue but not in the API still resolves.** This is the case that raises coverage, and it means the "not in the database" page is reached only when neither source has the product.
+4. **A barcode in the catalogue but not in the API still resolves.** This is the case that raises coverage, and it means the "not in the database" page is reached only when neither source has the product. **It resolves, and nothing leads anybody to it.** The catalogue is read in one place, `fetchProduct`, so a curated-only product can be reached by scanning its barcode or by following a direct link, and cannot be found by searching or by browsing brands: both of those ask the API and the API has never heard of it. Recorded 2026-09-08, on being asked why a brand was missing from the brand index. See 16.5c.
 5. **A transcribed manufacturer panel reaches high confidence; a shop listing does not.** That is the point of transcribing a panel, and it is only sound because item 3 makes the provenance visible. Without the disclosure this rule would be laundering.
 6. **The plausibility gate in section 12.5 item 2 applies to curated figures too.** A transcription error is as wrong as a data-entry error, and being ours does not make it truer.
 
@@ -1362,6 +1364,25 @@ Every entry carries, and the validator rejects it without:
 - The disclosure on the product page is asserted by `tools/check-live.py` rather than left to review: it loads the seeded barcode from the live API and requires the words that name the curated field and its source.
 - Both new files are in `SHELL_ASSETS`, so the catalogue is available offline like everything else it feeds.
 - **The catalogue is not a place to put a score.** It carries observations (ingredients, analysis, adequacy statements), never verdicts. The engine scores; the catalogue only feeds it, and section 6 stays the only description of how a number is reached.
+
+### 16.5b Curated products are not discoverable
+
+**Found 2026-09-08, and open.** Merge rule 4 in 16.5a says a barcode in the catalogue but not in the API still resolves. That is true of the product page and of nothing else.
+
+| Route a visitor takes | Works for a curated-only product? |
+|---|---|
+| Scanning the barcode | Yes. The scanner produces a barcode and the product page resolves it |
+| A direct link to `/product/?barcode=X` | Yes |
+| Typing the name into search | **No.** Search calls `/cgi/search.pl`, which searches the database |
+| Browsing brands | **No.** The brand index is the API's own facet, so a brand the database lacks cannot appear in it |
+
+The reason is structural rather than an oversight in any one page: `loadCatalogue` and `mergeCurated` are called from `fetchProduct` and from nowhere else, which is the right place for a merge and the wrong place to be the only place.
+
+**Why this was not obvious.** Every curated entry written so far fills a gap in a record the database already holds, so all four are searchable and browsable through the API for reasons that have nothing to do with the catalogue. The failure only appears for a product the API has never heard of, which is the case section 13 identified as the main one on the same day, and no entry of that kind exists yet to demonstrate it.
+
+**What it costs.** Coverage measured as "the site can score this product" and coverage measured as "a visitor can find this product" are different numbers, and M12's criterion means the second. A catalogue of a hundred API-absent products would move the first to 100% and leave the second where it started, which would be exactly the kind of true-but-useless claim section 24 exists to catch.
+
+**Fixing it** means the catalogue participating in search and in the brand index: a local name match over the catalogue, merged into the result list with its provenance shown, and catalogue brands added to the facet. That is M25, and it is a prerequisite for the coverage number in M22 rather than a later refinement.
 
 ### 16.6 API design
 

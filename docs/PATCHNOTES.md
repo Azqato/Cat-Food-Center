@@ -21,6 +21,30 @@ punctuation rather than content.
 
 ---
 
+## [0.23.1] - 2026-09-08
+
+**A curated product resolves, and nothing leads anybody to it.**
+
+Changed
+* **PRD section 16.5b, new, and M25 on the roadmap.** `loadCatalogue` and `mergeCurated` are
+  called from `fetchProduct` and from nowhere else, so a product the API has never heard of can
+  be reached by scanning its barcode or by following a direct link, and cannot be found by
+  typing its name into search or by browsing brands. Merge rule 4 in 16.5a said such a product
+  "still resolves", which is true of the product page and of nothing else; the rule now says so.
+* Found by being asked why Dr. Elsey's was missing from the brand index. It is missing because
+  Open Pet Food Facts holds no Dr. Elsey's food, only their cat litter, and the brand index is
+  the API's own facet. The question was about a brand that was never added; the answer exposed a
+  gap that would have applied to one that was.
+* **Why it had gone unnoticed:** all four curated entries so far fill gaps in records the
+  database already holds, so every one of them is searchable and browsable for reasons that have
+  nothing to do with the catalogue. The failure only appears for an API-absent product, and none
+  exists yet.
+* M25 is a prerequisite for M22's coverage number, not a refinement of it. "The site can score
+  this product" and "a visitor can find this product" are different numbers, and M12's criterion
+  means the second.
+
+---
+
 ## [0.23.0] - 2026-09-08
 
 **The product library, captured (M22, partial).**
