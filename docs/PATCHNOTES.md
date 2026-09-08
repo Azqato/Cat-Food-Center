@@ -21,6 +21,68 @@ punctuation rather than content.
 
 ---
 
+## [0.22.0] - 2026-09-08
+
+**The catalogue grows (M21). An additive pill that could never wrap (M21a).**
+
+Added
+* Three curated entries, transcribed from Purina label decks: Cat Chow Complete `0017800150149`,
+  Fancy Feast Kitten Tender Turkey Feast `0050000575008`, and Friskies Sea Captain's Pate
+  `0050000425648`. All three are `sourceKind: "manufacturer"`, all three filled records that had
+  neither an ingredient list nor an analysis, and each one records in its note why that barcode
+  is believed to describe that deck.
+* `tools/label-deck.py`. Give it the URL of a manufacturer label deck and it prints a proposed
+  catalogue entry: guaranteed analysis, ingredient list, AAFCO statement, life stage and format.
+  It prints rather than writes, because the parser can misread a layout it has not met and the
+  reviewer is the last check there is. It needs PyMuPDF, the only library dependency any tool in
+  this repository has, and says so plainly if it is missing.
+* PRD section 12.7, which for the first time says which hundred SKUs "top-100 coverage" means:
+  the Amazon and Chewy rankings, merged, with a quarterly refresh procedure and a rule that a
+  previous capture is kept rather than overwritten.
+* PRD section 12.8, which measures where a label panel can actually be read. Purina publishes a
+  PDF deck per product as text. Mars publishes the panel as an image, so Sheba, Temptations,
+  Whiskas and Iams cannot be transcribed at all.
+* Roadmap entries M22 (capture the list, measure coverage), M23 (Dr. Elsey's) and M24 (premix
+  groups).
+
+Changed
+* **The United States cat-food category in Open Pet Food Facts is 86 records, 48 of them with no
+  ingredient list.** Measured 2026-09-08. The coverage target had been written as though the
+  database held the common products and merely lacked their details; it does not hold them.
+  Merge rule 4 in section 16.5a, the barcode the API has never heard of, was written as an edge
+  case and is the main case.
+* PRD sections 13, 15.4, 16.4 and 16.11, and DESIGN section 9.
+
+Fixed
+* **`.additive-fn` could not wrap or shrink.** `white-space: nowrap` plus `flex-shrink: 0` on a
+  pill whose text comes from the knowledge base. The inorganic phosphates entry reads "moisture
+  retention, dental tartar control, acidifier", which took the product page to 420px at a 320px
+  viewport and failed WCAG 1.4.10. Every product flagging that additive had been failing reflow
+  since the additive cards shipped; none of the 25 fixed page states the accessibility gate
+  audits happened to be one of them.
+* Three defects in `label-deck.py`, all found by reading its first output against the PDF. It
+  was about to record Purina's label revision code "D662122" as an ingredient; it began the
+  AAFCO statement at "Louis, MO 63164 USA", because the address contains "St." and the sentence
+  match anchored there; and it labelled Friskies Sea Captain's Choice as kitten food when the
+  label says "for growth of kittens and maintenance of adult cats", because it tested for growth
+  before it tested for both. A tool built to remove transcription error introduced three of its
+  own within ten minutes.
+
+Investigated, and not a defect
+* All three new products score exactly 49. Three different foods landing on one number is the
+  shape of a cap, and it is one: a Tier 3 additive caps a score at 49 regardless of nutrition,
+  and every one of these labels lists menadione sodium bisulfite complex. Cat Chow Complete has
+  32% protein and scores 49. That is section 6 working as written.
+
+Known, recorded rather than fixed
+* Purina prints premixes as `VITAMINS [...]` and `MINERALS [...]`. The splitter keeps bracketed
+  groups whole so that "chicken (4%)" survives, so a twelve-item premix arrives as one
+  ingredient wearing the Tier 3 flag its menadione earns. The flag is true; its placement says
+  the whole premix is high risk. The fix moves ingredient counts and therefore scores, so it is
+  M24 with its own tests rather than a footnote here.
+
+---
+
 ## [0.21.0] - 2026-09-08
 
 **The curated catalogue, built (M20). Status colours get an ink (M20a).**

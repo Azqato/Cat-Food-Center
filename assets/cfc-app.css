@@ -355,11 +355,27 @@
   border-radius: 12px; padding: 16px; margin-bottom: 12px;
 }
 .additive-card:last-of-type { margin-bottom: 0; }
-.additive-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+.additive-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 8px; margin-bottom: 8px;
+  /* Wraps, because the function pill beside the name is as long as the
+     knowledge base makes it. "moisture retention, dental tartar control,
+     acidifier" is one real entry, and on a 320px viewport it and the additive
+     name cannot share a line. */
+  flex-wrap: wrap;
+}
 .additive-name   { font-weight: 600; font-size: 1rem; color: var(--ink); }
 .additive-fn {
   font-size: .75rem; color: var(--ink-soft); background: var(--hairline);
-  border-radius: 999px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0;
+  border-radius: 999px; padding: 2px 8px;
+  /* This pill was `white-space: nowrap; flex-shrink: 0`, which is a promise
+     that its text will never be broken and never be squeezed. Given a long
+     enough function string that is a promise to push the page wider than the
+     screen, and it did: the inorganic phosphates card took the product page to
+     420px at a 320px viewport, failing WCAG 1.4.10 on every product flagging
+     that additive. Found in M21 by measuring a curated product; the defect was
+     older than the catalogue. */
+  max-width: 100%;
 }
 .additive-impact { font-size: .875rem; color: var(--ink-soft); margin-bottom: 10px; }
 

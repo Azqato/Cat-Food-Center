@@ -502,6 +502,45 @@ The third and fourth were live in English too. They had never fired because no E
 - **Anonymous pagination stops after page 10.** Verified 2026-09-07: `page=10&page_size=100` returns its hundred products, and `page=11` returns HTTP 401 with an HTML login page in the body. It reads as a credentials failure and is a paging limit; this endpoint takes no key, so there is nothing to authenticate with. The practical effect is that the largest sample any measurement here can take is 1000 products of the roughly 1580 in the category, in the API's own order rather than at random. `tools/probe-opff.py` clamps to page 10 and prints the sample size next to every percentage it derives.
 - **`/cgi/search.pl?action=process&json=1` is the endpoint that actually searches text.** It honours `fields`, `page` and `page_size`, returns a truthful `count` (`salmon` 32, `tuna` 22, `chicken` 83), serves consecutive pages without overlap, and sends `Access-Control-Allow-Origin: *`. Its tag filters are numbered rather than named: `tagtype_0=categories&tag_contains_0=contains&tag_0=cat-food`, with a brand as pair 1.
 
+### 12.7 The top-100 SKU list, and how it stays current
+
+**Decided 2026-09-08.** M12 has required "top-100 SKU coverage at 80%" since the roadmap was first written, and until this section existed no document said which hundred SKUs. The criterion could not be met or missed, only asserted, which put it in the same family as the features section 24.1 catalogues.
+
+**What defines the hundred.** Two published rankings, captured together rather than either alone:
+
+| Source | What it contributes |
+|---|---|
+| Amazon Best Sellers, cat food and its dry and wet subcategories | Online volume, refreshed hourly by Amazon, and the broadest brand mix |
+| Chewy's cat food category, sorted by popularity | The pet-specialist channel, where premium brands sell that barely rank on Amazon |
+
+Rank is taken from each source, the two are merged, and a SKU appearing on both outranks one appearing on either. Transcription order is **by manufacturer, largest first**, which in practice means Purina before anyone else: it is the largest US brand family and, as below, the only one publishing a machine-readable panel. Coverage is measured against the merged list, not against transcription order.
+
+**The capture is manual, and that is a finding rather than a preference.** Both retailers refuse automated fetches: Amazon returns HTTP 503 to the best-seller pages and Chewy returns HTTP 429, on the first request, with no crawl in progress. Search results paraphrase the rankings but do not carry positions, and a rank invented from a paraphrase would be exactly the kind of documented-but-untrue artefact this project keeps section 24 for. So a person opens the two pages in a browser and pastes the list, and the file records the date and the URL it came from.
+
+**Refresh procedure.** Quarterly, and after any month in which two or more entries fail their `checked` re-verification:
+
+1. Open both ranking pages and capture the top 100 from each, with the date.
+2. Update the list file, keeping the previous capture in place rather than overwriting it: a SKU dropping off the list is information about the market, and a list with no history cannot show it.
+3. Re-run the coverage measurement and record the number.
+4. Re-verify the oldest curated entries against their sources, oldest `checked` date first. A manufacturer reformulates without renaming, so an entry is a claim with an expiry date rather than a fact.
+
+**Why 80% and not 100%.** Some SKUs cannot be transcribed at any effort, because their manufacturer publishes the panel only as an image. That is measured in section 12.8 and is the reason the target has always had a margin in it.
+
+### 12.8 Where a label panel can actually be read
+
+Measured 2026-09-08, while transcribing the first curated entries.
+
+| Publisher | What it publishes | Usable |
+|---|---|---|
+| Nestle Purina (Fancy Feast, Friskies, Cat Chow, Pro Plan, Purina ONE, Beyond) | A PDF label deck per product under `purina.com/sites/default/files`, carrying the guaranteed analysis, the ingredient list in order and the AAFCO statement as text | **Yes**, and it is the best source found |
+| Mars (Sheba, Temptations, Whiskas, Iams) | The panel as an image on the product page | No. Nothing can be transcribed without a person reading a photograph |
+
+**Two things about the Purina source are worth writing down, because neither is obvious.** The first is that `purina.com` returns HTTP 403 to any automated request for a *page*, including `robots.txt` itself, while serving the PDFs under `/sites/default/files` normally. The file store is open and the site is not, so label decks are found by search and fetched directly, and nothing here crawls the site. The second is that the decks are indexed, so a product's deck is reliably findable by name even though the catalogue of them is not browsable.
+
+**The consequence for coverage** is that the achievable ceiling is set by who publishes text, not by how much transcription anybody is willing to do. A Mars-heavy top-100 has a lower ceiling than a Purina-heavy one, and the 80% target in section 12.7 is the margin that acknowledges it.
+
+---
+
 ---
 
 ## 13. Roadmap
@@ -543,6 +582,8 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M19a: Offline support reaches the guide | 2026-09 | Complete |
 | M20: The curated catalogue mechanism | 2026-09-08 | Complete |
 | M20a: Status colours get an ink | 2026-09-08 | Complete |
+| M21: The catalogue grows, and a tool to fill it | 2026-09-08 | Complete |
+| M21a: The additive pill that could never wrap | 2026-09-08 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -732,9 +773,33 @@ now reports the same call the engine made, and a test pins it.
 
 *One over-correction, recorded because the reasoning is the useful part.* Four rows requiring the fills themselves to reach 3:1 against `--bg` were added and failed. WCAG 1.4.11 governs graphics that carry meaning on their own; the band chips carry their own text, and the 6px rule beside the word "Good" is `aria-hidden` decoration next to the same information in words. The rows were replaced with a comment in the gate recording the measurement and the condition under which they would be needed: a status colour becoming the only carrier of its meaning.
 
+**M21: the catalogue grows, and a tool to fill it.** *2026-09-08.* Three curated entries transcribed from manufacturer label decks, and `tools/label-deck.py`, which reads a published panel and prints a proposed entry. The catalogue holds four products.
+
+*The finding that reframed the milestone:* **the entire United States cat-food category in Open Pet Food Facts is 86 records, and 48 of them have no ingredient list.** The M12 coverage target was written as though the database held the common products and merely lacked their details. It does not hold them. Filling every US gap in the database would still leave most of a top-100 list untouched, because those products have no record at all. Merge rule 4 in section 16.5a, the barcode the API has never heard of, was written as an edge case and is in fact the main case.
+
+*Where a panel can be read is now measured, in section 12.8.* Purina publishes a PDF label deck per product, as text; Mars publishes the panel as an image and cannot be transcribed at all. That decides transcription order more than market share does, and it sets a ceiling on coverage that no amount of effort moves.
+
+*Why a tool rather than careful reading.* Section 16.5a holds a curated figure to the same standard as an upstream record, and `check-catalogue.py` gates its shape, but neither catches a digit typed wrong. `tools/label-deck.py` takes the panel from PDF to JSON without passing through anybody's short-term memory. It prints a proposal for review rather than writing the file, because the parser can misread a layout it has not met.
+
+*It misread three things on its first run, and the third is the one worth keeping.* A Purina label prints its own revision code after the last ingredient, so "salt. D662122" was about to ship as an ingredient nobody could look up. The AAFCO statement began at "Louis, MO 63164 USA", because the address before it contains "St." and the sentence match anchored there. And Friskies Sea Captain's Choice, whose label reads "for growth of kittens **and** maintenance of adult cats", was labelled kitten food, because the rule tested for growth before it tested for both. A tool built to remove transcription error introduced three of its own inside ten minutes, which is the argument for the review step rather than against the tool.
+
+*A result that looked like a bug and was the engine working.* All three new products scored exactly 49, the ceiling of the Poor band. Three different foods landing on the same number is the shape of a cap, and it is one: `scoring.js` caps a product containing a Tier 3 additive at 49 regardless of nutrition, and all three labels list menadione sodium bisulfite complex. Cat Chow Complete has 32% protein and scores 49; that is the hard gate doing exactly what section 6 says it does.
+
+*One thing left unfixed, deliberately, and recorded in 16.11.* Purina prints its premixes as `VITAMINS [...]` and `MINERALS [...]`. The splitter keeps bracketed groups intact, correctly, because "chicken (4%)" must not be split, so a twelve-item vitamin premix arrives as a single ingredient carrying the Tier 3 flag its menadione earns. The flag is true and its placement is not: the page says the whole premix is high risk. Fixing it changes ingredient counts and therefore scores, so it is its own milestone with its own tests, not a footnote to this one.
+
+**M21a: a pill that could never wrap.** *2026-09-08.* `.additive-fn`, the function label beside a flagged additive, carried `white-space: nowrap` and `flex-shrink: 0`: a promise never to break its text and never to be squeezed. The inorganic phosphates entry reads "moisture retention, dental tartar control, acidifier", which at a 320px viewport took the product page to 420px and failed WCAG 1.4.10.
+
+*It was not caused by the catalogue, only found by it.* Every product flagging that additive has been failing reflow since the additive cards shipped. The accessibility gate audits 25 fixed page states and none of them was a product carrying that flag, which is the same gap M18, M19 and M20a each found somewhere else: the gate answers exactly the question it was pointed at.
+
 ### Next
 
-**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open**, and it is the one the API cannot deliver on its own: of 1000 products sampled, 338 carry an ingredient list. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built it, and what M12 now waits on is entries in it, transcribed one at a time against the rules in section 16.5a. The mechanism is no longer the question, the volume is.
+**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open**, and it is the one the API cannot deliver on its own: of 1000 products sampled, 338 carry an ingredient list. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built it, M21 put four products in it, and what M12 now waits on is volume. Two things have to happen before the number can even be reported: the hundred SKUs have to be captured from the two rankings in section 12.7, which needs a person and a browser, and the coverage measurement has to be written. Until then the criterion is defined but unmeasured, which is still an improvement on being undefined.
+
+**M22: the top-100 list and a coverage measurement.** *Next.* Capture the Amazon and Chewy rankings per section 12.7, commit the merged list with its dates and sources, and write the tool that reports what fraction of it this site can score. That number is M12's only remaining criterion and nothing currently computes it.
+
+**M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the Dr. Elsey's range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and a catalogue drawn only from best-seller lists would be a catalogue of supermarket food. Whether its panels are text or images is unmeasured; section 12.8 gets a row either way.
+
+**M24: premix groups.** *Deferred from M21, recorded in 16.11.* A bracketed premix arrives as one ingredient and wears the flag its worst component earns. Its own milestone because the fix moves ingredient counts, and ingredient counts move scores.
 
 *The fourth criterion, "analytics instrumented", was removed on 2026-09-07 rather than met.* It had been written before section 12 was measured and it contradicted section 14, which gives "no analytics means no visitor data to protect" as the reason for having none. A milestone cannot require closing a gap the same document defends. Section 14 now says which targets are therefore never going to be reported, instead of describing them as pending.
 
@@ -887,6 +952,7 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 | `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 198 assertions. Exits non-zero on failure, so it works as a gate |
 | `python tools/check-live.py` | 23 end-to-end checks against the live API, two of them added in M18 to ask whether the search searches, one in M18b to ask whether the caveat travels with the score, and one in M20 to ask whether a curated field says so on the page. Every page-load check asserts a string that only the right page contains. Needs network. Not deterministic, so it is a smoke check rather than a gate |
 | `python tools/check-contrast.py` | Verify 52 foreground and background pairs against WCAG AA in both palettes |
+| `python tools/label-deck.py <pdf-url> [barcode]` | Read a manufacturer label deck and print a proposed catalogue entry for review. Needs PyMuPDF (`pip install pymupdf`), the only library dependency any tool here has. A maintenance aid; nothing the site loads uses it |
 | `python tools/check-catalogue.py` | Validate `assets/data/catalogue.json`: schema, source and date on every entry, plausibility bands, no unknown keys. Offline, instant, and a gate |
 | `python tools/check-a11y.py` | WCAG 2.1 AA audit of all 25 page states in both themes, plus reflow at 320px and the skip link. 100 audits. Exits non-zero, so it works as a gate |
 | `python tools/check-a11y.py --report` | The same audit, printing every violation with its selector, and exiting 0 |
@@ -1156,6 +1222,7 @@ Cat-Food-Center/
 │   ├── check-live.py        # 23 end-to-end checks against the live API
 │   ├── check-contrast.py    # WCAG AA audit of both palettes
 │   ├── check-catalogue.py   # Schema, sourcing and plausibility gate for catalogue.json
+   ├── label-deck.py        # Manufacturer PDF panel to a proposed catalogue entry
 │   ├── probe-opff.py        # Regenerates the numbers in section 12
 │   ├── site/                # Application page generator: chrome.py, build.py, content/
 │   └── learn/               # Guide generator: shell.py, bits.py, c_*.py
@@ -1346,6 +1413,7 @@ The `SHELL_ASSETS` list is currently 31 entries and the installed cache holds 32
 | Area | Shortcut taken | Correct solution |
 |---|---|---|
 | Product coverage | Whatever the database holds; about a fifth of products score on all three pillars | Curate a local catalogue for common SKUs under `assets/data/` (M12) |
+| Premix groups in an ingredient list | Purina prints `VITAMINS [...]` and `MINERALS [...]`. The splitter keeps bracketed groups whole, so a twelve-item premix is one ingredient and takes the Tier 3 flag its menadione earns, which reads as the whole premix being high risk | Split a bracketed group that is a list of ingredients, while still keeping `chicken (4%)` whole. It changes ingredient counts and therefore scores, so it needs its own tests |
 | Alias languages | Six covered; anything else is reported as unchecked | Extend the alias lists, and `MATCHED_LANGUAGES` with them, never ahead of them |
 | Search relevance | Delegated wholly to `/cgi/search.pl`, whose ranking is not documented and cannot be tuned or inspected | A curated catalogue, or a local index over it |
 | Scorable-only filter | Scans the first five pages of the query and filters those, because the API cannot filter on scorability. Beyond 120 results it is a sample, and says so | Only a local catalogue can fix this properly |
@@ -1790,6 +1858,7 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | "Ingredient list, each item expandable for an explanation" | PRD §7, DESIGN §10 | **The chevron was never rendered.** Both documents said it was built and inert; the string never appears in any commit's code. The claim was wrong twice over | Built in M15c, for the rows the knowledge base can actually speak to. The documentation error is left here because a document that said "inert" for three milestones is the more useful record |
 | "Submit queue processing, 50 or fewer waiting, internal queue dashboard" | METRICS | No queue exists, so the metric is unmeasurable | Deleted. It measured a feature that was cancelled |
 | Score reveal count-up, ingredient expand transition, route transition fades, skeleton loaders, tier glyphs, Open Graph image | DESIGN §8, §9, §10, §12, all marked "planned" | None built | Kept, still marked as not built, in DESIGN.md |
+| The top-100 SKU list itself, and any coverage number derived from it | PRD §12.7, §13 (M12) | **The list does not exist as a file.** §12.7 defines what goes in it and how it is refreshed; nothing has been captured yet, because both ranking sources refuse automated fetches and a person has to paste them | Deliberate. The section was written when the decision was taken, and the capture is M22. This row is deleted when the file exists and the coverage tool reports a number |
 | Scan button "disabled with tooltip in MVP", `role="tooltip"` on it | DESIGN §7, §10 | The scanner shipped in M8. There is no disabled button and no tooltip | Trusted the code. Removed |
 | "Search by brand or product name", and every count and ranking claim that followed from it | PRD §6 and §13, DESIGN §5, PATCHNOTES M6 onward | **Text search never searched.** `/api/v2/search` ignored `search_terms` and returned the whole cat-food category for every query, including one that cannot match anything. The feature existed, was tested, and was documented; what it did was unrelated to what was typed | Fixed in M18 by moving text queries to `/cgi/search.pl`. The M15a entry that misread this as a ranking defect is left standing in §13 and in PATCHNOTES, with the correction recorded here |
 
