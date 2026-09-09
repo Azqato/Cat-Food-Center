@@ -7,7 +7,7 @@ explanation of what is in it: the ingredients, any additives linked to health
 concerns in cats, the nutrition on a comparable basis, and a single score from
 0 to 100 with a verdict.
 
-**[Open the site](https://azqato.github.io/Cat-Food-Center/)**
+**[Open the site](https://azqato.github.io/catfoodcenter/)**
 
 Free. No account, nothing to install, no advertising, and no relationship with
 any pet food manufacturer.
@@ -54,7 +54,7 @@ in the United States, so a food containing it lands in the Bad band whatever
 else it does well.
 
 The full method is on the
-[methodology page](https://azqato.github.io/Cat-Food-Center/methodology/),
+[methodology page](https://azqato.github.io/catfoodcenter/methodology/),
 and the score is calculated in your own browser, so anyone who wants to check
 it can watch it happen.
 
@@ -108,7 +108,7 @@ tool built on the same data, and for the next person who scans the same tin.
 
 ## Questions, corrections and permission requests
 
-Open an issue: **https://github.com/Azqato/Cat-Food-Center/issues**
+Open an issue: **https://github.com/Azqato/catfoodcenter/issues**
 
 For a wrong product fact rather than a wrong score, correcting it at
 [Open Pet Food Facts](https://world.openpetfoodfacts.org/) fixes it everywhere.

@@ -12,7 +12,7 @@
 # azqato.github.io, a domain this project does not own. The robots.txt that
 # actually governs crawler behaviour for that host is the one at
 # https://azqato.github.io/robots.txt, which belongs to the domain owner. This
-# file is served at https://azqato.github.io/Cat-Food-Center/robots.txt and is
+# file is served at https://azqato.github.io/catfoodcenter/robots.txt and is
 # NOT the authoritative robots policy for the host. It is committed because it
 # is correct if the site ever moves to its own domain, and because it records
 # the intent either way. The same limitation applies to the sitemap below.
@@ -31,4 +31,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://azqato.github.io/Cat-Food-Center/sitemap.xml
+Sitemap: https://azqato.github.io/catfoodcenter/sitemap.xml

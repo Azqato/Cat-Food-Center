@@ -21,6 +21,34 @@ punctuation rather than content.
 
 ---
 
+## [0.24.1] - 2026-09-09
+
+**The repository was renamed, so the site moved.**
+
+Changed
+* `Cat-Food-Center` to `catfoodcenter`, everywhere the absolute URL had to be written down:
+  canonical tags on all twenty pages, `sitemap.xml`, `robots.txt`, the `Sitemap:` line inside it,
+  the probe user agent in `tools/probe-opff.py`, the base in `tools/site/build.py`, the "Report a
+  problem" link in `tools/site/chrome.py`, `README.md`, `LICENSE.md` and the PRD. Both page
+  generators were re-run rather than the output being edited by hand.
+* Live site is now **https://azqato.github.io/catfoodcenter/**, repository
+  **https://github.com/Azqato/catfoodcenter**. The git remote was repointed.
+* **PATCHNOTES was deliberately left alone.** Every earlier entry still names the old URL, and
+  section 23.6 says entries are historical records and are never rewritten to match the present.
+  GitHub redirects the old repository and Pages path, so those links still resolve.
+
+Notes
+* **Twenty pages carried the old path in exactly one tag each, and no page carried it in a link.**
+  That is ADR-001 working: every internal path on this site is relative, so a change of subpath
+  touched only the places that are required to state an absolute URL. A site with absolute
+  internal paths would have needed all twenty pages rewritten rather than one line each.
+* **A visitor who used the site before today keeps a service worker registered at the old path.**
+  A worker controls its own path and below, and the old scope no longer matches anything the new
+  site serves, so it cannot serve stale pages here; it will sit inert against a path that now
+  redirects. It is recorded rather than fixed because the site is pre-beta and has no such
+  visitors to strand. If that changes before launch, the fix is a one-line unregister on the old
+  path, not a cache version bump, because a bump only reaches a worker that is still in scope.
+
 ## [0.24.0] - 2026-09-08
 
 **M25: the catalogue is consulted everywhere it is needed, not in one place.**

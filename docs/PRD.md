@@ -2,8 +2,8 @@
 
 **Product:** Cat Food Center
 **Tagline:** Trustworthy reviews for your purrfect companion!
-**Live site:** https://azqato.github.io/Cat-Food-Center/
-**Repository:** https://github.com/Azqato/Cat-Food-Center
+**Live site:** https://azqato.github.io/catfoodcenter/
+**Repository:** https://github.com/Azqato/catfoodcenter
 **Document type:** Living specification, and the single source of truth for this project. Where this file and the code disagree, that disagreement is recorded in "Documentation Versus Reality" rather than silently resolved.
 **Last full audit:** 2026-09-06
 
@@ -197,7 +197,7 @@ These are decisions, not gaps. Each is a thing the project has chosen not to do.
 - **Static hosting only.** GitHub Pages serves the repository root verbatim. There is no server, no server-side rendering, no dynamic routes, and nowhere to POST. This is a decision, recorded in full in section 16.
 - **No build step.** What is committed is exactly what is served. The deploy cannot fail from a compile error because nothing compiles.
 - **No Node.js on the maintenance machine.** No npm, no lockfile, no `node_modules`, no bundler, no transpiler. Tooling is Python 3 plus Playwright.
-- **Served from a repository subpath**, `https://azqato.github.io/Cat-Food-Center/`, so every path in the site must be relative. An absolute path resolves to the domain root and 404s in production while working locally.
+- **Served from a repository subpath**, `https://azqato.github.io/catfoodcenter/`, so every path in the site must be relative. An absolute path resolves to the domain root and 404s in production while working locally.
 - **Secure context required for the camera.** `getUserMedia` needs HTTPS. `http://localhost` qualifies; `http://<LAN-IP>` does not, so a phone on the local network cannot test the scanner.
 
 **Data**
@@ -966,8 +966,8 @@ Playwright's own browser download is **not** needed, because both tools drive th
 ### 15.2 Local setup
 
 ```bash
-git clone https://github.com/Azqato/Cat-Food-Center.git
-cd Cat-Food-Center
+git clone https://github.com/Azqato/catfoodcenter.git
+cd catfoodcenter
 python -m http.server 8000
 ```
 
@@ -1025,8 +1025,8 @@ It builds nothing, so it cannot fail the way a build pipeline can. If a deploy f
 
 The rule for those: **do the whole thing locally, run all seven gates against it, and push once, when it passes.** Never split a change across pushes in a way that leaves production incorrect in between. If the change is large enough that you want it read before it goes live, put it on a branch; the gates are the same either way. Decided 2026-09-07, during M19.
 
-Live URL: **https://azqato.github.io/Cat-Food-Center/**
-Deploy log: **https://github.com/Azqato/Cat-Food-Center/actions**
+Live URL: **https://azqato.github.io/catfoodcenter/**
+Deploy log: **https://github.com/Azqato/catfoodcenter/actions**
 
 **Manual redeploy** without a code change: Actions, then the "Deploy to GitHub Pages" workflow, then Run workflow. The `workflow_dispatch` trigger exists for this.
 
@@ -1053,7 +1053,7 @@ The revert push triggers a new deploy automatically.
 | Environment | URL | Deployed by | Differences |
 |---|---|---|---|
 | Local | http://localhost:8000 | `python -m http.server` | Served from the domain root, not a subpath. No HTTPS |
-| Production | https://azqato.github.io/Cat-Food-Center/ | GitHub Actions on push to `main` | Served from a repository subpath, over HTTPS |
+| Production | https://azqato.github.io/catfoodcenter/ | GitHub Actions on push to `main` | Served from a repository subpath, over HTTPS |
 
 There is no staging environment.
 
@@ -1061,7 +1061,8 @@ There is no staging environment.
 
 | Difference | Class of bug it hides |
 |---|---|
-| Local serves from `/`, production from `/Cat-Food-Center/` | An absolute path (`/assets/...`) works locally and 404s in production. This is the single most likely production-only failure |
+| Local serves from `/`, production from `/catfoodcenter/` | An absolute path (`/assets/...`) works locally and 404s in production. This is the single most likely production-only failure |
+| The production subpath is not permanent | It changed once already, on 2026-09-09, when the repository was renamed from `Cat-Food-Center` to `catfoodcenter`. Nothing broke, because ADR-001's relative-path rule meant no page had ever written the old path into a link. The only places that carried it were the ones that have to name an absolute URL: canonical tags, the sitemap, `robots.txt`, the probe user agent and the documentation. Those are the places to check if it ever moves again |
 | Local is `http://localhost`, production is HTTPS | `localhost` is a secure context, so the camera works locally. A LAN IP is not, so a phone on the local network cannot test the scanner at all |
 | The service worker caches aggressively in production over many visits | A stale shell can persist on a real device in a way a fresh local profile never reproduces. `VERSION` in `sw.js` is the lever |
 | Local has no CDN | A Pages CDN cache can serve an old file for a few minutes after a successful deploy |
@@ -1089,7 +1090,7 @@ There is no staging environment.
 
 | What | Where |
 |---|---|
-| Deploy status and logs | https://github.com/Azqato/Cat-Food-Center/actions |
+| Deploy status and logs | https://github.com/Azqato/catfoodcenter/actions |
 | Pages uptime | https://www.githubstatus.com |
 | Core Web Vitals | PageSpeed Insights against the live URL. No CI gate yet |
 | JavaScript errors in production | Browser DevTools only. There is no error reporting service |
@@ -1223,7 +1224,7 @@ Everything at the repository root is served verbatim. `tools/` and `docs/` are t
 **This is the repository as it stands, since M19.**
 
 ```
-Cat-Food-Center/
+catfoodcenter/
 ├── README.md                # Public front door, general reader
 ├── LICENSE.md               # All rights reserved, plus the AI and search carve-out
 ├── robots.txt               # Fully open, deliberately
@@ -1829,7 +1830,7 @@ Being cited in an AI answer is the modern equivalent of ranking: it costs the pr
 
 Route to the public issue tracker rather than to private email:
 
-**https://github.com/Azqato/Cat-Food-Center/issues**
+**https://github.com/Azqato/catfoodcenter/issues**
 
 A visible record of what has and has not been permitted suits a posture whose enforcement depends on permissions being specific and traceable rather than assumed.
 
@@ -1839,7 +1840,7 @@ A visible record of what has and has not been permitted suits a posture whose en
 
 `sitemap.xml` sits at the repository root and lists every public page.
 
-**A note on scope that the audit had to check:** this site is served from a subpath of `azqato.github.io`, a domain this project does not own. The `robots.txt` that actually governs crawler behaviour for that host is the one at `https://azqato.github.io/robots.txt`, which belongs to the domain owner. The `robots.txt` committed here is served at `https://azqato.github.io/Cat-Food-Center/robots.txt` and is **not** the authoritative robots policy for the host. It is committed anyway because it is correct if the site ever moves to its own domain, and because it documents the intent. The sitemap is subject to the same limitation: it is only trusted for URLs under its own path unless a host-level `robots.txt` names it.
+**A note on scope that the audit had to check:** this site is served from a subpath of `azqato.github.io`, a domain this project does not own. The `robots.txt` that actually governs crawler behaviour for that host is the one at `https://azqato.github.io/robots.txt`, which belongs to the domain owner. The `robots.txt` committed here is served at `https://azqato.github.io/catfoodcenter/robots.txt` and is **not** the authoritative robots policy for the host. It is committed anyway because it is correct if the site ever moves to its own domain, and because it documents the intent. The sitemap is subject to the same limitation: it is only trusted for URLs under its own path unless a host-level `robots.txt` names it.
 
 ---
 
@@ -2163,7 +2164,7 @@ The part the project is most careful about is the opposite of scoring: refusing 
 
 **"I stopped buying the expensive one."** *(Fictional, illustrative.)* "I'd been buying the same food for four years because the bag looked serious," said Priya Raman, a fictional cat owner representing the primary audience. "I scanned it in the shop and it came back Poor, with the reason written out: unnamed meat by-products first, added sugar near the end. The one next to it, half the price, came back Good. That is not something I could have worked out from the packaging."
 
-**Try it.** Visit https://azqato.github.io/Cat-Food-Center/ and scan a tin, or search by brand. Nothing to install and nothing to sign up for.
+**Try it.** Visit https://azqato.github.io/catfoodcenter/ and scan a tin, or search by brand. Nothing to install and nothing to sign up for.
 
 **About Cat Food Center.** Cat Food Center is an independent, single-maintainer project built by Azqato. It takes no advertising, has no affiliate links, and has no commercial relationship with any pet food manufacturer. Its scoring methodology is published in full, its product data comes from the open Open Pet Food Facts database, and it also publishes a free eleven-page Cat Care Guide covering feline nutrition from AAFCO requirements to diet in disease. It is an information tool and not veterinary advice.
 
@@ -2237,7 +2238,7 @@ Read the confidence level and the warnings, which are shown with it. A score bui
 Each carries a source: FDA, EFSA, WHO or IARC positions, or peer-reviewed veterinary literature. Where the evidence is genuinely contested, such as carrageenan, the guide says so instead of picking a side.
 
 **22. How do I get help, or report a mistake?**
-Open an issue at https://github.com/Azqato/Cat-Food-Center/issues. For a wrong product fact rather than a wrong score, correcting it at Open Pet Food Facts fixes it everywhere.
+Open an issue at https://github.com/Azqato/catfoodcenter/issues. For a wrong product fact rather than a wrong score, correcting it at Open Pet Food Facts fixes it everywhere.
 
 ### Internal
 

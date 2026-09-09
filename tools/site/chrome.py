@@ -49,7 +49,7 @@ FOOTER_LINKS = [
                    ('{{root}}learn/additives/', 'Additives'), ('{{root}}learn/toxic/', 'Toxic foods')]),
     ('About', [('{{root}}methodology/', 'How scoring works'),
                ('https://world.openpetfoodfacts.org/', 'Open Pet Food Facts'),
-               ('https://github.com/Azqato/Cat-Food-Center/issues', 'Report a problem'),
+               ('https://github.com/Azqato/catfoodcenter/issues', 'Report a problem'),
                ('{{root}}LICENSE.md', 'Licence')]),
 ]
 

@@ -145,7 +145,7 @@ def build(name, title, description, current, module, want_toc, want_search):
     return path
 
 
-BASE = 'https://azqato.github.io/Cat-Food-Center/'
+BASE = 'https://azqato.github.io/catfoodcenter/'
 
 # path, changefreq, priority. Ordered as the sitemap reads.
 #

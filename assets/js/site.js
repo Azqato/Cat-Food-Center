@@ -16,7 +16,7 @@
    the root is derivable, once, here, and every other module asks. It cannot
    drift, because it is not a written-down fact: it is a measurement.
 
-   The result is absolute (https://host/Cat-Food-Center/), which is correct
+   The result is absolute (https://host/catfoodcenter/), which is correct
    and is not the thing PRD section 26.2 prohibits. That rule forbids
    *hard-coded* absolute paths like '/assets/...', which assume the site is
    served from a domain root and 404 under a repository subpath. This is
