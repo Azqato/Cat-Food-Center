@@ -14,6 +14,10 @@ is quiet. A mistyped key is ignored by the merge and the figure simply never
 appears; an implausible transcription produces a wrong score that looks exactly
 like a right one. Neither shows up in a diff as anything but a number.
 
+It also checks the raw panel captures in tools/data/panels/, which hold what
+the label printed rather than what this site scores. See PRD section 12.11 for
+why they exist and why they are not part of an entry.
+
 The bands and the reasoning behind them are docs/PRD.md sections 12.5 and 16.5a.
 """
 import datetime
@@ -56,6 +60,17 @@ BANDS = {
     'moisturePct': (0, 92),
     'kcalPer100g': (15, 600),
 }
+
+# PRD 12.11: everything the panel prints is captured, including the figures
+# nothing scores. It lives here rather than on the catalogue entry because
+# catalogue.json is fetched by every visitor and precached by the service
+# worker, and a hundred verbatim panels would be most of a megabyte of data no
+# page reads. Nothing under tools/ is served, so the capture costs a visitor
+# nothing and costs a future field nothing to backfill from.
+PANELS = os.path.join(ROOT, 'tools', 'data', 'panels')
+PANEL_REQUIRED = {'barcode', 'source', 'sourceKind', 'checked', 'text'}
+PANEL_OPTIONAL = {'capturedFrom', 'analysis', 'statements'}
+CAPTURE_KINDS = {'html', 'pdf', 'photo', 'manual'}
 
 FORMATS = {'wet', 'dry', 'unknown'}
 LIFE_STAGES = {'growth', 'adult', 'all', 'unknown'}
@@ -129,6 +144,87 @@ def check(entry, key, problems):
         bad('taurinePresent records only a positive declaration, so it is true or absent')
 
 
+def check_panel(panel, key, entry, problems):
+    """Shape, not meaning.
+
+    PRD 12.11 rule 3: the plausible bands exist to protect scores, and nothing
+    in here is scored, so a figure this file holds is checked for being a
+    string and not for being believable. The one thing that is enforced beyond
+    shape is that a capture and its entry were the same reading of the same
+    panel, because a record whose parsed fields are current and whose raw text
+    is two years stale is worse than no record.
+    """
+    def bad(message):
+        problems.append('panels/%s.json: %s' % (key, message))
+
+    if not isinstance(panel, dict):
+        bad('capture is not an object')
+        return
+
+    missing = PANEL_REQUIRED - set(panel)
+    if missing:
+        bad('missing %s' % ', '.join(sorted(missing)))
+    unknown = set(panel) - PANEL_REQUIRED - PANEL_OPTIONAL
+    if unknown:
+        bad('unknown key(s): %s' % ', '.join(sorted(unknown)))
+
+    if panel.get('barcode') != key:
+        bad('barcode field %r does not match its filename' % panel.get('barcode'))
+
+    text = panel.get('text')
+    if not isinstance(text, str):
+        bad('text must be a string')
+    elif len(text.strip()) < 40:
+        bad('text is too short to be a captured panel')
+
+    if entry is None:
+        bad('no catalogue entry for this barcode. A capture records the panel an '
+            'entry was read from, so it does not stand alone')
+    else:
+        for field in ('source', 'sourceKind', 'checked'):
+            if panel.get(field) != entry.get(field):
+                bad('%s is %r and the catalogue entry says %r. One reading, one date'
+                    % (field, panel.get(field), entry.get(field)))
+
+    kind = panel.get('capturedFrom')
+    if kind is not None and kind not in CAPTURE_KINDS:
+        bad('capturedFrom must be one of %s' % ', '.join(sorted(CAPTURE_KINDS)))
+
+    analysis = panel.get('analysis')
+    if analysis is not None:
+        if not isinstance(analysis, dict):
+            bad('analysis must be an object of label to printed value')
+        else:
+            for label, value in analysis.items():
+                if not isinstance(value, str) or not str(value).strip():
+                    bad('analysis[%r] must be the value as printed, got %r' % (label, value))
+
+    statements = panel.get('statements')
+    if statements is not None:
+        if not isinstance(statements, list):
+            bad('statements must be a list of sentences as printed')
+        elif not all(isinstance(s, str) and s.strip() for s in statements):
+            bad('every statement is a non-empty string, as printed')
+
+
+
+
+def read_panels(problems):
+    """Every capture on disk, keyed by barcode."""
+    found = {}
+    if not os.path.isdir(PANELS):
+        return found
+    for name in sorted(os.listdir(PANELS)):
+        if not name.endswith('.json'):
+            continue
+        key = name[:-len('.json')]
+        try:
+            found[key] = json.loads(io.open(os.path.join(PANELS, name), encoding='utf-8').read())
+        except ValueError as exc:
+            problems.append('panels/%s: not valid JSON: %s' % (name, exc))
+    return found
+
+
 def main():
     if not os.path.exists(PATH):
         print('No catalogue at %s.' % os.path.relpath(PATH, ROOT))
@@ -148,6 +244,10 @@ def main():
     for key in sorted(products):
         check(products[key], key, problems)
 
+    panels = read_panels(problems)
+    for key in sorted(panels):
+        check_panel(panels[key], key, products.get(key), problems)
+
     for key in sorted(products):
         entry = products[key]
         name = (entry.get('name') or entry.get('ingredientsText') or '')[:38]
@@ -156,6 +256,11 @@ def main():
                                           entry.get('checked', '?'), ', '.join(fields)))
         if name:
             print('  %-14s %s' % ('', name))
+        panel = panels.get(key)
+        if panel:
+            print('  %-14s panel captured, %d characters%s' % (
+                '', len(panel.get('text') or ''),
+                ', %d figures' % len(panel['analysis']) if panel.get('analysis') else ''))
 
     print('')
     if problems:
@@ -164,8 +269,10 @@ def main():
         print('\n%d entr%s, %d problem(s).'
               % (len(products), 'y' if len(products) == 1 else 'ies', len(problems)))
         return 1
-    print('%d entr%s, all sourced and within the plausible bands.'
-          % (len(products), 'y' if len(products) == 1 else 'ies'))
+    # Not a failure. Captures are backfilled as products are revisited, and an
+    # entry written before PRD 12.11 existed is not wrong, only thinner.
+    print('%d entr%s, all sourced and within the plausible bands. %d raw panel(s) captured.'
+          % (len(products), 'y' if len(products) == 1 else 'ies', len(panels)))
     return 0
 
 

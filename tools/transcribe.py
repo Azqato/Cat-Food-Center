@@ -26,6 +26,13 @@ attaches one product's panel to another product's scan, and no gate can catch
 it, because both halves are individually valid. So the tool proposes and a
 person decides, every time.
 
+*The whole panel, not only the scored part.* PRD section 12.11: every figure
+the label prints is captured, including the ones nothing reads, and the panel's
+text is kept verbatim beside them in tools/data/panels/<barcode>.json. A figure
+skipped today is this entire procedure repeated the day it matters, for every
+product already entered. The capture is not part of the entry and never reaches
+a page; it is a record of what was read.
+
 *Writing.* `--write` puts the entry in assets/data/catalogue.json and runs
 check-catalogue.py, refusing to leave a file the gate rejects. Without it,
 nothing is written and the proposal is printed for review, which is the default
@@ -50,6 +57,7 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CATALOGUE = os.path.join(ROOT, 'assets', 'data', 'catalogue.json')
+PANELS = os.path.join(ROOT, 'tools', 'data', 'panels')
 UPC_API = 'https://api.upcitemdb.com/prod/trial/search'
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/140.0 Safari/537.36')
@@ -67,9 +75,30 @@ def fetch_text(url):
     with urllib.request.urlopen(request, timeout=60) as response:
         body = response.read()
         kind = response.headers.get('Content-Type', '')
+        charset = response.headers.get_content_charset()
     if 'pdf' in kind.lower() or url.lower().endswith('.pdf'):
         return deck.text_of(body), 'pdf'
-    return html_text(body.decode('utf-8', 'replace')), 'html'
+    return html_text(decode(body, charset)), 'html'
+
+
+def decode(body, charset=None):
+    """The page's own characters, not a guess that turns them into question marks.
+
+    This mattered the moment PRD 12.11 started keeping panel text verbatim. Dr.
+    Elsey's serves Windows-1252 and its feeding guide is full of en dashes; a
+    flat utf-8 decode with 'replace' turned each one into U+FFFD, and a capture
+    whose whole purpose is fidelity was corrupting the text on the way in.
+    Declared encoding first, then utf-8, then Windows-1252, which is what a
+    browser does and is nearly always right about.
+    """
+    for encoding in [charset, 'utf-8', 'cp1252']:
+        if not encoding:
+            continue
+        try:
+            return body.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return body.decode('utf-8', 'replace')
 
 
 def html_text(source):
@@ -221,7 +250,206 @@ def first_title(raw, kind):
     return ''
 
 
-def write_entry(entry):
+# Anything printed as "<label> (min) <number> <unit>", which is the form a
+# guaranteed analysis is written in whatever it is guaranteeing. Deliberately
+# not a list of the fields this project knows about: the point of PRD 12.11 is
+# the figures nobody has thought of yet, and a named list can only capture the
+# ones somebody already did.
+#
+# The qualifier is taken either side of the number, because labels print both
+# "Crude Protein (min) 59.0%" and "Crude Protein 59.0% min".
+UNITS = r'%|IU/kg|IU/lb|mg/kg|mg/lb|kcal/kg|kcal/cup|kcal/can'
+PRINTED_FIGURE = re.compile(
+    r'^(?P<label>.*?)\s*(?:[(\[]\s*(?P<before>min|max|minimum|maximum)\s*[)\]]\s*)?'
+    r'(?P<value>[\d,]+(?:\.\d+)?)\s*(?P<unit>' + UNITS + r')'
+    r'\s*(?:[(\[]?\s*(?P<after>min|max|minimum|maximum)\s*[)\]]?)?\s*$', re.I)
+
+# Where a guarantee is printed. Everything outside these blocks is marketing,
+# and marketing contains numbers with percent signs beside them: this page
+# advertises "95% chicken" and footnotes a facility that is "not 100%
+# Gluten-Free". Both parse perfectly as guarantees and neither is one.
+FIGURE_BLOCKS = (r'guaranteed\s+analysis', r'calorie\s+content', r'caloric\s+content',
+                 r'calorie\s+information')
+
+
+def figure_blocks(text):
+    """The guaranteed analysis and the calorie statement, as printed.
+
+    Given the text with its line breaks intact. `deck.flatten` is not used
+    here and that is the point: a panel's line breaks are its structure, and
+    flattening them ran the guarantee straight into the paragraph after it,
+    which cost this page its last figure.
+    """
+    blocks = []
+    for pattern in FIGURE_BLOCKS:
+        for match in re.finditer(pattern, text, re.I):
+            blocks.append(text[match.end():match.end() + 900])
+    return blocks
+
+
+def figure_segments(block):
+    """One printed figure per segment.
+
+    Split on line breaks, semicolons, and commas that do not sit inside a
+    number: "3,953 kcal/kg" is one figure and splitting it produced a figure
+    of 953.
+    """
+    for segment in re.split(r'[;\n]|,(?!\d)', block):
+        segment = ' '.join(segment.split()).strip(' .:')
+        if segment:
+            yield segment
+
+
+def printed_figures(text):
+    """Every number the guarantee states, as printed, keyed by its printed label.
+
+    The value keeps its unit and its min/max qualifier, because "59.0% min" and
+    "59.0% max" are different guarantees and a bare 59.0 is neither. Nothing
+    here is converted, rounded or renamed: a capture that normalises is a
+    capture that has already decided what the figure means.
+
+    A block ends where the figures stop rather than at a fixed length, because
+    "Guaranteed Analysis" is followed by a guarantee and then by prose, and no
+    character count knows where. Two consecutive segments that are not figures
+    is the end of it. That also disposes of the navigation: this page prints
+    "Caloric Content" as a tab heading three times before printing it as a
+    label, and each of those is followed immediately by something that is not a
+    number.
+    """
+    figures = {}
+    for block in figure_blocks(text):
+        misses = 0
+        for segment in figure_segments(block):
+            match = PRINTED_FIGURE.match(segment)
+            label = match.group('label').strip(" .:-'") if match else ''
+            if not match or len(label.split()) > 7:
+                misses += 1
+                if misses >= 2:
+                    break
+                continue
+            misses = 0
+            qualifier = (match.group('before') or match.group('after') or '').lower()
+            qualifier = {'minimum': 'min', 'maximum': 'max'}.get(qualifier, qualifier)
+            value = '%s%s%s' % (match.group('value'), match.group('unit'),
+                                ' ' + qualifier if qualifier else '')
+            # "3,953 kcal/kg, 523 kcal/cup": the second figure carries no label
+            # of its own and the unit is the only name it has.
+            figures.setdefault(label or match.group('unit'), value)
+    return dedupe(figures)
+
+
+def dedupe(figures):
+    """The same figure read twice under two labels is one figure.
+
+    A guarantee that runs into the calorie statement is read once ending at the
+    line break and once carrying the next line's heading, so 3,953 kcal/kg
+    arrives as both "Metabolizable Energy" and "Caloric Content (calculated)
+    Metabolizable Energy". The shorter label is the one the panel put next to
+    the number.
+    """
+    drop = set()
+    for label, value in figures.items():
+        for other, same in figures.items():
+            if other is label or same != value:
+                continue
+            if other.endswith(label) or label.endswith(other):
+                drop.add(label if len(label) > len(other) else other)
+    return dict((k, v) for k, v in figures.items() if k not in drop)
+
+
+PANEL_ANCHORS = (r'crude\s+protein', r'guaranteed\s+analysis', r'ingredients?\b',
+                 r'calorie\s+content', r'caloric\s+content',
+                 r'\bAAFCO\b', r'feeding\s+(guide|instructions|directions)')
+
+
+def panel_window(text):
+    """The part of the page the label is printed on.
+
+    A manufacturer's product page is mostly navigation, marketing and a footer,
+    and storing all of it would be storing the website rather than the panel.
+    The window runs from the first thing that reads like a label to the last,
+    with a wide margin at both ends, because the cost of a little too much is a
+    few kilobytes and the cost of too little is the refetch this capture exists
+    to prevent.
+
+    No anchor found means no panel was recognised, and the whole text is kept.
+    Guessing a narrower window there would be discarding the only evidence.
+    """
+    starts, ends = [], []
+    for pattern in PANEL_ANCHORS:
+        for match in re.finditer(pattern, text, re.I):
+            starts.append(match.start())
+            ends.append(match.end())
+    if not starts:
+        return text.strip(), False
+    low = max(0, min(starts) - 300)
+    high = min(len(text), max(ends) + 900)
+    return text[low:high].strip(), True
+
+
+def printed_statements(text, aafco):
+    """The sentences a panel prints that are not figures.
+
+    The AAFCO statement verbatim, because it says which of the two routes was
+    taken and the entry keeps only two derived values. And the manufacturer's
+    own footnotes, which are where a maker qualifies its own claim: the
+    "not recognized as an essential nutrient" note beside an omega-3 figure is
+    the label arguing with itself, and it is worth keeping.
+    """
+    found = []
+    if aafco:
+        found.append(' '.join(aafco.split()))
+    # A footnote sits wherever the label had room for it. This page prints
+    # "Non-GMO & For All Life Cycles *produced in a facility that is not 100%
+    # Gluten-Free" on one line, so a rule that wanted the asterisk at the start
+    # of a line found nothing.
+    for match in re.finditer(r'[*' + chr(8224) + r']\s*([a-z][^*' + chr(8224) + r'\n]{10,300})', text):
+        line = ' '.join(match.group(1).split()).rstrip()
+        if line not in found:
+            found.append(line)
+    for line in text.split(chr(10)):
+        if re.search(r'not\s+recognized\s+as\s+an\s+essential', line, re.I):
+            line = ' '.join(line.split())
+            if line not in found:
+                found.append(line)
+    return found
+
+
+def capture_panel(entry, raw, kind, aafco):
+    """What the label printed, beside what this site made of it.
+
+    PRD 12.11. It carries the entry's own source, sourceKind and checked date
+    because it is the same reading of the same panel, and the gate refuses a
+    capture whose dates have drifted from its entry's.
+    """
+    text, located = panel_window(raw)
+    panel = {
+        'barcode': entry['barcode'],
+        'source': entry['source'],
+        'sourceKind': entry['sourceKind'],
+        'checked': entry['checked'],
+        'capturedFrom': kind if kind in ('html', 'pdf') else 'manual',
+        'text': text,
+    }
+    figures = printed_figures(text)
+    if figures:
+        panel['analysis'] = figures
+    statements = printed_statements(text, aafco)
+    if statements:
+        panel['statements'] = statements
+    return panel, located
+
+
+def write_panel(panel):
+    if not os.path.isdir(PANELS):
+        os.makedirs(PANELS)
+    path = os.path.join(PANELS, '%s.json' % panel['barcode'])
+    io.open(path, 'w', encoding='utf-8', newline=chr(10)).write(
+        json.dumps(panel, ensure_ascii=False, indent=1) + chr(10))
+    return path
+
+
+def write_entry(entry, panel=None):
     """Into the catalogue, and only if the gate still passes afterwards."""
     data = json.load(io.open(CATALOGUE, encoding='utf-8'))
     before = json.dumps(data, ensure_ascii=False, indent=1)
@@ -231,14 +459,20 @@ def write_entry(entry):
     data['products'][entry['barcode']] = entry
     io.open(CATALOGUE, 'w', encoding='utf-8', newline='\n').write(
         json.dumps(data, ensure_ascii=False, indent=1) + '\n')
+    written = write_panel(panel) if panel else None
     gate = subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'check-catalogue.py')],
                           capture_output=True, text=True)
     print(gate.stdout.strip()[-800:])
     if gate.returncode != 0:
         io.open(CATALOGUE, 'w', encoding='utf-8', newline='\n').write(before + '\n')
+        if written:
+            os.remove(written)
         print('# The gate refused this entry, so the catalogue is unchanged.')
         return 1
     print('# Written. %d entries.' % len(data['products']))
+    if written:
+        print('# Panel captured: %s, %d characters.'
+              % (os.path.relpath(written, ROOT), len(panel['text'])))
     return 0
 
 
@@ -261,11 +495,23 @@ def one(url, barcode, find, write, meta=None):
     missing = [f for f, _ in deck.GA_FIELDS if f not in entry]
     if missing:
         print('# Not found, which may be correct for this product: %s' % ', '.join(missing))
+
+    panel, located = capture_panel(entry, raw, kind, aafco)
+    if not located:
+        print('# No panel recognised on this page, so the whole text is captured.')
+    print('# Panel: %d characters, %d printed figure(s), %d statement(s).'
+          % (len(panel['text']), len(panel.get('analysis') or {}),
+             len(panel.get('statements') or [])))
+    extra = sorted(set(panel.get('analysis') or {}))
+    if extra:
+        print('# Figures as printed: %s' % '; '.join(
+            '%s %s' % (k, panel['analysis'][k]) for k in extra))
+
     if write:
         if not barcode:
             print('# Refusing to write without a barcode.')
             return 2
-        return write_entry(entry)
+        return write_entry(entry, panel)
     return 0
 
 

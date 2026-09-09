@@ -21,6 +21,54 @@ punctuation rather than content.
 
 ---
 
+## [0.33.0] - 2026-09-09
+
+**The panel capture from section 12.11 is built, and it goes in a sidecar rather than on the entry,
+because an entry is a download.**
+
+Added
+* **`tools/data/panels/<barcode>.json`,** holding the panel verbatim beside the figures it prints,
+  keyed by barcode. `transcribe.py` writes one whenever it writes an entry, and the first is Dr.
+  Elsey's cleanprotein Chicken Recipe Kibble: 11 printed figures including EPA, DHA, omega-3,
+  vitamin E, the taurine percentage and kcal/cup, none of which the catalogue entry can hold.
+* **`check-catalogue.py` checks captures.** Shape, not meaning, per rule 3: the plausible bands
+  exist to protect scores and nothing here is scored. The one thing enforced beyond shape is rule 2,
+  that a capture and its entry carry the same source and the same checked date, because parsed
+  fields that are current beside raw text that is two years stale would be a trap. Verified by
+  breaking it four ways: a drifted date, an unknown key, a text too short to be a panel, and a
+  figure stored as a number instead of as printed. All four refused.
+
+Changed
+* **Section 12.11 said captures live "in their own block on the entry". That was wrong and is
+  corrected there.** `assets/data/catalogue.json` is fetched by every visitor and precached by the
+  service worker: five entries are 8.6KB and a captured panel is about 3KB, so a hundred of them on
+  the entries would have pushed a quarter of a megabyte of data no page reads onto every device,
+  offline installs included. Nothing under `tools/` is served. The rule that a capture is not a
+  curated field is now enforced by the filesystem instead of by a convention, and no JavaScript
+  changed, which is the sign it was the right place to put it.
+* **Order.** This was scheduled first inside M27b, after M23. It was built before both, for the
+  reason the policy exists: entries written before the capture are exactly the entries that would
+  need refetching, and M23 is about 18 more of them.
+
+Fixed
+* **The page's own character set.** `fetch_text` decoded every page as utf-8 with errors replaced.
+  Dr. Elsey's serves Windows-1252, so its en dashes and trademark signs were arriving as U+FFFD:
+  survivable while only numbers were being read, fatal the moment 12.11 started keeping text
+  verbatim. It now honours the declared charset, then utf-8, then Windows-1252, which is what a
+  browser does.
+* **Three faults in the figure reader, all found on the first panel it met.** A line-wide match read
+  "Eicosapentaenoic Acid (EPA) (min) 0.06%, Docosahexaenoic Acid (DHA) (min) 0.06%" as one figure
+  labelled "min", losing both fatty acids this section was written about. Splitting on every comma
+  turned "3,953 kcal/kg" into 953. And flattening the text before scanning ran the guarantee into
+  the paragraph after it, which cost the panel its last figure, omega-3. A panel's line breaks are
+  its structure.
+
+Notes
+* Backfilling the four earlier entries is not scheduled. They are not wrong, only thinner, and they
+  are revisited when their products are. `check-catalogue.py` reports the count rather than
+  requiring one.
+* Section 24.1's open item for this is deleted, having been opened and closed the same day.
+
 ## [0.32.0] - 2026-09-09
 
 **Documentation only. A retention decision: transcription captures everything the panel prints,
