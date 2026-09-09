@@ -598,6 +598,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M23: Dr. Elsey’s | | Queued, blocked on barcodes |
 | M24: Premix groups | | Queued, see 16.11 |
 | M26: Hide unscored products by default | | Queued, requested 2026-09-08 |
+| M27: Our own product database | | Queued, requested 2026-09-09 |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -826,6 +827,7 @@ now reports the same call the engine made, and a test pins it.
 | 2 | **M24: premix groups** | Also unblocked. It moves scores, so it wants a slot where nothing else is moving them, and both blocked milestones below leave exactly that |
 | 3 | **M22, finishing it: a coverage number** | M12's only open criterion. M25 is done; it still needs a barcode per SKU |
 | 4 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
+| 5 | **M27: our own product database** | Requested 2026-09-09. The destination the catalogue has been walking toward since M20, and the largest thing on this list. It is last because the four above are how you find out what it has to hold |
 | - | **M12: public beta** | Not work of its own. It is the gate the ones above roll up to |
 
 **M25: curated products become discoverable.** *Shipped 2026-09-08.* Search and the brand index now consult the catalogue, a curated card carries its provenance, and a live check fails if a search card and a product page report different scores for the same barcode. Section 16.5b has what was built and why.
@@ -845,6 +847,18 @@ now reports the same call the engine made, and a test pins it.
 **4. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
 
 *Blocked on something other than the panel.* Dr. Elsey's publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC; Amazon and Target do not show one either; and Open Pet Food Facts holds exactly one Dr. Elsey's record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription. It shares that blocker with M22, which is the argument for taking them together, and it is why both sit behind the two unblocked milestones rather than ahead of them.
+
+**5. M27: our own product database.** *Requested 2026-09-09: a product database like Open Pet Food Facts, hosted on this site.* This is where the curated catalogue has been heading since M20 without anybody naming the destination. `assets/data/catalogue.json` is already a small local database with a schema, a provenance model and a gate; M27 is that file growing into the thing the site is primarily served from, with Open Pet Food Facts becoming a source it reads rather than the source it depends on.
+
+*It stays static, and that is not a compromise.* The architecture decision of 2026-09-08 was to keep the site a set of files with no backend, and a database does not require a server. What it requires is an index, and an index can be a file. The shape that fits ADR-001 is sharded JSON built at author time by a tool in `tools/`, plus a small index the browser loads once: a name and brand index for search, a barcode index for lookup, and one shard per bucket of products so a visitor downloads the few kilobytes their query touches rather than the whole database. The scoring engine already runs entirely in the browser and never fetches, so nothing about scoring changes.
+
+*What it actually costs, which is not the code.* The engineering here is a week of work and the schema mostly exists. The real cost is that this project stops being a reader of somebody else's data and becomes a publisher of its own, and every wrong figure becomes ours. Tenet 4 and section 16.5a are built on a reader's promise, that a number can be traced to where it came from; a local database keeps that promise only if every record still names a source, a `sourceKind` and a checked date, and only if the transcription rate is honest about how far behind the labels it is. A record with no provenance would be worse than no record, because it would look exactly like the ones that have it.
+
+*What it does not do.* It does not fork Open Pet Food Facts, and it does not stop reading from it. A local database that shadows a community one silently diverges from it, and the divergence is invisible to a visitor. The merge rules in 16.5a already say which source wins and why; M27 widens what those rules run over rather than replacing them. Corrections found here should go upstream as well, because section 24 says a correction that only improves our copy is a correction we kept.
+
+*The open question, which is the one to answer before writing code.* A database people cannot contribute to is a transcription backlog with better tooling, and this site has no backend to accept a submission. Today `/submit/` points a visitor at Open Pet Food Facts, which is a real answer and stops being one the moment the local database is the primary source. The candidates are a GitHub issue form feeding a review step, a pull request against the data files, or keeping submissions upstream and syncing. That choice decides whether M27 is a product or a chore, and it should be made deliberately rather than discovered.
+
+*Why it is last.* M26, M24, M22 and M23 are all cheap next to this, and three of them tell you what it has to hold: M22 says which products matter, M23 says what a full brand transcription actually takes, and the barcode blocker both share is the same blocker a local database has to solve on day one. Building the container before knowing what goes in it is the mistake this milestone is most likely to make.
 
 **M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open.** The API cannot deliver it: of 1000 products sampled, 338 carry an ingredient list, and the whole United States cat-food category is 86 records. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list of what to cover, M25 made entries reachable, and what remains is a barcode source and volume.
 
