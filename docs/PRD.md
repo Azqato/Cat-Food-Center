@@ -540,11 +540,13 @@ Measured 2026-09-08, while transcribing the first curated entries.
 |---|---|---|
 | Nestle Purina (Fancy Feast, Friskies, Cat Chow, Pro Plan, Purina ONE, Beyond) | A PDF label deck per product under `purina.com/sites/default/files`, carrying the guaranteed analysis, the ingredient list in order and the AAFCO statement as text | **Yes**, and it is the best source found |
 | Mars (Sheba, Temptations, Whiskas, Iams) | The panel as an image on the product page | No. Nothing can be transcribed without a person reading a photograph |
-| Dr. Elsey’s | The full panel as text on the product page, ingredient list included, and the page is fetchable | **The panel, yes. The product, no**, and the reason is below |
+| Dr. Elsey’s | The full panel as text on the product page, ingredient list included, and the page is fetchable | **Yes, both**, since 2026-09-09. The panel was never the problem; the barcode was, and section 12.10 solves it |
 
 **Two things about the Purina source are worth writing down, because neither is obvious.** The first is that `purina.com` returns HTTP 403 to any automated request for a *page*, including `robots.txt` itself, while serving the PDFs under `/sites/default/files` normally. The file store is open and the site is not, so label decks are found by search and fetched directly, and nothing here crawls the site. The second is that the decks are indexed, so a product's deck is reliably findable by name even though the catalogue of them is not browsable.
 
-**A readable panel is not enough on its own: the entry needs a barcode.** The catalogue is keyed by barcode, because that is what a visitor scans and what the API is asked for. Dr. Elsey’s is the case that makes the point. Its site publishes a complete panel as text, which is better than Purina manages on the page itself, and no UPC anywhere; and Open Pet Food Facts holds one Dr. Elsey’s record, for cat litter. So a product whose data is entirely readable still cannot be entered, because nothing published anywhere states which number is printed on the bag. This is a distinct blocker from panel format and it is measured separately for that reason.
+**A readable panel is not enough on its own: the entry needs a barcode.** The catalogue is keyed by barcode, because that is what a visitor scans and what the API is asked for. Dr. Elsey’s was the case that made the point. Its site publishes a complete panel as text, better than Purina manages on the page itself, and no UPC anywhere; Open Pet Food Facts holds one Dr. Elsey’s record, for cat litter.
+
+*Solved 2026-09-09, and the answer was that "published" was being read too narrowly.* The manufacturer does not publish the UPC and no retailer shows it, but aggregators hold it: UPCitemdb's trial endpoint returns `000338026604` for cleanprotein Chicken Recipe Kibble 6.6lb, under a title anybody can check the product against. That is evidence rather than a manufacturer statement, which is why section 12.10 has a person choose from candidates and never lets the tool pick. **A wrong barcode is the worst error available to this project**: it files one product's panel under another product's scan, every half of it is individually valid, and no gate can see it.
 
 **The consequence for coverage** is that the achievable ceiling is set by who publishes text, not by how much transcription anybody is willing to do. A Mars-heavy top-100 has a lower ceiling than a Purina-heavy one, and the 80% target in section 12.7 is the margin that acknowledges it.
 
@@ -572,7 +574,79 @@ Measured 2026-09-08, while transcribing the first curated entries.
 
 **Five of the hundred are a different problem.** They carry an ingredient list and are not tagged `cat-food`, so the site's own category filter hides them. All five are Fancy Feast. That is fixable upstream rather than here, and it is recorded separately because "nobody entered it" and "somebody entered it and left off one tag" call for different work.
 
-**What this does to M12.** Section 12.7's target is 80% and the measurement is 0%, so the criterion is not close, and this is the first day it has been measurable at all. The decision it forces belongs to the project owner and is recorded in section 13 rather than settled here.
+**What this does to M12.** Section 12.7's target is 80% and the measurement is 0%, so the criterion is not close, and 2026-09-09 is the first day it has been measurable at all. **The owner's answer, the same day, was to defer the launch and transcribe**: the process first, Dr. Elsey's as the test case, then the top 100 in batches of five. Section 13 has the order.
+
+**This number is re-measured at every batch, not at the end.** `python tools/measure-coverage.py` costs about twenty requests and a couple of minutes, and a batch of five that moves it by nothing is worth knowing about immediately: it would mean the transcriptions are landing on products the measurement cannot match, which is a defect in one or the other and not something to discover after eighty entries.
+
+### 12.10 The transcription process
+
+**Written 2026-09-09**, because the next several milestones are all the same work: M23 is a brand, M12 needs coverage, M27 is a database, and each of them is this procedure repeated. A process nobody wrote down is a process that is slightly different every time and cannot be handed to anybody.
+
+**One product, six steps.**
+
+1. **Pick the SKU and find its panel.** Section 12.8 says who publishes what: a Purina PDF deck, a manufacturer page that prints the panel as text, or nothing usable, in which case stop here and record it as unreachable rather than transcribing a retailer's copy.
+2. **Resolve a barcode.** `python tools/transcribe.py <url> --find-barcode "<brand> <product> <size>"` prints candidates with the titles they are filed under. **Choose one by reading it.** The tool never chooses, and a multipack listing is not the product: a title reading "Pack Of 2" is a reseller's own code and belongs to a bundle, not to the bag on the shelf.
+3. **Propose the entry, and capture everything the panel prints.** Section 12.11 is the standing decision here: every published figure is read, including the ones no score uses, and the panel's text is kept verbatim beside them. A figure skipped today is the whole transcription repeated the day it matters. `python tools/transcribe.py <url> --barcode N --name "..." --brand "..." --quantity "..."`. Name, brand and pack size are given by hand because no panel states them and a product the database has never heard of has no name without them. Nothing is written yet.
+4. **Read every figure against the source.** This is the step the tooling exists to make possible, not to replace. `label-deck.py` misread three things on its first run (section 13, M21), and the parser here has met a handful of layouts, not all of them.
+5. **Write it.** Add `--write`. The entry goes into `assets/data/catalogue.json` and `check-catalogue.py` runs immediately; if the gate refuses, the file is restored and nothing is left behind.
+6. **Verify what the visitor sees.** Load `/product/?barcode=<code>` and read the score, the reasoning, the provenance box and the confidence line. A gate checks the shape of an entry; only the page shows whether it says something true.
+
+**In batches of five, each batch a checkpoint.** `python tools/transcribe.py --batch <file>` takes a JSON array of rows carrying `url`, `barcode`, `name`, `brand`, `quantity` and `note`. Five is the size at which the review step in step 4 is still done properly. Each batch ends with the gates, a commit, a push and `python tools/measure-coverage.py`, so the number in section 12.9 moves visibly rather than in one unverifiable jump at the end.
+
+**What an entry must say about itself.** `sourceKind` is `manufacturer` only when the panel came from the maker's own publication. A barcode from an aggregator does not change that, because the panel is what the score is computed from and the barcode is only the key it is filed under, but the entry's `note` says where the barcode came from and quotes the title it was filed under, so the choice made in step 2 is auditable by somebody who was not there.
+
+**The first entry was checked against a photograph of the printed panel**, supplied by the project owner after the transcription was written from the manufacturer's page text. Every figure agrees: protein 59.0, fat 17.0, fibre 4.0, moisture 12.0, taurine 0.15, 3,953 kcal/kg, the ingredient list in printed order, and "for All Life Stages". The panel prints no ash figure and the entry carries none, which is the parser declining to invent one rather than a gap.
+
+*That check is worth keeping in the process.* The page text and the printed panel are two publications of the same label and they can disagree, because a website is edited and a bag is printed. Where a photograph of the panel is available, reading the entry against it is the strongest verification this project can do, and it is the only one that would catch a manufacturer's page being out of date with its own packaging.
+
+**Two things the panel carries that this site cannot yet hold, both found by that check and neither of them fixed here.**
+
+*Fatty acids and vitamin E have nowhere to go.* The panel states EPA 0.06%, DHA 0.06%, omega-3 0.40% and vitamin E 150 IU/kg, and `DATA_FIELDS` has no field for any of them, so they are dropped rather than misfiled. This is the first product in the catalogue to publish them. They are exactly the kind of figure the scoring engine could reward, and adding a field is cheap; deciding what a score should do with it is not, and that decision belongs with the scoring work rather than with transcription. Recorded in section 24.1.
+
+*The premix is in parentheses, and M24 expands brackets.* This label prints `Vitamins (Niacin, ...)` and `Minerals (Zinc Proteinate, ...)`, where Purina prints `VITAMINS [...]`. `expandGroups` requires square brackets, so the premix arrives as one ingredient again, which is the exact condition M24 shipped to fix. It cost this product nothing, because it flags no additives, but a parenthesised premix containing menadione would put a Tier 3 flag on the whole premix and read as high risk. Extending the rule is one character in a regular expression and a decision worth making carefully: parentheses also carry `chicken (4%)` and `Mixed Tocopherols (Preservative)`, and the guard that protects those is the heading test, not the bracket shape. Recorded in section 24.1.
+
+**Two things this process changed on its first run, both of which were the site being wrong rather than the product being unusual.**
+
+*The plausible band for protein was 50% and the first product outside the supermarket shelf states 59%.* Dr. Elsey's cleanprotein kibble is a real product, that is its published figure, and `check-catalogue.py` called it impossible. The band came from a database of ordinary food and had quietly encoded "ordinary" as "real". It is 65 now, in the gate, in `opff.js` and in `probe-opff.py`, which still catches what the band exists for: a per-kilogram figure lands in the hundreds and a dry-matter figure for wet food in the eighties.
+
+*The provenance box credited a record that does not exist.* It ended "everything else on this page is from the Open Pet Food Facts record", which is true of an entry filling gaps in a record and false of a product upstream has never heard of. Every curated entry before this one was the first kind. `mergeCurated` now records whether there was an upstream record at all, and the page says the honest sentence for each case.
+
+---
+
+---
+
+### 12.11 Capture everything the panel prints
+
+**Decided 2026-09-09 by the project owner, and it is a retention policy rather than a scoring one.** Transcription captures every figure the label publishes, including the ones nothing currently reads. The reason is the cost of the alternative: a figure left out today is a figure that needs the panel fetched, parsed and reviewed again the day it matters, for every product already entered. Reading it once and keeping it is nearly free; going back for it is the whole transcription over again.
+
+**This does not change any score, and that separation is the point.** Section 6 decides what a score is made of, and nothing here asks it to change. A captured figure sits in the record unread until somebody makes a deliberate decision to use it, at which point the data is already there for every product transcribed since this policy. **Long term these figures may well earn a place in the score.** Short term they are stored and shown to nobody, which is the honest state for a number that has not been reasoned about.
+
+**What to capture, from the Dr. Elsey's panel that prompted this.**
+
+| On the label | Held today | |
+|---|---|---|
+| Crude protein, fat, fibre, moisture, ash | Yes, `crudeProteinPct` and the rest | |
+| Taurine, as a declaration | Yes, `taurinePresent`, a boolean | The panel prints a percentage (0.15% min) and the record keeps only "declared" |
+| Calorie content, kcal/kg | Yes, as `kcalPer100g` | The label's own kcal/cup is dropped, and it is the figure a feeding guide is written in |
+| **EPA, DHA, omega-3, omega-6** | **No** | Printed as minimum percentages. The nearest thing to a direct measure of oil quality a label offers |
+| **Vitamin E, IU/kg** | **No** | An amount, not a "supplement present" flag |
+| **Calcium, phosphorus, magnesium** | **No** | Not on this label; standard on renal and urinary formulas, which is exactly where a reader wants them |
+| **The feeding guide** | **No** | Grams and cups per body weight. It is what turns a kcal figure into a daily cost, and no API publishes it |
+| **The AAFCO statement, verbatim** | Only as `aafcoComplete` and `lifeStage` | Two derived values where the label prints a sentence, and the sentence says which of the two AAFCO routes was taken, formulation or feeding trial |
+| **Footnotes and asterisks** | **No** | This label's "not recognized as an essential nutrient by the AAFCO Cat Food Nutrient Profiles" is the manufacturer qualifying its own omega-3 claim |
+| **The panel as text** | **No** | Everything above, plus whatever nobody has thought to model yet |
+
+**The last row is the one that makes this policy hold.** A named field can only be captured once somebody has thought of it, and the point of this decision is the figures nobody has thought of. Keeping the panel's text verbatim beside the parsed fields means a field added in six months can be backfilled from records already written, with no refetch and no re-review, and it means a parser that misread something can be corrected against what the label actually said rather than against what the parser made of it.
+
+**Three rules this has to follow, or it undoes work already done.**
+
+1. **A captured figure is not a curated field.** The provenance box lists what Cat Food Center recorded, and a visitor reads that list to know what the score is standing on. A stored figure nothing reads does not belong in that sentence: it would grow the list of claims without growing the claims. Captured raw values live in their own block on the entry, outside `DATA_FIELDS`, and `mergeCurated` never merges them into the product the page renders.
+2. **It is still provenance-bearing data.** The same `source`, `sourceKind` and `checked` cover it, because it came from the same reading of the same panel. A record whose parsed fields are current and whose raw block is two years stale would be a trap; they are one entry, verified together.
+3. **The gate checks its shape, not its meaning.** `check-catalogue.py` should reject a malformed raw block, and it has no business asserting plausible bands on figures nothing uses yet. The bands exist to protect scores.
+
+**What this is not.** It is not a licence to store anything found anywhere. It is the published panel, from the source the entry already names, read once. A retailer's marketing copy, a review, a nutritional analysis somebody calculated: none of that is the label, and none of it belongs in the record because it was easy to grab at the same time.
+
+**Status.** Policy recorded 2026-09-09, no code written. It is the first thing to build inside M27b, before the batches begin, because entries written before it exists are the ones that would need refetching, which is the exact cost this policy is here to avoid.
 
 ---
 
@@ -621,13 +695,16 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M21a: The additive pill that could never wrap | 2026-09-08 | Complete |
 | M22: The product library, and a coverage number | 2026-09-09 | Complete. The number is 0%, see 12.9 |
 | M25: Curated products become discoverable | 2026-09-08 | Complete |
-| M23: Dr. Elsey’s | | Queued, blocked on barcodes |
+| M23: Dr. Elsey’s | | **In progress.** Unblocked 2026-09-09, 1 of 19 food SKUs transcribed |
 | M24: Premix groups | 2026-09-09 | Complete |
 | M24a: Canonical tags | 2026-09-09 | Complete |
 | M24b: The wait before the first API request | 2026-09-09 | Complete. Reopened the same day it was closed, once it was measured rather than assumed |
 | M26: Hide unscored products by default | 2026-09-09 | Complete |
 | M12: Public beta | 2027-01 | Planned |
-| M27: Our own product database | | Queued, after the beta |
+| M27a: The transcription process | 2026-09-09 | Complete, see 12.10 |
+| M27b: The top 100, transcribed | | Queued, in batches of five |
+| M27c: Contributions through GitHub issues | | Queued, after the beta |
+| M27: Our own product database | | **Split into M27a, M27b and M27c on 2026-09-09.** The number stays allocated to the whole, and the three rows above are what is tracked |
 
 ### What shipped, and what was learned
 
@@ -858,9 +935,13 @@ now reports the same call the engine made, and a test pins it.
 | - | ~~M24a: canonical tags~~ | **Shipped 2026-09-09.** |
 | - | ~~M24b: the wait before the first API request~~ | **Shipped 2026-09-09.** 2271ms to 1361ms |
 | - | ~~M22, finishing it: a coverage number~~ | **Shipped 2026-09-09.** The number is 0%, see 12.9, and what to do about it is the decision below |
-| 1 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
-| 2 | **M12: public beta** | Ordered here 2026-09-09. It launches on Open Pet Food Facts plus the curated catalogue, which is the setup that exists, rather than waiting for the one that does not |
-| 3 | **M27: our own product database** | Requested 2026-09-09. The largest thing on this list, and now the first thing after launch rather than the last thing before it |
+| - | ~~M27a: the transcription process~~ | **Shipped 2026-09-09.** Section 12.10. It is listed here because M23, M12 and M27b are all this procedure repeated, and it was unwritten until the day it blocked three milestones at once |
+| 1 | **M23: the rest of Dr. Elsey's** | Unblocked 2026-09-09 and started: one product in, about 19 food SKUs on the manufacturer's sitemap. The test case for the process, in batches of five |
+| 2 | **M27b: the top 100, transcribed** | Ordered here by the project owner on 2026-09-09, ahead of the beta. Batches of five, each one a checkpoint with the gates, a commit and a re-measured coverage number, so section 12.9 moves visibly rather than in one unverifiable jump |
+| 3 | **M12: public beta** | Deferred 2026-09-09 rather than decided. It launches when the coverage number is one the owner is willing to publish, which is what M23 and M27b exist to produce |
+| 4 | **M27c: contributions through GitHub issues** | After the beta. A database other people can add to is worth building once there is a database worth adding to |
+
+*Why this order changed on 2026-09-09.* The coverage measurement came back at 0 of 100 and the queue above it assumed a launch would come first. Presented with the options, the owner deferred the launch decision and chose the work instead: build the process, prove it on Dr. Elsey's, then transcribe the top 100 in batches of five. That inverts the argument M12 had been carrying, which was that launching early is how you learn what to cover. It is the right inversion, and the reason is in the number: launching a scoring site that cannot score a single best-seller does not gather information about what visitors want, it teaches them the site does not work.
 
 **M25: curated products become discoverable.** *Shipped 2026-09-08.* Search and the brand index now consult the catalogue, a curated card carries its provenance, and a live check fails if a search card and a product page report different scores for the same barcode. Section 16.5b has what was built and why.
 
@@ -915,23 +996,39 @@ The list is computed by reading the imports out of the module sources, never wri
 
 *Both were loose debt and were put in a slot, at the project owner's direction on 2026-09-09.* They are grouped with M24 because it is the slot before the beta and they both have to be done before it, not because they are related to premix groups. They are numbered as their own milestones rather than folded into M24's scope so that "M24 moves scores" stays a true sentence about one change: a milestone that moves scores and also rewrites twenty page heads is one nobody can bisect.
 
-**M22, finished: a coverage number.** *Blocked on a barcode source.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
+**M22, finished: a coverage number.** *Captured 2026-09-08, measured 2026-09-09.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
 
-**1. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
+**1. M23: Dr. Elsey's.** *Requested 2026-09-08, unblocked and started 2026-09-09.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
 
-*Blocked on something other than the panel.* Dr. Elsey's publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC; Amazon and Target do not show one either; and Open Pet Food Facts holds exactly one Dr. Elsey's record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription. It shares that blocker with M22, which is the argument for taking them together, and it is why both sit behind the two unblocked milestones rather than ahead of them.
+*It was blocked on something other than the panel, for a day.* Dr. Elsey's publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC; Amazon and Target do not show one either; and Open Pet Food Facts holds exactly one Dr. Elsey's record, for cat litter. The catalogue is keyed by barcode, so the entry could not be written from the panel alone.
 
-**4. M12: public beta.** *Ordered here on 2026-09-09, ahead of M27 rather than after it.* Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open, and as of 2026-09-09 it is measured: 0 of 100.** Section 12.9 has the run and the audit trail. The database's shape was already known from section 12, where 338 of 1000 sampled products carry an ingredient list and the whole United States category is 86 records; what 12.9 adds is that the gap falls exactly on the products people buy, which is the worst place for it to fall. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list and now measures against it, M25 made entries reachable, and what remains is transcription volume.
+*Unblocked 2026-09-09, by reading "published" less narrowly.* Aggregators hold the UPC even when the manufacturer does not print it: UPCitemdb returns `000338026604` for cleanprotein Chicken Recipe Kibble 6.6lb, under a title a person can check the product against. That is evidence rather than a manufacturer statement, so section 12.10 has a person choose from candidates and never lets a tool pick. The same route serves M27b, since the top-100 rows carry names and no barcodes either.
 
-*The decision this forces, and it is the project owner's.* Four best-sellers cannot be covered at any effort, because Mars publishes their panels as images (section 12.8). Most of the rest are Purina, whose label decks are readable as text and are the best transcription source found. So 80% is reachable in principle and only by transcription, at roughly eighty entries. The options are to hold the beta until that is done, to launch with the number published and the criterion restated, or to launch behind a smaller number that says what the site does cover. Nothing here picks one.
+*Where it stands.* One product transcribed, verified against the printed panel, and scoring 90: 59% crude protein, 67% on a dry-matter basis, no flagged additives, supplemental taurine declared, penalised for being dry. The manufacturer's sitemap lists about 19 food SKUs, which is four batches of five. The panels are identical in structure across the range, so the remaining work is volume rather than discovery.
 
-*What launching here means.* The beta runs on Open Pet Food Facts plus the curated catalogue, which is the setup that exists today and the one M27 is explicitly designed to sit alongside rather than replace. That is the argument for this order: M27 is a large build whose shape depends on what real visitors ask for, and launching first is how you find that out. It also means the coverage number is a launch criterion rather than a pre-launch luxury, so M22 has to land either way.
+*What the first product cost, which was not transcription time.* It broke a gate and exposed a false sentence on the product page, both recorded in 12.10. That is the argument for a test case: the first product of a new kind is where the site finds out what it had assumed, and finding it on one product is cheap.
+
+**2. M27b: the top 100, transcribed.** *Ordered here 2026-09-09, ahead of the beta.* The hundred SKUs section 12.7 names, entered into the catalogue by the process in 12.10, in batches of five. Each batch ends with the gates, a commit, a push and `python tools/measure-coverage.py`, so the number in 12.9 is re-measured about twenty times on the way rather than once at the end.
+
+*Five is a review size, not a throughput target.* Step 4 of the process is a person reading every figure against the published panel, and it is the only step that catches a parser that has met a layout it does not understand. A batch large enough to make that step feel like a formality is a batch that produces entries nobody checked, which is worse than no entries: a wrong figure with a source and a checked date beside it is indistinguishable from a right one.
+
+*What is not reachable, and is not a failure.* Four of the hundred are Mars products whose panels are published only as images (12.8). They will be recorded as unreachable rather than transcribed from a retailer's copy of unknown vintage, which is the rule `SOURCE_KINDS` exists to enforce. The ceiling this sets is why section 12.7's target has always had a margin in it.
+
+**3. M12: public beta.** *Ordered here on 2026-09-09, then deferred the same day.* Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open, and as of 2026-09-09 it is measured: 0 of 100.** Section 12.9 has the run and the audit trail. The database's shape was already known from section 12, where 338 of 1000 sampled products carry an ingredient list and the whole United States category is 86 records; what 12.9 adds is that the gap falls exactly on the products people buy, which is the worst place for it to fall. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list and now measures against it, M25 made entries reachable, and what remains is transcription volume.
+
+*The decision this forced, and how the owner took it.* Four best-sellers cannot be covered at any effort, because Mars publishes their panels as images (section 12.8). Most of the rest are Purina, whose label decks are readable as text and are the best transcription source found. So 80% is reachable in principle and only by transcription, at roughly eighty entries. The options put to the owner on 2026-09-09 were to hold the beta until that is done, to launch with the number published and the criterion restated, or to launch behind a smaller number naming what the site does cover.
+
+**The answer was to defer the launch question and do the transcription**, starting with the process itself, then Dr. Elsey's as the test case, then the top 100 in batches of five. So M12 is not waiting on a decision, it is waiting on a number: the criterion stands at 80% until somebody restates it, and the batches are what move it. The launch conversation is worth reopening at every checkpoint rather than once at the end, because the honest thing to launch behind is whatever the number actually is on the day.
+
+*What launching here means.* The beta runs on Open Pet Food Facts plus the curated catalogue, which is the setup that exists today and the one M27 is explicitly designed to sit alongside rather than replace.
+
+*The argument that used to sit here has been overtaken, and it is left visible rather than deleted.* It said M27 is a large build whose shape depends on what real visitors ask for, so launching first is how you find that out. That reasoning survives for M27c, the contribution route, which genuinely wants real visitors. It does not survive for M27b: a visitor who searches for the cat food they actually buy and gets nothing has not told this project anything it did not already measure, and has learned that the site does not work. Transcription volume was never the thing a beta would teach.
 
 *Two things that were not criteria and blocked launch anyway* were M24a and M24b, queued into the slot immediately before this one on 2026-09-09 and both shipped that day. A site with no canonical tag that has already changed address once should not be the site anybody starts linking to, and a search that spent 2.3 seconds before asking anybody anything should not be the first thing a visitor meets.
 
 *The fourth criterion, "analytics instrumented", was removed on 2026-09-07 rather than met.* It had been written before section 12 was measured and it contradicted section 14, which gives "no analytics means no visitor data to protect" as the reason for having none. A milestone cannot require closing a gap the same document defends. Section 14 now says which targets are therefore never going to be reported, instead of describing them as pending.
 
-**5. M27: our own product database.** *Requested 2026-09-09: a product database like Open Pet Food Facts, hosted on this site.* This is where the curated catalogue has been heading since M20 without anybody naming the destination. `assets/data/catalogue.json` is already a small local database with a schema, a provenance model and a gate; M27 is that file growing into the thing the site is primarily served from, with Open Pet Food Facts becoming a source it reads rather than the source it depends on.
+**M27, in three parts.** *Requested 2026-09-09: a product database like Open Pet Food Facts, hosted on this site.* It was one milestone until the owner set the order on 2026-09-09, which separated work that is already done from work that is queued from work that waits for the beta. **M27a, the transcription process**, shipped that day and is section 12.10. **M27b, the top 100 transcribed**, is queue slot 2 and is the milestone that moves the coverage number. **M27c, contributions through GitHub issues**, is everything below about other people adding records, and stays after the beta. The design notes that follow apply to all three. This is where the curated catalogue has been heading since M20 without anybody naming the destination. `assets/data/catalogue.json` is already a small local database with a schema, a provenance model and a gate; M27 is that file growing into the thing the site is primarily served from, with Open Pet Food Facts becoming a source it reads rather than the source it depends on.
 
 *It stays static, and that is not a compromise.* The architecture decision of 2026-09-08 was to keep the site a set of files with no backend, and a database does not require a server. What it requires is an index, and an index can be a file. The shape that fits ADR-001 is sharded JSON built at author time by a tool in `tools/`, plus a small index the browser loads once: a name and brand index for search, a barcode index for lookup, and one shard per bucket of products so a visitor downloads the few kilobytes their query touches rather than the whole database. The scoring engine already runs entirely in the browser and never fetches, so nothing about scoring changes.
 
@@ -2054,6 +2151,8 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | "Submit queue processing, 50 or fewer waiting, internal queue dashboard" | METRICS | No queue exists, so the metric is unmeasurable | Deleted. It measured a feature that was cancelled |
 | Score reveal count-up, ingredient expand transition, route transition fades, skeleton loaders, tier glyphs, Open Graph image | DESIGN §8, §9, §10, §12, all marked "planned" | None built | Kept, still marked as not built, in DESIGN.md |
 | A coverage number that meets the target | PRD 12.7, 12.9, 13 (M12) | **Measured 2026-09-09 and it is 0 of 100.** The tool exists and the number is real; what the number says is that this site cannot currently score a single US best-seller. M12 states 80% as a launch criterion | Open, and the decision it forces is the project owner's. Deleted when either the coverage rises or the criterion is restated |
+| Raw panel data the schema cannot hold | PRD 12.11, 12.10, 16.5a | **Decided 2026-09-09: capture it all, score none of it.** EPA, DHA, omega-3, vitamin E, the feeding guide, the AAFCO sentence verbatim and the panel's own text are published on labels this project is about to transcribe in volume, and nothing holds them. Policy written, no code | Open, and first in line inside M27b. Every entry written before the raw block exists is an entry that has to be fetched and reviewed again, which is the cost 12.11 exists to avoid. Deleted when transcription stores the panel and the gate checks its shape |
+| Premix groups printed in parentheses | PRD 13 (M24), `assets/js/ingredients.js` | **`expandGroups` requires square brackets** and Dr. Elsey's prints `Vitamins (Niacin, ...)`, so the premix arrives as one ingredient and would wear its worst component's flag. That is the condition M24 shipped to fix, met again in a different punctuation | Open, and it costs nothing today because no catalogue entry with a parenthesised premix flags an additive. Deleted when the rule covers both, with the heading test still protecting `chicken (4%)` |
 | Scan button "disabled with tooltip in MVP", `role="tooltip"` on it | DESIGN §7, §10 | The scanner shipped in M8. There is no disabled button and no tooltip | Trusted the code. Removed |
 | "Search by brand or product name", and every count and ranking claim that followed from it | PRD §6 and §13, DESIGN §5, PATCHNOTES M6 onward | **Text search never searched.** `/api/v2/search` ignored `search_terms` and returned the whole cat-food category for every query, including one that cannot match anything. The feature existed, was tested, and was documented; what it did was unrelated to what was typed | Fixed in M18 by moving text queries to `/cgi/search.pl`. The M15a entry that misread this as a ranking defect is left standing in §13 and in PATCHNOTES, with the correction recorded here |
 

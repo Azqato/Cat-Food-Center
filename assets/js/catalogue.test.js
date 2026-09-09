@@ -76,6 +76,16 @@ suite('curated merge: a product the database does not have', (t) => {
   t.equal(merged.curated.fields.includes('name'), true,
     'and every field is declared, because every field is curated');
   t.equal(merged.dataCompleteness, 'partial', 'completeness is recomputed, not inherited');
+  t.equal(merged.curated.only, true,
+    'and the entry says there was no upstream record, because the disclosure on the '
+    + 'product page otherwise credits the rest of the page to a record that does not exist');
+});
+
+suite('curated merge: an entry that fills gaps in a real record', (t) => {
+  const merged = mergeCurated(API_PRODUCT, RETAILER);
+
+  t.equal(merged.curated.only, false,
+    'there was an upstream record, so the page may say the rest came from it');
 });
 
 suite('curated merge: nothing to say', (t) => {

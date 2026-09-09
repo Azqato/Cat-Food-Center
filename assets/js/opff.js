@@ -68,9 +68,18 @@ const FIELDS = [
 ].join(',');
 
 /* A cat food as fed. A value outside its band is a data-entry error rather
-   than an unusual product (see docs/PRD.md section 12 for the evidence). */
+   than an unusual product (see docs/PRD.md section 12 for the evidence).
+
+   The protein ceiling was 50 until 2026-09-09, when the first transcription
+   from outside the supermarket shelf hit it: Dr. Elsey's cleanprotein kibble
+   states 59% crude protein on the manufacturer's own panel, and the gate
+   rejected the published figure as impossible. The band was drawn from a
+   database of ordinary food and quietly encoded "ordinary" as "real". 65
+   admits the high-protein shelf and still catches what the band exists to
+   catch: a per-kilogram figure lands in the hundreds, a dry-matter figure for
+   wet food in the eighties. */
 const PLAUSIBLE = {
-  protein: [3, 50],
+  protein: [3, 65],
   fat: [0.5, 40],
   fibre: [0, 15],
   ash: [0, 15],

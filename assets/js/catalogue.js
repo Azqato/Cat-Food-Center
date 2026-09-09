@@ -166,6 +166,13 @@ export function mergeCurated(product, entry) {
     source: entry.source,
     sourceKind: entry.sourceKind,
     checked: entry.checked,
+    // Whether there was an upstream record at all. The disclosure on the
+    // product page used to end "everything else on this page is from the Open
+    // Pet Food Facts record", which is true of an entry that fills gaps in a
+    // record and false of a product the database has never heard of. The first
+    // Dr. Elsey's transcription was the first of the second kind, and it said
+    // its data came from a record that does not exist.
+    only: !product,
   };
   return merged;
 }

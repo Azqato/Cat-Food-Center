@@ -374,7 +374,7 @@ function renderCurated(product) {
 
   return `<div class="bg-surface border border-hairline rounded-card p-4 mb-6">
     <p class="text-small text-ink" style="margin:0 0 6px"><strong>Not everything here came from Open Pet Food Facts.</strong> On this page, ${esc(list)} ${names.length === 1 ? 'was' : 'were'} recorded by Cat Food Center from ${esc(kind)}${curated.checked ? `, checked on ${esc(curated.checked)}` : ''}.</p>
-    <p class="text-micro text-ink-soft" style="margin:0;overflow-wrap:anywhere">Source: ${link}. Everything else on this page is from the Open Pet Food Facts record. The score is worked out the same way either way; see the methodology.</p>
+    <p class="text-micro text-ink-soft" style="margin:0;overflow-wrap:anywhere">Source: ${link}. ${curated.only ? 'Open Pet Food Facts holds no record for this product, so everything on this page was recorded by Cat Food Center.' : 'Everything else on this page is from the Open Pet Food Facts record.'} The score is worked out the same way either way; see the methodology.</p>
   </div>`;
 }
 

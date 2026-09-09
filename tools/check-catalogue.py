@@ -46,7 +46,10 @@ SOURCE_KINDS = {'manufacturer', 'retailer-listing'}
 # (PRD 12.5 item 2). Ours are not exempt: a transcription error is as wrong as
 # a data-entry error, and being ours does not make it truer.
 BANDS = {
-    'crudeProteinPct': (3, 50),
+    # 65, not 50, since 2026-09-09. See the note beside PLAUSIBLE in
+    # assets/js/opff.js: a manufacturer's published 59% was rejected as
+    # impossible by a band drawn from supermarket food.
+    'crudeProteinPct': (3, 65),
     'crudeFatPct': (0.5, 40),
     'crudeFibrePct': (0, 15),
     'ashPct': (0, 15),

@@ -39,7 +39,7 @@ MATCHED_LANGUAGES = ('en', 'fr', 'de', 'es', 'it', 'nl')
 
 # A cat food as fed. Anything outside these ranges is a data-entry error, not an
 # unusual product. See docs/PRD.md section 12.
-PLAUSIBLE = {'protein': (3, 50), 'fat': (0.5, 40), 'moisture': (0, 90), 'kcal': (15, 600)}
+PLAUSIBLE = {'protein': (3, 65), 'fat': (0.5, 40), 'moisture': (0, 90), 'kcal': (15, 600)}
 
 
 # The endpoint stops serving anonymous requests past page 10. Page 10 returns

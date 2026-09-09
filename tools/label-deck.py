@@ -118,7 +118,19 @@ def find_aafco(text):
         joined.append(' '.join(lines[index:index + 3]).strip())
     for claim in (r'is formulated to meet the nutritional levels', r'Animal feeding tests'):
         for candidate in joined:
-            match = re.search(r'^(.{0,200}?' + claim + r'[^.]*\.)', candidate, re.I)
+            # Find the claim, then walk back to the start of its sentence
+            # rather than requiring it near the start of the block. A PDF puts
+            # the statement in a paragraph of its own; a web page buries the
+            # same sentence at the end of three paragraphs about transitioning
+            # your cat's food, and a window measured from the block's start
+            # finds it in one source and not the other.
+            found = re.search(claim, candidate, re.I)
+            if not found:
+                continue
+            head = candidate[:found.start()]
+            begin = max(head.rfind('. '), head.rfind('\u2022'))
+            sentence = candidate[begin + 1:] if begin >= 0 else candidate
+            match = re.search(r'^(\s*.*?' + claim + r'[^.]*\.)', sentence, re.I)
             if match:
                 # The address often shares the paragraph. Drop it: the
                 # statement begins after the country, and what matters to the

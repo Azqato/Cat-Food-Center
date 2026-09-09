@@ -21,6 +21,108 @@ punctuation rather than content.
 
 ---
 
+## [0.32.0] - 2026-09-09
+
+**Documentation only. A retention decision: transcription captures everything the panel prints,
+including the figures nothing scores.**
+
+Added
+* **PRD section 12.11.** Every published figure is read and kept, whether or not anything uses it,
+  and the panel's text is kept verbatim beside the parsed fields. The reasoning is asymmetric cost:
+  reading a figure while the panel is already open is nearly free, and going back for it later is
+  the whole transcription repeated, for every product already entered.
+* **The list of what is currently dropped**, from the label that prompted this: EPA, DHA, omega-3
+  and omega-6 percentages, vitamin E in IU/kg, calcium, phosphorus and magnesium where a label
+  prints them, the feeding guide, the AAFCO statement as a sentence rather than as two derived
+  values, the manufacturer's own footnotes, and the taurine and kcal/cup figures the record
+  currently reduces to a boolean and a single unit.
+* **The rule that makes it safe:** a captured figure is not a curated field. It lives outside
+  `DATA_FIELDS`, `mergeCurated` never puts it on the page, and the provenance box keeps listing only
+  what the score stands on. Storing more must not make the site claim more.
+* Section 12.10's step 3 now names the capture as part of the process, and section 24.1's open item
+  is rewritten around the decision rather than around the four missing figures that prompted it.
+
+Notes
+* **Long term these figures may earn a place in the score. Today they are stored and read by
+  nobody**, which is the honest state for a number nobody has reasoned about. Section 6 is
+  unchanged.
+* This is first in line inside M27b, ahead of the batches, for the reason the policy exists: entries
+  written before the raw block exists are exactly the entries that would need refetching.
+* No code changed. The transcription work is `[0.30.0]`, the roadmap is `[0.31.0]`.
+
+## [0.31.0] - 2026-09-09
+
+**Documentation only. The roadmap the owner set after the coverage number came back, and two gaps
+a photograph of a label turned up.**
+
+Changed
+* **The queue is reordered and M27 is split in three.** M27a, the transcription process, shipped
+  and is section 12.10. M27b, the top 100 transcribed in batches of five, is now slot 2, **ahead of
+  the public beta**. M27c, contributions through GitHub issues, stays after it. The order is the
+  project owner's, taken on 2026-09-09 in answer to the 0-of-100 measurement: defer the launch,
+  build the process, prove it on Dr. Elsey's, then transcribe.
+* **M23 is no longer described as blocked.** It was unblocked the same day it was measured, by
+  reading "published" less narrowly: aggregators hold the UPC the manufacturer does not print. One
+  product is in and scores 90; about 19 food SKUs remain.
+* **M12 is deferred rather than decided.** The 80% criterion stands until somebody restates it, and
+  the batches are what move it. The old argument for launching first is left visible in section 13
+  rather than deleted, with a note on which half of it survives: a beta teaches you what visitors
+  want, and it does not teach you transcription volume.
+* Section 12.9 now says the coverage number is re-measured at every batch. A batch that moves it by
+  nothing means the transcriptions and the measurement disagree, which is worth knowing after five
+  entries rather than after eighty.
+
+Added
+* **A verification step, in section 12.10: read the entry against a photograph of the printed panel
+  where one exists.** The first entry was checked this way and every figure agreed, including the
+  absent ash figure, which the label does not print and the entry does not carry. A website and a
+  bag are two publications of the same label and they can disagree, because one is edited and the
+  other is printed.
+* **Two open items in section 24.1, both found by that check.** The panel states EPA, DHA, omega-3
+  and vitamin E and the schema has no field for any of them, so they are read and dropped. And
+  `expandGroups` requires square brackets while this label prints `Vitamins (Niacin, ...)`, which is
+  the exact condition M24 shipped to fix, met again in different punctuation.
+
+Notes
+* No code changed in this entry. The transcription work it describes is `[0.30.0]`.
+
+## [0.30.0] - 2026-09-09
+
+**A transcription process, and the first product transcribed with it: Dr. Elsey's cleanprotein
+Chicken Recipe Kibble, which scores 90.**
+
+Added
+* **`tools/transcribe.py`,** the general form of `label-deck.py`. It reads a panel from a
+  manufacturer page as well as from a PDF, imports the PDF tool's parsers rather than copying
+  them, proposes an entry for review, and writes it only with `--write`, running
+  `check-catalogue.py` immediately and restoring the file if the gate refuses.
+* **A barcode route, which unblocks M23.** The manufacturer publishes no UPC and no retailer shows
+  one, but aggregators hold it: `--find-barcode` prints candidates from UPCitemdb with the titles
+  they are filed under, **and never picks one**. A wrong barcode files one product's panel under
+  another product's scan, both halves are individually valid, and no gate can see it.
+* **PRD section 12.10, the process itself:** find the panel, resolve a barcode, propose, read every
+  figure against the source, write, then load the product page and see what the visitor sees. In
+  batches of five, each batch a checkpoint with the gates, a commit and a re-measured coverage
+  number.
+* The first entry: UPC 000338026604, 59% crude protein, no flagged additives, scored 90 and
+  Excellent. The catalogue holds 5.
+
+Fixed
+* **The plausible band for protein was 50% and rejected a manufacturer's published 59%.** Dr.
+  Elsey's cleanprotein kibble is a real product and that is its printed figure; the band was drawn
+  from a database of supermarket food and had encoded "ordinary" as "real". It is 65 now, in
+  `check-catalogue.py`, `opff.js` and `probe-opff.py`. It still catches what it exists to catch: a
+  per-kilogram figure lands in the hundreds.
+* **The provenance box credited a record that does not exist.** It ended "everything else on this
+  page is from the Open Pet Food Facts record", which is true of an entry filling gaps in a record
+  and false of a product upstream has never heard of. Every curated entry before this one was the
+  first kind. `mergeCurated` now records whether there was an upstream record, the page says the
+  honest sentence for each, and two tests hold both branches.
+* `find_aafco` matched the adequacy statement only near the start of a block, which suits a PDF
+  that gives it a paragraph and not a web page that buries the same sentence at the end of three.
+  It finds the claim and walks back to the start of its sentence now.
+* Service worker `v10` to `v11`.
+
 ## [0.29.0] - 2026-09-09
 
 **M22 is finished: top-100 coverage is measurable, and it is 0%.**
