@@ -410,6 +410,55 @@ async def main():
                                    'list present and attributed=%s' % disclosed))
             await page.close()
 
+            total += 1
+            # A card and a page cannot disagree (PRD 16.5b, M25).
+            #
+            # This is the check the catalogue lacked for two milestones. Every
+            # merge rule was right, and the catalogue was consulted in exactly
+            # one place, so a search for a curated product returned a card
+            # reading "No ingredient list on record. Not scored" above a count
+            # line saying "0 of these can be scored", while the product page for
+            # the same barcode scored it off a transcribed panel. Both were
+            # produced by this site, from the same data, in the same minute.
+            #
+            # So the assertion is agreement, not correctness: whatever the score
+            # is, the card and the page say the same one. A check that pinned
+            # the number would fail every time the engine legitimately moved,
+            # and would still not have caught this.
+            page = await browser.new_page()
+            await page.goto(base + '/product/?barcode=0017800150149')
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Loading')", timeout=25000)
+            await page.wait_for_timeout(800)
+            page_score = await page.evaluate(
+                "(document.querySelector('main .text-display') || {}).textContent || ''")
+            page_score = page_score.strip()
+            await page.goto(base + '/search/?q=' + 'Cat%20Chow%20Complete')
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Searching')", timeout=25000)
+            await page.wait_for_timeout(1200)
+            card = await page.evaluate(
+                "(() => {"
+                "  const li = [...document.querySelectorAll('main li')]"
+                "    .find((n) => /Cat Chow Complete/i.test(n.textContent));"
+                "  if (!li) return null;"
+                "  const tile = li.querySelector('[aria-label]');"
+                "  return {"
+                "    score: ((tile && tile.getAttribute('aria-label')) || '')"
+                "      .replace(/^Score (\d+).*$/, '$1'),"
+                "    text: li.textContent.replace(/\s+/g, ' ').trim(),"
+                "  };"
+                "})()")
+            card = card or {'score': '', 'text': ''}
+            agree = bool(page_score) and page_score == card['score']                 and 'No ingredient list on record' not in card['text']
+            if not agree:
+                failures.append('search card agrees with product page')
+            print('%s %-44s %s' % ('PASS' if agree else 'FAIL',
+                                   'a curated product scores the same in search',
+                                   'page=%s card=%s' % (page_score or 'none',
+                                                        card['score'] or 'no card')))
+            await page.close()
+
             total += 2
             # Scope, and the guide pages.
             #

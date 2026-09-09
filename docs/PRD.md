@@ -594,9 +594,10 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M21: The catalogue grows, and a tool to fill it | 2026-09-08 | Complete |
 | M21a: The additive pill that could never wrap | 2026-09-08 | Complete |
 | M22: The product library, captured | 2026-09-08 | **Partial**, see below |
-| M25: Curated products become discoverable | | **Next.** Found 2026-09-08, see 16.5b |
+| M25: Curated products become discoverable | 2026-09-08 | Complete |
 | M23: Dr. Elsey’s | | Queued, blocked on barcodes |
 | M24: Premix groups | | Queued, see 16.11 |
+| M26: Hide unscored products by default | | Queued, requested 2026-09-08 |
 | M12: Public beta | 2027-01 | Planned |
 
 ### What shipped, and what was learned
@@ -820,27 +821,30 @@ now reports the same call the engine made, and a test pins it.
 
 | Order | Milestone | Why it sits here |
 |---|---|---|
-| 1 | **M25: curated products become discoverable** | Everything downstream is worth less until it is done. A prerequisite for M22, not a refinement of it |
-| 2 | **M22, finishing it: a coverage number** | M12's only open criterion. Needs M25 first, and needs a barcode per SKU |
-| 3 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
+| - | ~~M25: curated products become discoverable~~ | **Shipped 2026-09-08.** See 16.5b |
+| 1 | **M22, finishing it: a coverage number** | M12's only open criterion. M25 is done; it still needs a barcode per SKU |
+| 2 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
+| 3 | **M26: hide unscored products by default** | Small, and it changes what every visitor sees first. It wants the coverage number in hand, because it hides the evidence of the gap that number measures |
 | 4 | **M24: premix groups** | A real defect, but it degrades a page rather than hiding a product. It moves scores, so it wants a quiet slot |
-| - | **M12: public beta** | Not work of its own. It is the gate the three above roll up to |
+| - | **M12: public beta** | Not work of its own. It is the gate the ones above roll up to |
 
-**1. M25: curated products become discoverable.** *Next.* A curated-only product resolves on its product page and cannot be found by searching or by browsing brands, because the catalogue is read inside `fetchProduct` and nowhere else. Section 16.5b has the detail and the table of which routes work.
+**M25: curated products become discoverable.** *Shipped 2026-09-08.* Search and the brand index now consult the catalogue, a curated card carries its provenance, and a live check fails if a search card and a product page report different scores for the same barcode. Section 16.5b has what was built and why.
 
-*Why it leads the queue.* A hundred curated entries nobody can reach would take "the site can score this product" to 100% and leave "a visitor can find this product" exactly where it started. M12's criterion means the second. Transcribing first would be building inventory for a shop with no door.
+**1. M22, finishing it: a coverage number.** *Next.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
 
-*What it involves:* a local name match over the catalogue, merged into the search result list with its provenance shown the way the product page already shows it, and catalogue brands added to the brand index. The merge rules in 16.5a do not change; what changes is how many places consult them.
-
-**2. M22, finishing it: a coverage number.** *After M25.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
-
-**3. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
+**2. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
 
 *Blocked on something other than the panel.* Dr. Elsey's publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC; Amazon and Target do not show one either; and Open Pet Food Facts holds exactly one Dr. Elsey's record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription. It shares that blocker with M22, which is the argument for taking them together.
 
+**3. M26: hide unscored products by default.** *Requested 2026-09-08.* The search page already has a scorable-only control, carried in the URL as `only=scorable`, and it is off unless a visitor turns it on. This turns it on by default, so the first thing a search shows is food the site can actually say something about, and keeps the toggle for anybody who wants the rest.
+
+*What makes it more than a flipped boolean.* Two thirds of the database carries no ingredient list, so the default would be hiding most of every result set, and the page has to say so plainly rather than quietly returning fewer results. The scorable-only path also scans several pages to fill one, so this makes the expensive path the normal path, and the label saying how far the scan reached becomes the label almost everybody reads. The preference should survive a navigation, which would be the first piece of visitor state this site keeps that is not in the URL; section 16.7 says every view is a link somebody can send, so an explicit `only` in the URL still wins over the stored preference.
+
+*Why it waits.* It hides the evidence of the coverage gap M22 exists to measure. Measure first, then hide, is the honest order. Hiding first would make the site look more complete on the day the number is being established.
+
 **4. M24: premix groups.** *Deferred from M21, recorded in 16.11.* A bracketed premix arrives as one ingredient and wears the flag its worst component earns, so a twelve-item vitamin premix reads as high risk because it contains menadione. The flag is true and its placement is not. Its own milestone because the fix moves ingredient counts, and ingredient counts move scores, so the tests are written before the change rather than after.
 
-**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open.** The API cannot deliver it: of 1000 products sampled, 338 carry an ingredient list, and the whole United States cat-food category is 86 records. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list of what to cover, and what remains is M25 to make entries reachable, a barcode source, and volume.
+**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open.** The API cannot deliver it: of 1000 products sampled, 338 carry an ingredient list, and the whole United States cat-food category is 86 records. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list of what to cover, M25 made entries reachable, and what remains is a barcode source and volume.
 
 *The fourth criterion, "analytics instrumented", was removed on 2026-09-07 rather than met.* It had been written before section 12 was measured and it contradicted section 14, which gives "no analytics means no visitor data to protect" as the reason for having none. A milestone cannot require closing a gap the same document defends. Section 14 now says which targets are therefore never going to be reported, instead of describing them as pending.
 
@@ -1384,24 +1388,44 @@ Every entry carries, and the validator rejects it without:
 - Both new files are in `SHELL_ASSETS`, so the catalogue is available offline like everything else it feeds.
 - **The catalogue is not a place to put a score.** It carries observations (ingredients, analysis, adequacy statements), never verdicts. The engine scores; the catalogue only feeds it, and section 6 stays the only description of how a number is reached.
 
-### 16.5b Curated products are not discoverable
+### 16.5b Reaching a curated product
 
-**Found 2026-09-08, and open.** Merge rule 4 in 16.5a says a barcode in the catalogue but not in the API still resolves. That is true of the product page and of nothing else.
+**Found 2026-09-08, fixed the same day in M25.** Merge rule 4 in 16.5a says a barcode in the catalogue but not in the API still resolves. That was true of the product page and of nothing else.
 
-| Route a visitor takes | Works for a curated-only product? |
-|---|---|
-| Scanning the barcode | Yes. The scanner produces a barcode and the product page resolves it |
-| A direct link to `/product/?barcode=X` | Yes |
-| Typing the name into search | **No.** Search calls `/cgi/search.pl`, which searches the database |
-| Browsing brands | **No.** The brand index is the API's own facet, so a brand the database lacks cannot appear in it |
+| Route a visitor takes | Before M25 | After M25 |
+|---|---|---|
+| Scanning the barcode | Yes | Yes |
+| A direct link to `/product/?barcode=X` | Yes | Yes |
+| Typing the name into search | **No.** Search calls `/cgi/search.pl`, which searches the database | Yes. `searchCatalogue` matches locally, and the matches are put first |
+| Browsing brands | **No.** The brand index is the API's own facet, so a brand the database lacks cannot appear in it | Yes. `catalogueBrands` joins the facet, exempt from the minimum-product threshold |
 
-The reason is structural rather than an oversight in any one page: `loadCatalogue` and `mergeCurated` are called from `fetchProduct` and from nowhere else, which is the right place for a merge and the wrong place to be the only place.
+The reason was structural rather than an oversight in any one page: `loadCatalogue` and `mergeCurated` were called from `fetchProduct` and from nowhere else, which is the right place for a merge and the wrong place to be the only place.
 
-**Why this was not obvious.** Every curated entry written so far fills a gap in a record the database already holds, so all four are searchable and browsable through the API for reasons that have nothing to do with the catalogue. The failure only appears for a product the API has never heard of, which is the case section 13 identified as the main one on the same day, and no entry of that kind exists yet to demonstrate it.
+**The second failure, which was worse.** The table above is about a product the database does not hold. The same single call site also meant a product the database *does* hold showed one thing in search and another on its page. A search for "Cat Chow Complete" returned a card reading "No ingredient list on record. Not scored", under a count line saying "0 of these can be scored", while `/product/?barcode=0017800150149` scored the same barcode 49 off a transcribed manufacturer panel and listed every ingredient. Both views were produced by this site, from the same data, in the same minute. A missing product is a gap. A site contradicting itself is a reason to believe neither page.
+
+**Why this was not obvious.** Every curated entry written so far fills a gap in a record the database already holds, so all four are searchable and browsable through the API for reasons that have nothing to do with the catalogue. The discoverability failure only shows for a product the API has never heard of, and no entry of that kind exists yet to demonstrate it. The disagreement failure was on the live site the whole time, and nothing looked. That is the same shape as M20a and M21a: the gates measured what they were pointed at.
 
 **What it costs.** Coverage measured as "the site can score this product" and coverage measured as "a visitor can find this product" are different numbers, and M12's criterion means the second. A catalogue of a hundred API-absent products would move the first to 100% and leave the second where it started, which would be exactly the kind of true-but-useless claim section 24 exists to catch.
 
-**Fixing it** means the catalogue participating in search and in the brand index: a local name match over the catalogue, merged into the result list with its provenance shown, and catalogue brands added to the facet. That is M25, and it is a prerequisite for the coverage number in M22 rather than a later refinement.
+**What M25 built.** Three functions in `catalogue.js`. The merge rules in 16.5a are unchanged; what changed is how many places consult them.
+
+| Function | Job |
+|---|---|
+| `applyCurated(products, catalogue)` | Merges the catalogue over every product a search returned, so a card cannot disagree with its own page |
+| `searchCatalogue(catalogue, {query, brandTags, exclude})` | Finds curated products the API cannot return, matching name, brand and pack size |
+| `catalogueBrands(catalogue)` | Catalogue brands shaped like facet entries, carrying `curated: true` |
+
+Five decisions worth keeping:
+
+1. **Only entries carrying a `name` are findable this way.** An entry that fills a gap in a record the database already holds has no name of its own and is already findable through the API. Listing it would put the same product on the page twice.
+2. **The ingredient list is not searched.** Somebody searching "chicken" means the food, not every food containing chicken.
+3. **Curated-only matches appear on the first page only, and are counted on every page.** Interleaving a local list into a remote pagination would either repeat them on every page or drop them silently. Counting them everywhere is what stops the result line reading 1579 on page one and 1578 on page two for the same search, and page two's numbering steps over them.
+4. **Curated brands are exempt from the minimum-product threshold.** That threshold hides the database's long tail of one-product transcription noise. A brand entered by hand is the opposite of noise: it is there because somebody decided it was worth covering.
+5. **The API being unreachable no longer withholds what is held locally.** A curated match is a real answer, so it is shown under a warning rather than replaced by a failure message.
+
+**Provenance travels to the card.** A search card for a partly transcribed product carries a "Recorded by hand" pill, and the result line says how many of the results are. The card is where the number is first read, and a caveat that stays behind on another page is a caveat that does not exist. Same argument M18b made for confidence.
+
+**The gate.** `tools/check-live.py` loads the product page and the search result for `0017800150149` and fails unless they report the same score. It asserts agreement, not a particular number: a check that pinned 49 would fail every time the engine legitimately moved, and would not have caught this.
 
 ### 16.6 API design
 

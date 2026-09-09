@@ -158,6 +158,109 @@ export function mergeCurated(product, entry) {
   return merged;
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Reaching a curated product (PRD 16.5b, M25).
+
+   Until M25 the three functions below did not exist, and the catalogue was
+   consulted in exactly one place: fetchProduct. Two things followed, and the
+   second is worse than the first.
+
+   A product the database has never heard of resolved on its own page and could
+   not be found by searching or by browsing brands, so it was reachable only by
+   scanning its barcode. And a product the database *does* hold showed one thing
+   in search and another on its page: a search for "Cat Chow Complete" returned
+   a card reading "No ingredient list on record. Not scored", above a count line
+   saying "0 of these can be scored", while the product page for the same
+   barcode scored it 49 and listed every ingredient. The catalogue had the list;
+   the card never asked.
+
+   So the merge rules in section 16.5a are unchanged here. What changes is how
+   many places consult them.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Merge the catalogue over a list of products already fetched from the API.
+ *
+ * The fix for a card and a page disagreeing. Every product keeps its position;
+ * this only fills in what the catalogue knows.
+ *
+ * @param {object[]} products normalised products
+ * @param {object} catalogue barcode-keyed entries
+ * @returns {object[]} a new array
+ */
+export function applyCurated(products, catalogue) {
+  if (!catalogue) return products || [];
+  return (products || []).map((product) => {
+    const entry = catalogue[product && product.barcode];
+    if (!entry) return product;
+    const merged = mergeCurated(product, entry);
+    return merged && merged.curated ? merged : product;
+  });
+}
+
+function haystack(entry) {
+  return [entry.name, entry.brand, entry.quantity].filter(Boolean).join(' ').toLowerCase();
+}
+
+/**
+ * Curated products matching a search, for the ones the API cannot return.
+ *
+ * Only entries carrying a `name` can be found this way, and that is the design
+ * rather than a limitation. An entry that fills a gap in a record the database
+ * already holds has no name of its own, does not need one, and is already
+ * findable through the API; adding it here would put the same product on the
+ * page twice.
+ *
+ * Matching is a plain substring over the name, brand and pack size. It is not
+ * a ranking, because with a handful of entries a ranking would be theatre, and
+ * it deliberately does not read the ingredient list: somebody searching
+ * "chicken" means the food, not every food containing chicken.
+ *
+ * @param {object} catalogue barcode-keyed entries
+ * @param {{query?: string, brandTags?: string, exclude?: Set<string>}} options
+ * @returns {object[]} products, shaped exactly like an API result
+ */
+export function searchCatalogue(catalogue, { query = '', brandTags = '', exclude } = {}) {
+  const q = String(query || '').trim().toLowerCase();
+  const brands = String(brandTags || '')
+    .split('|').map((t) => t.trim().toLowerCase()).filter(Boolean);
+  if (!q && !brands.length) return [];
+
+  const out = [];
+  for (const [code, entry] of Object.entries(catalogue || {})) {
+    if (!entry || !entry.name) continue;
+    if (exclude && exclude.has(code)) continue;
+    const hay = haystack(entry);
+    if (q && !hay.includes(q)) continue;
+    if (brands.length && !brands.some((b) => String(entry.brand || '').toLowerCase() === b)) continue;
+    const product = mergeCurated(null, entry);
+    if (product) out.push(product);
+  }
+  return out;
+}
+
+/**
+ * Catalogue brands, shaped like entries in the API's own brand facet.
+ *
+ * `curated: true` travels with them so `fetchBrands` can exempt them from the
+ * minimum-product threshold. That threshold exists to hide the database's long
+ * tail of one-product transcription noise, and a brand this project entered by
+ * hand is the opposite of noise: it is there because somebody decided it was
+ * worth covering.
+ *
+ * @param {object} catalogue barcode-keyed entries
+ * @returns {{name: string, products: number, curated: boolean}[]}
+ */
+export function catalogueBrands(catalogue) {
+  const counts = new Map();
+  for (const entry of Object.values(catalogue || {})) {
+    const brand = entry && String(entry.brand || '').trim();
+    if (!brand || !entry.name) continue;
+    counts.set(brand, (counts.get(brand) || 0) + 1);
+  }
+  return [...counts].map(([name, products]) => ({ name, products, curated: true }));
+}
+
 const NUTRITION_FIELDS = [
   'crudeProteinPct', 'crudeFatPct', 'crudeFibrePct', 'ashPct',
   'moisturePct', 'kcalPer100g', 'taurinePresent',

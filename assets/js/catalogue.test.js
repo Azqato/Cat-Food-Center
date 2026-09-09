@@ -4,7 +4,9 @@
  * tests most is the source ranking: a retailer listing fills gaps and a
  * manufacturer panel outranks the database. It is the rule most likely to be
  * "simplified" later by somebody who reads the code without the reason. */
-import { mergeCurated } from './catalogue.js';
+import {
+  mergeCurated, applyCurated, searchCatalogue, catalogueBrands,
+} from './catalogue.js';
 import { suite } from './test-runner.js';
 
 const API_PRODUCT = {
@@ -107,4 +109,89 @@ suite('curated merge: confidence', (t) => {
   });
   t.equal(panel.nutrition.confidence, 'high',
     'a figure read off the manufacturer panel is, which is the point of transcribing it');
+});
+
+
+/* ── Reaching a curated product (section 16.5b, M25) ──
+
+   These three exist because the merge rules above were correct and consulted in
+   one place. The bug they lock down is not a wrong number, it is the site
+   disagreeing with itself: a search card reading "No ingredient list on record.
+   Not scored" for a barcode whose own page scored it 49 off a transcribed
+   panel. ── */
+
+const CATALOGUE = {
+  '4008429158100': RETAILER,
+  '0017800150149': {
+    barcode: '0017800150149',
+    source: 'https://example.invalid/label-deck.pdf',
+    sourceKind: 'manufacturer',
+    checked: '2026-09-08',
+    name: 'Cat Chow Complete',
+    brand: 'Purina',
+    quantity: '3.15lbs',
+    ingredientsText: 'Poultry by-product meal, corn meal, soybean meal',
+    ingredientsLang: 'en',
+    crudeProteinPct: 32,
+  },
+  '9999999999999': {
+    barcode: '9999999999999',
+    source: 'https://example.invalid/gap',
+    sourceKind: 'manufacturer',
+    checked: '2026-09-08',
+    crudeFatPct: 11,
+  },
+};
+
+suite('applyCurated: a card and a page cannot disagree', (t) => {
+  const bare = { ...API_PRODUCT, barcode: '0017800150149', ingredients: [], nutrition: {} };
+  const [merged] = applyCurated([bare], CATALOGUE);
+
+  t.equal(merged.ingredients.length, 3,
+    'the list the product page already showed is now on the search result too');
+  t.equal(merged.nutrition.crudeProteinPct, 32, 'and so is the panel figure');
+  t.equal(merged.curated.sourceKind, 'manufacturer', 'with its provenance attached');
+
+  const untouched = { ...API_PRODUCT, barcode: '1111111111111' };
+  t.equal(applyCurated([untouched], CATALOGUE)[0], untouched,
+    'a product the catalogue says nothing about is passed through unchanged');
+  t.equal(applyCurated(null, CATALOGUE).length, 0, 'and no products is not an error');
+});
+
+suite('searchCatalogue: only named entries are findable', (t) => {
+  const hits = searchCatalogue(CATALOGUE, { query: 'cat chow' });
+  t.equal(hits.length, 1, 'a name match is found');
+  t.equal(hits[0].barcode, '0017800150149', 'and it is the right product');
+
+  t.equal(searchCatalogue(CATALOGUE, { query: 'poultry' }).length, 0,
+    'the ingredient list is not searched: somebody searching chicken means the food');
+  t.equal(searchCatalogue(CATALOGUE, { query: 'fat' }).length, 0,
+    'an entry with no name of its own is a gap-filler, already findable through the API, '
+    + 'and adding it here would put the same product on the page twice');
+  t.equal(searchCatalogue(CATALOGUE, { query: '' }).length, 0,
+    'an empty search is not a request for everything');
+});
+
+suite('searchCatalogue: brands, and not showing a product twice', (t) => {
+  t.equal(searchCatalogue(CATALOGUE, { brandTags: 'Purina' }).length, 1, 'a brand browse matches');
+  t.equal(searchCatalogue(CATALOGUE, { brandTags: 'purina|Purina' })[0].brand, 'Purina',
+    'and the OR syntax the API filter uses is understood here too');
+  t.equal(searchCatalogue(CATALOGUE, { brandTags: 'Whiskas' }).length, 0, 'a miss is a miss');
+
+  const excluded = searchCatalogue(CATALOGUE, {
+    query: 'cat chow', exclude: new Set(['0017800150149']),
+  });
+  t.equal(excluded.length, 0,
+    'a product the API already returned is not added a second time');
+});
+
+suite('catalogueBrands: a brand entered by hand is not noise', (t) => {
+  const brands = catalogueBrands(CATALOGUE);
+  t.equal(brands.length, 1, 'only named entries carry a brand worth listing');
+  t.equal(brands[0].name, 'Purina', 'the brand is the one on the entry');
+  t.equal(brands[0].products, 1, 'counted');
+  t.equal(brands[0].curated, true,
+    'and flagged, so fetchBrands can exempt it from the minimum-product threshold '
+    + 'that exists to hide the database long tail');
+  t.equal(catalogueBrands(null).length, 0, 'no catalogue, no brands, no error');
 });

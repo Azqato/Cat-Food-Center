@@ -94,6 +94,14 @@ function card(product, result) {
     ? `<span class="inline-block text-micro px-2 rounded-pill mt-1" style="background:${bg};color:${ink};padding-top:2px;padding-bottom:2px">${result.bandLabel} · ${result.confidence} confidence</span>`
     : '<span class="inline-block text-micro px-2 rounded-pill mt-1" style="border:1px solid var(--hairline);color:var(--ink-soft);padding-top:2px;padding-bottom:2px">No ingredient list on record</span>';
 
+  /* Said on the card, not only on the product page. A score built partly from a
+     panel this project transcribed is a different claim from one built entirely
+     from the database, and the card is where the number is first read. The
+     product page carries the full disclosure; this is the pointer to it. */
+  const hand = product.curated
+    ? '<span class="inline-block text-micro px-2 rounded-pill mt-1" style="border:1px solid var(--hairline);color:var(--ink-soft);padding-top:2px;padding-bottom:2px;margin-left:4px">Recorded by hand</span>'
+    : '';
+
   const meta = [product.brand, FORMAT_LABEL[product.format], product.quantity]
     .filter(Boolean).join(' · ');
 
@@ -112,7 +120,7 @@ function card(product, result) {
       <div class="min-w-0 flex-1">
         <p class="text-ink font-medium text-small truncate">${esc(product.name)}</p>
         <p class="text-ink-soft text-micro">${esc(meta || 'Brand not recorded')}</p>
-        ${badge}
+        ${badge}${hand}
       </div>
       <div class="w-14 h-14 rounded-card flex items-center justify-center shrink-0"
            style="background:${bg}" aria-label="${esc(ariaLabel)}">${tile}</div>
@@ -218,7 +226,7 @@ async function run() {
     return;
   }
 
-  const [{ products, total, pageSize, error }, kb] = await Promise.all([
+  const [{ products, total, pageSize, error, warning, curated = 0 }, kb] = await Promise.all([
     searchProducts(state.q, { page: state.page, brand: state.brand }),
     loadKnowledgeBase(),
   ]);
@@ -244,12 +252,20 @@ async function run() {
   const scorableCount = scored.filter((s) => s.result.scorable).length;
 
   controls.hidden = false;
-  list.innerHTML = scored.map(({ product, result }) => card(product, result)).join('');
+  list.innerHTML = (warning
+    ? `<li class="bg-surface border border-hairline rounded-card p-4 text-small text-ink-soft">${esc(warning)}</li>`
+    : '')
+    + scored.map(({ product, result }) => card(product, result)).join('');
 
-  const first = (state.page - 1) * pageSize + 1;
+  /* Curated-only matches all sit on page one (see searchProducts), so from page
+     two onwards the running number has to step over them. Without this the
+     first result on page two claims a position the first page already used. */
+  const first = (state.page - 1) * pageSize + 1 + (state.page > 1 ? curated : 0);
   const last = first + scored.length - 1;
+  const byHand = scored.filter(({ product }) => product.curated).length;
   setLabel(`Results ${first}&ndash;${last} of ${total} for ${subjectOf(state, brandName)}`
-    + ` · ${scorableCount} of these can be scored`);
+    + ` · ${scorableCount} of these can be scored`
+    + (byHand ? ` · ${byHand} ${byHand === 1 ? 'is' : 'are'} recorded by hand` : ''));
 
   renderPager(state, total, pageSize, scored.length);
 }

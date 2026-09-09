@@ -21,6 +21,53 @@ punctuation rather than content.
 
 ---
 
+## [0.24.0] - 2026-09-08
+
+**M25: the catalogue is consulted everywhere it is needed, not in one place.**
+
+Added
+* **Search reads the curated catalogue.** `applyCurated` merges catalogue data over every
+  product a search returns, and `searchCatalogue` finds curated products the API cannot return
+  at all, matching on name, brand and pack size. Curated-only matches are put first: there are
+  few of them, they are the records this project vouches for by name, and the alternative is
+  burying them under a ranking that has never heard of them.
+* **Catalogue brands join the brand index,** exempt from the minimum-product threshold. That
+  threshold hides the database's long tail of one-product transcription noise; a brand entered
+  by hand is the opposite of noise, because entering it was a decision.
+* **"Recorded by hand" on the search card,** and the result line now says how many of the
+  results are. The card is where a score is first read, and a caveat that stays behind on the
+  product page is a caveat that does not exist. Same argument M18b made for confidence.
+* **A live check that a card and a page cannot disagree.** `check-live.py` reads the score off
+  `/product/?barcode=0017800150149` and off that product's search card and fails unless they
+  match. It asserts agreement rather than a number: pinning 49 would fail every time the engine
+  legitimately moved, and would not have caught this.
+* Nineteen assertions in `catalogue.test.js` covering the three new functions, including the
+  two rules most likely to be simplified away later: only named entries are findable this way,
+  and the ingredient list is not searched.
+
+Fixed
+* **The site contradicted itself, on production, in public.** A search for "Cat Chow Complete"
+  returned a card reading "No ingredient list on record. Not scored", under a count line saying
+  "0 of these can be scored", while the product page for the same barcode scored it 49 off a
+  transcribed manufacturer panel and listed every ingredient. Both views came from this site,
+  from the same data, in the same minute. Section 16.5b had recorded the discoverability half of
+  this the day before and missed this half, which was the visible one.
+* **A search no longer loses local data when the database is unreachable.** Curated matches are
+  returned under a warning instead of being replaced by a failure message. The one path where
+  the catalogue is the only source there is was the one path that threw it away.
+* **Result numbering across pages.** Curated matches are counted on every page and shown on the
+  first, so a search no longer reports 1579 results on page one and 1578 on page two, and page
+  two's numbering steps over the entries page one added.
+
+Changed
+* Service worker `v5` to `v6`.
+* **PRD section 16.5b** rewritten from an open defect to what was built, with the route table
+  now showing before and after and the five decisions worth keeping.
+* **M26 added to the roadmap:** hide unscored products by default. The scorable-only control
+  already exists; what is new is the default, making it survive a navigation, and saying plainly
+  that it hides most of the database. Queued behind the coverage number, because it hides the
+  evidence of the gap that number measures.
+
 ## [0.23.1] - 2026-09-08
 
 **A curated product resolves, and nothing leads anybody to it.**

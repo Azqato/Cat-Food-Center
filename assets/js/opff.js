@@ -29,7 +29,9 @@
    client-side fetch. It is sent by tools/probe-opff.py, which is not a browser.
    ========================================================================== */
 
-import { loadCatalogue, mergeCurated } from './catalogue.js';
+import {
+  loadCatalogue, mergeCurated, applyCurated, searchCatalogue, catalogueBrands,
+} from './catalogue.js';
 
 const API = 'https://world.openpetfoodfacts.org/api/v2';
 
@@ -385,20 +387,68 @@ export async function searchProducts(query, { page = 1, pageSize = 24, brand = '
       + '&brands_tags=' + encodeURIComponent(b)
       + '&page=' + page + '&page_size=' + pageSize + '&fields=' + FIELDS;
 
+  /* The catalogue is consulted here as well as in fetchProduct, which is the
+     whole of M25 (PRD 16.5b). It does two separate jobs.
+
+     `applyCurated` stops a card and a page disagreeing. Before this, a search
+     for a curated product returned a card reading "No ingredient list on
+     record. Not scored" while its own page scored it from the catalogue.
+
+     `searchCatalogue` finds products the API cannot return at all, and they are
+     put first: there are few of them, they are the records this project
+     vouches for by name, and the alternative is burying them under an API
+     ranking that has never heard of them.
+
+     Curated-only matches are added on the first page only. Interleaving a local
+     list into a remote pagination would either repeat them on every page or
+     silently drop them, and both are worse than saying they are here. */
+  const catalogue = await loadCatalogue();
+  /* Counted on every page, shown only on the first. The count has to be
+     page-independent or the result line contradicts itself between pages: 1579
+     results on page one and 1578 on page two, for the same search. */
+  const curatedMatches = searchCatalogue(catalogue, { query: q, brandTags: b });
+
   try {
     const data = await getJSON(url, signal);
+    const fromApi = applyCurated((data.products || []).map(normalize), catalogue);
+    const seen = new Set(fromApi.map((p) => p.barcode));
+    const curatedOnly = page === 1
+      ? curatedMatches.filter((p) => !seen.has(p.barcode))
+      : [];
     return {
-      products: (data.products || []).map(normalize),
-      total: data.count || 0,
+      products: [...curatedOnly, ...fromApi],
+      total: (data.count || 0) + curatedMatches.length,
+      curated: curatedMatches.length,
       page: data.page || page,
       pageSize: data.page_size || pageSize,
     };
   } catch (err) {
     if (err.name === 'AbortError') throw err;
-    return {
-      products: [], total: 0, page, pageSize,
-      error: 'Could not reach Open Pet Food Facts.',
-    };
+    /* The API being unreachable is not a reason to withhold what is held
+       locally. A curated match is still a real answer, and this is the one
+       path where the catalogue is the only source there is. */
+    const offline = page === 1 ? curatedMatches : [];
+    /* `error` empties the page; `warning` sits above results that are real but
+       incomplete. A curated match found while the database is down is a real
+       answer, and throwing it away to show a failure message would be the page
+       hiding data it is holding. */
+    return offline.length
+      ? {
+        products: offline,
+        total: offline.length,
+        curated: offline.length,
+        page,
+        pageSize,
+        warning: 'Open Pet Food Facts could not be reached, so this is only what Cat Food Center holds locally.',
+      }
+      : {
+        products: [],
+        total: 0,
+        curated: 0,
+        page,
+        pageSize,
+        error: 'Could not reach Open Pet Food Facts.',
+      };
   }
 }
 
@@ -487,14 +537,29 @@ export function brandDisplayName(expression) {
  * @returns {Promise<{brands: object[], error?: string}>}
  */
 export async function fetchBrands({ minProducts = 2, signal } = {}) {
+  /* Catalogue brands join the facet (PRD 16.5b). Without this, a brand the
+     database does not carry cannot appear in the brand index however many
+     curated products it has, which is how Dr. Elsey's came to be missing from
+     a list of cat food brands while being a cat food brand.
+
+     They are exempt from `minProducts`. That threshold hides the database's
+     long tail of one-product transcription noise; a brand somebody entered by
+     hand is the opposite of noise, because entering it was a decision. */
+  const catalogue = await loadCatalogue();
+  const curated = catalogueBrands(catalogue);
+  const curatedNames = new Set(curated.map((c) => c.name.toLowerCase()));
+
   try {
     const data = await getJSON(BRANDS_URL, signal);
-    const brands = mergeBrandTags(data.tags || [])
-      .filter((b) => b.count >= minProducts);
+    const brands = mergeBrandTags([...(data.tags || []), ...curated])
+      .filter((b) => b.count >= minProducts || curatedNames.has(b.name.toLowerCase()));
     return { brands };
   } catch (err) {
     if (err.name === 'AbortError') throw err;
-    return { brands: [], error: 'Could not reach Open Pet Food Facts.' };
+    return {
+      brands: mergeBrandTags(curated),
+      error: 'Could not reach Open Pet Food Facts.',
+    };
   }
 }
 
