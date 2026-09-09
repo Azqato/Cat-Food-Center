@@ -137,6 +137,13 @@ def build(name, title, description, current, module, want_toc, want_search):
     # failure mode this exists to remove: it works from one directory, 404s
     # from another, and the two are indistinguishable in a diff.
     out = out.replace('{{root}}', './' if depth == 0 else '../' * depth)
+    # The canonical URL is the page's own directory, never a query string. Six
+    # of these pages are shells that render whatever `?barcode=` or `?q=` asks
+    # for, so the honest canonical is the document rather than the view: there
+    # is one /product/ page and it is this file. If product views ever need to
+    # be indexed in their own right, that is a different mechanism and not a
+    # different value for this tag.
+    out = out.replace('{{canonical}}', BASE if name == 'index' else BASE + name + '/')
 
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)
@@ -145,7 +152,7 @@ def build(name, title, description, current, module, want_toc, want_search):
     return path
 
 
-BASE = 'https://azqato.github.io/catfoodcenter/'
+BASE = chrome.BASE
 
 # path, changefreq, priority. Ordered as the sitemap reads.
 #

@@ -204,6 +204,7 @@ TEMPLATE = """<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>%(title)s - Cat Food Center</title>
   <meta name="description" content="%(description)s">
+  <link rel="canonical" href="{{canonical}}">
   <link rel="icon" href="{{root}}favicon.svg">
   <!-- Blocking on purpose: applies the stored theme before first paint. -->
   <script src="{{root}}assets/cfc-theme.js"></script>
@@ -282,6 +283,10 @@ def build(slug, h1, description, lede, body, crumb=None, title=None):
     # {{root}}, so a fragment, a sidebar entry and the shared chrome are all
     # depth-agnostic and none of them can be wrong about where they ended up.
     html = html.replace('{{root}}', '../' * depth)
+    # M24a. `parts` is already the page's path from the site root, so the
+    # canonical is that path under the production base and nothing here has to
+    # know how deep it sits.
+    html = html.replace('{{canonical}}', chrome.BASE + '/'.join(parts) + '/')
 
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)

@@ -597,8 +597,8 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M25: Curated products become discoverable | 2026-09-08 | Complete |
 | M23: Dr. Elsey’s | | Queued, blocked on barcodes |
 | M24: Premix groups | 2026-09-09 | Complete |
-| M24a: Canonical tags | | Queued, see 21 |
-| M24b: Search LCP back under budget | | Queued, see 16.11 |
+| M24a: Canonical tags | 2026-09-09 | Complete |
+| M24b: Search LCP back under budget | | **Reopened** 2026-09-09 with the real cause found, see 16.11 |
 | M26: Hide unscored products by default | 2026-09-09 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 | M27: Our own product database | | Queued, after the beta |
@@ -827,7 +827,8 @@ now reports the same call the engine made, and a test pins it.
 | - | ~~M25: curated products become discoverable~~ | **Shipped 2026-09-08.** See 16.5b |
 | - | ~~M26: hide unscored products by default~~ | **Shipped 2026-09-09.** |
 | - | ~~M24: premix groups~~ | **Shipped 2026-09-09.** |
-| 1 | **M24a: canonical tags** and **M24b: search LCP** | Loose debt with no milestone until 2026-09-09. Both have to be done before the beta, and this is the slot before it |
+| - | ~~M24a: canonical tags~~ | **Shipped 2026-09-09.** |
+| 1 | **M24b: search LCP** | Still open, and now aimed at the right thing: 2.3 seconds pass before the first API request leaves the browser |
 | 2 | **M22, finishing it: a coverage number** | M12's only open criterion. M25 is done; it still needs a barcode per SKU |
 | 3 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
 | 4 | **M12: public beta** | Ordered here 2026-09-09. It launches on Open Pet Food Facts plus the curated catalogue, which is the setup that exists, rather than waiting for the one that does not |
@@ -851,9 +852,26 @@ now reports the same call the engine made, and a test pins it.
 
 *What it did move is the page.* Cat Chow Complete went from 28 ingredient rows to 38, and the Tier 3 chip moved off `VITAMINS [...eleven vitamins and menadione...]` and onto `menadione sodium bisulfite complex (Vitamin K)`, which is the only entry that earned it.
 
-**1. M24a: canonical tags.** *Queued 2026-09-09.* Twenty pages, no `rel=canonical` on any of them. That was survivable while nothing linked here and the address never changed; both stopped being true on 2026-09-09, when the repository was renamed and the old Pages path started answering 404 rather than redirecting. Nothing on the site tells a crawler which address is the real one, and launch is the moment anybody starts linking to it. The work is a line in `tools/site/chrome.py` and one in the guide generator, plus the `{{root}}` handling that already exists for depth, so it is one change in two places rather than twenty. Section 21.
+**M24a: canonical tags.** *Shipped 2026-09-09.* Twenty pages, and none of them had a `rel=canonical`. That was survivable while nothing linked here and the address never changed; both stopped being true on 2026-09-09, when the repository was renamed and the old Pages path started answering 404 rather than redirecting. Nothing on the site tells a crawler which address is the real one, and launch is the moment anybody starts linking to it. As built: a `{{canonical}}` token beside `{{root}}`, substituted by the same writer that already knows how deep each page sits, and `BASE` moved into `chrome.py` so both generators read one definition of the site's address. `check-live.py` walks every built page and fails unless its canonical is its own URL, read off disk rather than over the wire, because the value is a production URL and the checker serves from `127.0.0.1`: a check that compared the tag to the page it fetched would pass while pointing at the wrong site.
 
-**2. M24b: search LCP, back under the budget.** *Queued 2026-09-09, caused by M26.* The filtered path fetches five pages of results in parallel and renders nothing until all five land, so making the filter the default took search LCP from about 1.0s to 3.3s, measured twice on the same machine. The fix is to render the first page's scorable results as soon as that page arrives and fill in as the rest do: the scan is already parallel, so this is a rendering change and not a fetching one. Section 16.11 carries it.
+*One decision worth stating.* The canonical is the page's own directory and never a query string, so `/product/?barcode=X` canonicalises to `/product/`. Six of these pages are shells that render whatever the query asks for, and the honest canonical is the document rather than the view: there is one `/product/` page and it is that file. If product views ever need indexing in their own right, that is a different mechanism, not a different value for this tag.
+
+**1. M24b: search LCP.** *Opened 2026-09-09, and reopened the same day once it was measured properly.*
+
+*The diagnosis in the M26 entry was wrong, and the correction matters more than the milestone.* That entry said making the filter the default "tripled LCP", from about 1.0s to 3.3s, and blamed the five-page scan rendering nothing until all five landed. Two changes were made on that basis, painting the first page as soon as it arrives and then issuing the first request alone, and neither moved the number. Instrumenting the throttled page to name the LCP element explains why:
+
+| Path | LCP | The element that won it |
+|---|---|---|
+| `?q=chicken&only=all` | 1080ms | The filter checkbox label, a piece of static chrome |
+| `?q=chicken` (filtered, the default) | 3452ms | A card's meta line, `Nestle Purina PetCare - Wet - 70g` |
+
+Both paths receive their first API response at about the same moment, 3.1 to 3.3 seconds. What changed between them is which element the browser considers largest, not when content appears. The unfiltered page's largest element is a wide label that paints early; the filtered page's is a line inside a result card. **The site did not get three times slower. The metric started measuring a different element.**
+
+*The real finding, which neither state was hiding well.* The first API request does not leave the browser until **2257ms**. Everything after it is fast: the search response lands 1.0s later, and the other four scan pages together add about 450ms. So the page spends more than two seconds of a four-second load doing nothing that a visitor can see, on every search, filtered or not, and the same shape applies to the product page. That is the thing worth fixing, and it was invisible for as long as the number was read without asking which element it belonged to.
+
+*What M24b is now.* Start the request before the module graph is ready. The chain today is stylesheets and fonts, then `cfc-theme.js`, then `search-page.js` pulling in `opff.js`, `catalogue.js`, `ingredients.js`, `scoring.js` and `thumb.js`, then two data files, and only then a fetch. A small inline script in the head can build the same URL from `location.search` and start the fetch immediately, with `opff.js` adopting the in-flight promise when it loads. It is worth doing carefully rather than quickly: the URL it builds has to be the one `opff.js` would have built, or the page issues two requests and the warm start becomes a tax.
+
+*What shipped from the first attempt, because it stands on its own.* The filtered path now paints page one as soon as it lands instead of waiting for all five, and says "still checking further results" while the rest arrive. That is about 450ms of waiting removed and an honest intermediate state; it is not the LCP fix and is no longer described as one.
 
 *Both were loose debt and are now in a slot, at the project owner's direction on 2026-09-09.* They are grouped with M24 because it is the slot before the beta and they both have to be done before it, not because they are related to premix groups. They are numbered as their own milestones rather than folded into M24's scope so that "M24 moves scores" stays a true sentence about one change: a milestone that moves scores and also rewrites twenty page heads is one nobody can bisect.
 
@@ -1550,7 +1568,7 @@ The `SHELL_ASSETS` list is currently 31 entries and the installed cache holds 32
 | Product coverage | Whatever the database holds; about a fifth of products score on all three pillars | Curate a local catalogue for common SKUs under `assets/data/` (M12) |
 | Alias languages | Six covered; anything else is reported as unchecked | Extend the alias lists, and `MATCHED_LANGUAGES` with them, never ahead of them |
 | Search relevance | Delegated wholly to `/cgi/search.pl`, whose ranking is not documented and cannot be tuned or inspected | A curated catalogue, or a local index over it |
-| Search LCP, since M26 | Making the filter the default made the five-page scan the default, and the page renders nothing until all five land. Measured 2026-09-09, immediately after shipping it: LCP on `search results (API)` went from about 1.0s to 3.3s, repeatably. It is outside the gate, because API pages are excluded from the vitals budget on the grounds that upstream latency is not ours, which is exactly the reasoning that let a self-inflicted 3x through | Render the first page's scorable results as soon as that page lands and fill in as the rest arrive. The scan is already parallel, so this is a rendering change rather than a fetching one. Do it before the beta, and consider whether an API page being outside the budget should still be outside it when the site chose the extra requests |
+| Time to the first API request | 2257ms of a 4s throttled search load passes before the first request leaves the browser: stylesheets, fonts, a blocking theme script, six ES modules and two data files, in that order. Measured 2026-09-09 by naming the LCP element rather than reading the number, which is also how the M26 entry's "tripled LCP" claim was found to be a change of element and not a change of speed | Start the fetch from a small inline script in the head and have `opff.js` adopt the in-flight promise. M24b |
 | Scorable-only filter | Scans the first five pages of the query and filters those, because the API cannot filter on scorability. Beyond 120 results it is a sample, and says so | Only a local catalogue can fix this properly |
 | Product image quality | Contributor photographs at whatever angle and lighting they had, shown as they are | Nothing to do inside this architecture. The catalogue is the source, and a photo of the real tin is worth more than a tidy one |
 | Ingredient explanations | Only entries in the additive knowledge base explain themselves, which is 20 additives and 3 vague-term groups | A general ingredient dictionary, if one can be sourced without inventing claims. Nothing true can be added to "chicken" today |

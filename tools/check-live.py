@@ -11,7 +11,9 @@ it is a smoke check, not a gate.
 import asyncio
 import http.server
 import os
+import io
 import socketserver
+import re
 import sys
 import threading
 
@@ -458,6 +460,36 @@ async def main():
                                    'page=%s card=%s' % (page_score or 'none',
                                                         card['score'] or 'no card')))
             await page.close()
+
+            total += 1
+            # Every served page names its own address (M24a).
+            #
+            # Read off disk rather than over the wire, because the value being
+            # checked is a production URL and this server is 127.0.0.1: a check
+            # that compared the tag to the page it was fetched from would pass
+            # while pointing at the wrong site. What can go wrong here is one
+            # page carrying another page's canonical, which is what a
+            # hand-written absolute URL does when a file is copied, and which no
+            # amount of local browsing would reveal.
+            base_url = 'https://azqato.github.io/catfoodcenter/'
+            wrong = []
+            for dirpath, dirnames, filenames in os.walk(ROOT):
+                dirnames[:] = [d for d in dirnames
+                               if d not in ('.git', 'tools', 'docs', 'assets')]
+                if 'index.html' not in filenames:
+                    continue
+                rel = os.path.relpath(dirpath, ROOT).replace(os.sep, '/')
+                expected = base_url if rel == '.' else base_url + rel + '/'
+                html = io.open(os.path.join(dirpath, 'index.html'), encoding='utf-8').read()
+                found = re.search(r'<link rel="canonical" href="([^"]*)"', html)
+                if not found or found.group(1) != expected:
+                    wrong.append('%s -> %s' % (rel, found.group(1) if found else 'absent'))
+            canonical_ok = not wrong
+            if not canonical_ok:
+                failures.append('every page names its own address')
+            print('%s %-44s %s' % ('PASS' if canonical_ok else 'FAIL',
+                                   'every page carries its own canonical',
+                                   'all correct' if canonical_ok else '; '.join(wrong[:3])))
 
             total += 3
             # The scorable-only default, and its disclosure (M26).

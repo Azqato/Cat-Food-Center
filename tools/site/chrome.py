@@ -54,6 +54,14 @@ FOOTER_LINKS = [
 ]
 
 
+# The production origin and subpath. It lives here rather than in build.py
+# because both generators need it for the canonical URL, and it has already
+# moved once: the repository was renamed on 2026-09-09 and the old Pages path
+# answers 404 rather than redirecting. One definition is what makes the next
+# move a one-line change. See PRD section 21.
+BASE = 'https://azqato.github.io/catfoodcenter/'
+
+
 def head(title, description, page_css=True, extra=''):
     """The <head>. cfc-theme.js is deliberately a blocking script here: that
     position is what applies the stored theme before first paint, and moving it
@@ -68,6 +76,14 @@ def head(title, description, page_css=True, extra=''):
         '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
         '  <title>%s</title>\n'
         '  <meta name="description" content="%s">\n'
+        # Canonical, added in M24a. Every page had been shipping without one,
+        # which was survivable while the address never changed and nothing
+        # linked here. Both stopped being true on 2026-09-09. {{canonical}} is
+        # substituted where {{root}} is, by the writer that knows the depth,
+        # for the same reason: a hand-written absolute URL is right from one
+        # directory and wrong from another, and the two look identical in a
+        # diff.
+        '  <link rel="canonical" href="{{canonical}}">\n'
         '  <link rel="icon" href="{{root}}favicon.svg">\n'
         '  <link rel="manifest" href="{{root}}manifest.webmanifest">\n'
         '  <meta name="theme-color" content="#C2410C">\n'

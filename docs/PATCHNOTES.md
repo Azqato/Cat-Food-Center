@@ -21,6 +21,54 @@ punctuation rather than content.
 
 ---
 
+## [0.27.0] - 2026-09-09
+
+**M24a: every page says which address it lives at. And the LCP number in `[0.25.0]` was
+measuring the wrong thing.**
+
+Added
+* **`rel=canonical` on all twenty pages.** A `{{canonical}}` token sits beside `{{root}}` and is
+  substituted by the same writer that already knows how deep each page is, so no page ever
+  contains a hand-written absolute URL. `BASE` moved into `tools/site/chrome.py`, giving both
+  generators one definition of the site's address, which is what makes the next rename a one-line
+  change rather than the twenty-nine-file sweep of `[0.24.1]`.
+* **A gate for it,** read off disk rather than over the wire: the value is a production URL and
+  `check-live.py` serves from `127.0.0.1`, so a check that compared the tag to the page it fetched
+  would pass while every page pointed at the wrong site. 27 live checks to 28.
+* The canonical is a page's own directory, never a query string, so `/product/?barcode=X`
+  canonicalises to `/product/`. There is one product document and it renders whatever the query
+  asks for; saying otherwise in a tag would not make it two pages.
+
+Changed
+* **The filtered search paints page one as soon as it lands** instead of waiting for all five scan
+  pages, and says "still checking further results" until the rest arrive. About 450ms of waiting
+  removed. Service worker `v8` to `v9`.
+
+Fixed
+* **`[0.25.0]` said M26 "tripled LCP on a search", from about 1.0s to 3.3s. That was a
+  misreading, and the site was never three times slower.** Instrumenting the throttled page to
+  name the element behind the number: on `?only=all` the largest element is the filter checkbox
+  label, static chrome that paints at 1080ms; on the filtered default it is a line inside a result
+  card, at 3452ms. Both paths receive their first API response at the same moment, 3.1 to 3.3
+  seconds. The metric changed which element it was measuring. The page did not change speed.
+* Two changes were made on the strength of the wrong diagnosis before it was checked. The first,
+  painting page one early, is worth keeping on its own merits and is above. The second, issuing
+  the first request alone so it would not share bandwidth, was reverted: it cost a round trip and
+  bought nothing, because bandwidth was never the constraint.
+
+Notes
+* **The real number, now that something is pointed at it: 2257ms pass before the first API
+  request leaves the browser.** Stylesheets, fonts, a blocking theme script, six ES modules and
+  two data files all load first. Everything after is quick, the search response lands a second
+  later and the four extra scan pages add 450ms between them. So more than half of a four-second
+  search is spent before the site has asked anybody anything. That is M24b, which is reopened
+  and now aimed at the thing that is actually slow.
+* **This is the fifth time a measurement turned out to be about the instrument.** M20a, M21a,
+  M22, M25, M26. The new one is worth naming precisely, because it is subtler than the others: a
+  correct number, honestly gathered, describing something other than what it was read as
+  describing. "LCP got worse" was true. "The page got slower" did not follow, and nothing in the
+  number said so either way until somebody asked which element it belonged to.
+
 ## [0.26.0] - 2026-09-09
 
 **M24: the flag goes on the ingredient that earned it.**

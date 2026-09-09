@@ -334,20 +334,54 @@ function subjectOf(state, brandName) {
    Deduplicated by barcode, because paged API results can repeat a record and
    a duplicate card would inflate the count this page is trying to state
    accurately. */
-async function runFiltered(state, brandName) {
-  const [pages, kb] = await Promise.all([
-    Promise.all(Array.from({ length: SCAN_PAGES }, (_, i) =>
-      searchProducts(state.q, { page: i + 1, brand: state.brand }))),
-    loadKnowledgeBase(),
-  ]);
+/* The scan paints twice (M24b).
 
-  const failed = pages.find((p) => p.error);
+   M26 made this the default path, and it used to await all five pages before
+   writing anything to the document, so the default search went from about a
+   second to paint to three and a third. The requests were already parallel;
+   what was serial was the patience.
+
+   So the first page paints as soon as it lands, with the label saying the scan
+   is still running, and the full set replaces it when the rest arrive. Nothing
+   about the numbers changes: every label still reports what it actually
+   scanned at the moment it is written, which is what makes an intermediate
+   paint honest rather than a guess that gets corrected.
+
+   Only on page one. A later page of a locally paginated list cannot be filled
+   from the first API page, so painting there would show an empty list and then
+   a full one, which is worse than waiting. */
+async function runFiltered(state, brandName) {
+  const requests = Array.from({ length: SCAN_PAGES }, (_, i) =>
+    searchProducts(state.q, { page: i + 1, brand: state.brand }));
+  const [first, kb] = await Promise.all([requests[0], loadKnowledgeBase()]);
+
+  if (first.error) {
+    setLabel('');
+    empty('Could not reach the database', esc(first.error) + ' Check your connection and try again.');
+    return;
+  }
+
+  if (state.page === 1) renderFiltered(state, brandName, [first], kb, true);
+
+  const rest = await Promise.all(requests.slice(1));
+  const failed = rest.find((p) => p.error);
+  if (failed && state.page === 1) {
+    // Page one is already on screen and is real. Losing pages two to five
+    // narrows the scan; it does not invalidate what has been painted, and the
+    // label below will say "the first 24 of 1571" rather than claiming more.
+    renderFiltered(state, brandName, [first], kb, false);
+    return;
+  }
   if (failed) {
     setLabel('');
     empty('Could not reach the database', esc(failed.error) + ' Check your connection and try again.');
     return;
   }
 
+  renderFiltered(state, brandName, [first, ...rest], kb, false);
+}
+
+function renderFiltered(state, brandName, pages, kb, scanning) {
   const total = pages[0].total;
   const pageSize = pages[0].pageSize;
   const seen = new Map();
@@ -359,6 +393,7 @@ async function runFiltered(state, brandName) {
   const scanned = seen.size;
   const subject = subjectOf(state, brandName);
 
+  if (!scanned && scanning) return;
   if (!scanned) {
     setLabel('');
     const what = brandName ? `${esc(brandName)} products` : `&ldquo;${esc(state.q)}&rdquo;`;
@@ -381,6 +416,12 @@ async function runFiltered(state, brandName) {
 
   controls.hidden = false;
 
+  if (!scorable.length && scanning) {
+    // Nothing scorable yet is not "none of these can be scored". Say what is
+    // happening instead of announcing a result the scan has not reached.
+    setLabel(`Checking ${scanned} of ${total} results for ${subject}…`);
+    return;
+  }
   if (!scorable.length) {
     pager.hidden = true;
     setLabel('');
@@ -401,6 +442,9 @@ async function runFiltered(state, brandName) {
 
   const lastPage = Math.max(1, Math.ceil(scorable.length / pageSize));
   const page = Math.min(state.page, lastPage);
+  // A note from a previous paint would otherwise stack under the pager.
+  const stale = document.getElementById('scan-note');
+  if (stale) stale.remove();
   const slice = scorable.slice((page - 1) * pageSize, page * pageSize);
 
   list.innerHTML = slice.map(({ product, result }) => card(product, result)).join('');
@@ -414,16 +458,17 @@ async function runFiltered(state, brandName) {
     + `products in ${scope} that can be scored`
     + (hidden
       ? ` · ${hidden} with no ingredient list ${hidden === 1 ? 'is' : 'are'} hidden · ${showEverythingLink(state)}`
-      : ''));
+      : '')
+    + (scanning ? ' · still checking further results' : ''));
 
   renderPager({ ...state, page }, scorable.length, pageSize, slice.length);
 
   // On the last page, say the scan stopped. The label already says it, but by
   // the time somebody has read to the bottom of the results they have earned a
   // reminder that "no more" means "no more that were looked at".
-  if (!exhausted && page === lastPage) {
+  if (!exhausted && page === lastPage && !scanning) {
     pager.insertAdjacentHTML('afterend',
-      `<p class="text-micro text-ink-soft" style="max-width:52ch;margin:14px auto 0;text-align:center">
+      `<p id="scan-note" class="text-micro text-ink-soft" style="max-width:52ch;margin:14px auto 0;text-align:center">
          That is every scorable product in the first ${scanned} results. The search matched
          ${total} in all, and the rest were not checked.
          ${showEverythingLink(state)} to page through them yourself.
