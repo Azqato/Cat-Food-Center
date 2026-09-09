@@ -598,7 +598,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M23: Dr. Elsey’s | | Queued, blocked on barcodes |
 | M24: Premix groups | 2026-09-09 | Complete |
 | M24a: Canonical tags | 2026-09-09 | Complete |
-| M24b: Search LCP back under budget | | **Reopened** 2026-09-09 with the real cause found, see 16.11 |
+| M24b: The wait before the first API request | 2026-09-09 | Complete. Reopened the same day it was closed, once it was measured rather than assumed |
 | M26: Hide unscored products by default | 2026-09-09 | Complete |
 | M12: Public beta | 2027-01 | Planned |
 | M27: Our own product database | | Queued, after the beta |
@@ -828,11 +828,11 @@ now reports the same call the engine made, and a test pins it.
 | - | ~~M26: hide unscored products by default~~ | **Shipped 2026-09-09.** |
 | - | ~~M24: premix groups~~ | **Shipped 2026-09-09.** |
 | - | ~~M24a: canonical tags~~ | **Shipped 2026-09-09.** |
-| 1 | **M24b: search LCP** | Still open, and now aimed at the right thing: 2.3 seconds pass before the first API request leaves the browser |
-| 2 | **M22, finishing it: a coverage number** | M12's only open criterion. M25 is done; it still needs a barcode per SKU |
-| 3 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
-| 4 | **M12: public beta** | Ordered here 2026-09-09. It launches on Open Pet Food Facts plus the curated catalogue, which is the setup that exists, rather than waiting for the one that does not |
-| 5 | **M27: our own product database** | Requested 2026-09-09. The largest thing on this list, and now the first thing after launch rather than the last thing before it |
+| - | ~~M24b: the wait before the first API request~~ | **Shipped 2026-09-09.** 2271ms to 1361ms |
+| 1 | **M22, finishing it: a coverage number** | M12's only open criterion. M25 is done; it still needs a barcode per SKU |
+| 2 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
+| 3 | **M12: public beta** | Ordered here 2026-09-09. It launches on Open Pet Food Facts plus the curated catalogue, which is the setup that exists, rather than waiting for the one that does not |
+| 4 | **M27: our own product database** | Requested 2026-09-09. The largest thing on this list, and now the first thing after launch rather than the last thing before it |
 
 **M25: curated products become discoverable.** *Shipped 2026-09-08.* Search and the brand index now consult the catalogue, a curated card carries its provenance, and a live check fails if a search card and a product page report different scores for the same barcode. Section 16.5b has what was built and why.
 
@@ -856,7 +856,7 @@ now reports the same call the engine made, and a test pins it.
 
 *One decision worth stating.* The canonical is the page's own directory and never a query string, so `/product/?barcode=X` canonicalises to `/product/`. Six of these pages are shells that render whatever the query asks for, and the honest canonical is the document rather than the view: there is one `/product/` page and it is that file. If product views ever need indexing in their own right, that is a different mechanism, not a different value for this tag.
 
-**1. M24b: search LCP.** *Opened 2026-09-09, and reopened the same day once it was measured properly.*
+**M24b: the wait before the first API request.** *Opened, reopened and shipped on 2026-09-09.*
 
 *The diagnosis in the M26 entry was wrong, and the correction matters more than the milestone.* That entry said making the filter the default "tripled LCP", from about 1.0s to 3.3s, and blamed the five-page scan rendering nothing until all five landed. Two changes were made on that basis, painting the first page as soon as it arrives and then issuing the first request alone, and neither moved the number. Instrumenting the throttled page to name the LCP element explains why:
 
@@ -869,15 +869,27 @@ Both paths receive their first API response at about the same moment, 3.1 to 3.3
 
 *The real finding, which neither state was hiding well.* The first API request does not leave the browser until **2257ms**. Everything after it is fast: the search response lands 1.0s later, and the other four scan pages together add about 450ms. So the page spends more than two seconds of a four-second load doing nothing that a visitor can see, on every search, filtered or not, and the same shape applies to the product page. That is the thing worth fixing, and it was invisible for as long as the number was read without asking which element it belonged to.
 
-*What M24b is now.* Start the request before the module graph is ready. The chain today is stylesheets and fonts, then `cfc-theme.js`, then `search-page.js` pulling in `opff.js`, `catalogue.js`, `ingredients.js`, `scoring.js` and `thumb.js`, then two data files, and only then a fetch. A small inline script in the head can build the same URL from `location.search` and start the fetch immediately, with `opff.js` adopting the in-flight promise when it loads. It is worth doing carefully rather than quickly: the URL it builds has to be the one `opff.js` would have built, or the page issues two requests and the warm start becomes a tax.
+*What was built, and why not the inline-script idea.* The plan written here was an inline script in the head that builds the search URL from `location.search` and starts the fetch before any module loads, with `opff.js` adopting the promise. That is the fastest possible answer and the wrong one to reach for first: it duplicates URL construction in a second place, and the day the two disagree the page issues two requests and nobody notices, because two requests look exactly like one that was slow. The measurement said the delay was not one problem but three, and all three had ordinary fixes:
+
+**1. A four-level module waterfall, 1794ms.** The browser cannot ask for `opff.js` until `search-page.js` has arrived and been parsed, nor for `catalogue.js` until `opff.js` has. Eight modules arrived in three serial waves. `chrome.py` now emits `<link rel="modulepreload">` for the entry module's whole transitive graph, so the head names every file up front and they arrive in one wave.
+
+The list is computed by reading the imports out of the module sources, never written down. A hand-kept list is wrong the first time somebody adds an import, and nothing says so. That is not hypothetical: the first version of the pattern was line-bounded, `opff.js` imports five names from `catalogue.js` across three lines, and `catalogue.js` was silently missing from the preloads. `check-live.py` now compares each built page's preloads against the graph computed from the sources, which also catches a page that was not rebuilt after an import changed.
+
+**2. `catalogue.json` fetched five times.** `loadCatalogue` cached its result, and the five concurrent page requests of a filtered search all awaited it in the same tick, so every one of them found an empty cache and started a fetch. It caches the promise now, which is what "fetched once" was always meant to say. `check-vitals.py` gained a gate: no page may request the same local file twice, on any page, gated or not.
+
+**3. The API request waited on a local file it did not need.** `searchProducts` awaited the catalogue before issuing the request, and `fetchBrands` did the same. Neither URL depends on the catalogue. Both now start the request first and await the catalogue while it is in flight. Nothing about the results changed; only the order did.
+
+*The result, same throttle, `/search/?q=chicken`.* First API request **2271ms to 1361ms**. Search LCP **3452ms to 2596ms**, and the product page **to 2284ms**. Eight modules in one wave instead of three, and `catalogue.json` fetched once. The API pages are still outside the LCP budget and are still not gated on it, for the reason section 14 gives: what remains is Open Pet Food Facts' own response time, which is about a second on this throttle and is not something a commit here moves.
+
+*What is deliberately left.* Three stylesheets and a Google Fonts stylesheet are still render-blocking, about 900ms of overlapping load. That is the next thing worth measuring and it is not this milestone: it affects when the page paints, not when it asks, and every page here paints inside budget today.
 
 *What shipped from the first attempt, because it stands on its own.* The filtered path now paints page one as soon as it lands instead of waiting for all five, and says "still checking further results" while the rest arrive. That is about 450ms of waiting removed and an honest intermediate state; it is not the LCP fix and is no longer described as one.
 
-*Both were loose debt and are now in a slot, at the project owner's direction on 2026-09-09.* They are grouped with M24 because it is the slot before the beta and they both have to be done before it, not because they are related to premix groups. They are numbered as their own milestones rather than folded into M24's scope so that "M24 moves scores" stays a true sentence about one change: a milestone that moves scores and also rewrites twenty page heads is one nobody can bisect.
+*Both were loose debt and were put in a slot, at the project owner's direction on 2026-09-09.* They are grouped with M24 because it is the slot before the beta and they both have to be done before it, not because they are related to premix groups. They are numbered as their own milestones rather than folded into M24's scope so that "M24 moves scores" stays a true sentence about one change: a milestone that moves scores and also rewrites twenty page heads is one nobody can bisect.
 
-**2. M22, finishing it: a coverage number.** *Blocked on a barcode source.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
+**1. M22, finishing it: a coverage number.** *Blocked on a barcode source.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
 
-**3. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
+**2. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
 
 *Blocked on something other than the panel.* Dr. Elsey's publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC; Amazon and Target do not show one either; and Open Pet Food Facts holds exactly one Dr. Elsey's record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription. It shares that blocker with M22, which is the argument for taking them together, and it is why both sit behind the two unblocked milestones rather than ahead of them.
 
@@ -885,7 +897,7 @@ Both paths receive their first API response at about the same moment, 3.1 to 3.3
 
 *What launching here means.* The beta runs on Open Pet Food Facts plus the curated catalogue, which is the setup that exists today and the one M27 is explicitly designed to sit alongside rather than replace. That is the argument for this order: M27 is a large build whose shape depends on what real visitors ask for, and launching first is how you find that out. It also means the coverage number is a launch criterion rather than a pre-launch luxury, so M22 has to land either way.
 
-*Two things that are not criteria and still block launch* are M24a and M24b above, queued into the slot immediately before this one on 2026-09-09. A site with no canonical tag that has already changed address once should not be the site anybody starts linking to, and a search that takes 3.3s to paint should not be the first thing a visitor meets.
+*Two things that were not criteria and blocked launch anyway* were M24a and M24b, queued into the slot immediately before this one on 2026-09-09 and both shipped that day. A site with no canonical tag that has already changed address once should not be the site anybody starts linking to, and a search that spent 2.3 seconds before asking anybody anything should not be the first thing a visitor meets.
 
 *The fourth criterion, "analytics instrumented", was removed on 2026-09-07 rather than met.* It had been written before section 12 was measured and it contradicted section 14, which gives "no analytics means no visitor data to protect" as the reason for having none. A milestone cannot require closing a gap the same document defends. Section 14 now says which targets are therefore never going to be reported, instead of describing them as pending.
 
@@ -1058,7 +1070,7 @@ python tools/check-contrast.py   # audits both palettes against WCAG AA
 |---|---|
 | `python -m http.server 8000` | Serve the site locally |
 | `python tools/run-tests.py` | Run the browser-hosted suite headlessly. 198 assertions. Exits non-zero on failure, so it works as a gate |
-| `python tools/check-live.py` | 23 end-to-end checks against the live API, two of them added in M18 to ask whether the search searches, one in M18b to ask whether the caveat travels with the score, and one in M20 to ask whether a curated field says so on the page. Every page-load check asserts a string that only the right page contains. Needs network. Not deterministic, so it is a smoke check rather than a gate |
+| `python tools/check-live.py` | 29 end-to-end checks against the live API, two of them added in M18 to ask whether the search searches, one in M18b to ask whether the caveat travels with the score, and one in M20 to ask whether a curated field says so on the page. Every page-load check asserts a string that only the right page contains. Needs network. Not deterministic, so it is a smoke check rather than a gate |
 | `python tools/check-contrast.py` | Verify 52 foreground and background pairs against WCAG AA in both palettes |
 | `python tools/capture-rankings.py [source]` | Capture retailer best-seller rankings into `tools/data/top-skus.json`, appending rather than replacing. Drives Edge. Needs network |
 | `python tools/label-deck.py <pdf-url> [barcode]` | Read a manufacturer label deck and print a proposed catalogue entry for review. Needs PyMuPDF (`pip install pymupdf`), the only library dependency any tool here has. A maintenance aid; nothing the site loads uses it |
@@ -1568,7 +1580,7 @@ The `SHELL_ASSETS` list is currently 31 entries and the installed cache holds 32
 | Product coverage | Whatever the database holds; about a fifth of products score on all three pillars | Curate a local catalogue for common SKUs under `assets/data/` (M12) |
 | Alias languages | Six covered; anything else is reported as unchecked | Extend the alias lists, and `MATCHED_LANGUAGES` with them, never ahead of them |
 | Search relevance | Delegated wholly to `/cgi/search.pl`, whose ranking is not documented and cannot be tuned or inspected | A curated catalogue, or a local index over it |
-| Time to the first API request | 2257ms of a 4s throttled search load passes before the first request leaves the browser: stylesheets, fonts, a blocking theme script, six ES modules and two data files, in that order. Measured 2026-09-09 by naming the LCP element rather than reading the number, which is also how the M26 entry's "tripled LCP" claim was found to be a change of element and not a change of speed | Start the fetch from a small inline script in the head and have `opff.js` adopt the in-flight promise. M24b |
+| Render-blocking stylesheets | Three of this site's stylesheets and one from Google Fonts block the first paint, roughly 900ms of overlapping load on a throttled phone. Measured 2026-09-09 alongside M24b, which fixed the request delay beside it and left this one alone | Worth measuring before it is worth changing: every page paints inside the LCP budget today, so this is a number with no symptom yet |
 | Scorable-only filter | Scans the first five pages of the query and filters those, because the API cannot filter on scorability. Beyond 120 results it is a sample, and says so | Only a local catalogue can fix this properly |
 | Product image quality | Contributor photographs at whatever angle and lighting they had, shown as they are | Nothing to do inside this architecture. The catalogue is the source, and a photo of the real tin is worth more than a tidy one |
 | Ingredient explanations | Only entries in the additive knowledge base explain themselves, which is 20 additives and 3 vague-term groups | A general ingredient dictionary, if one can be sourced without inventing claims. Nothing true can be added to "chicken" today |

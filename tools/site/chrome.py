@@ -9,6 +9,9 @@ and absent from the ninth. This module is the single copy.
 The guide pages get their chrome from tools/learn/shell.py, which imports the
 same NAV and FOOTER definitions from here so the two cannot drift.
 """
+import io
+import os
+import re
 
 # Site navigation. One list, used inline in the bar above 900px and inside the
 # drawer below it.
@@ -62,7 +65,7 @@ FOOTER_LINKS = [
 BASE = 'https://azqato.github.io/catfoodcenter/'
 
 
-def head(title, description, page_css=True, extra=''):
+def head(title, description, page_css=True, extra='', module=None):
     """The <head>. cfc-theme.js is deliberately a blocking script here: that
     position is what applies the stored theme before first paint, and moving it
     or adding defer reintroduces a flash of the wrong palette on every page."""
@@ -102,7 +105,7 @@ def head(title, description, page_css=True, extra=''):
         '  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;'
         '9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">\n'
         '  <link rel="stylesheet" href="{{root}}assets/cfc.css">\n'
-        '%s%s</head>\n' % (full, description, app_css, extra))
+        '%s%s%s</head>\n' % (full, description, modulepreload(module), app_css, extra))
 
 
 def topbar(current, show_search=True):
@@ -180,6 +183,65 @@ def footer():
         'rel="noopener noreferrer">Open Pet Food Facts</a>.</span>\n'
         '  </div>\n'
         '</footer>\n' % (PAW, SUPPORT_URL, cols, AUTHOR_URL))
+
+
+JS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))), 'assets', 'js')
+
+# `[^;]` deliberately matches newlines: opff.js imports five names across three
+# lines, and a line-bounded pattern silently missed catalogue.js, the module the
+# whole curated catalogue lives in. A preload list that quietly omits one file is
+# worse than no list at all, because the waterfall it leaves behind is the one
+# nobody is looking for any more.
+IMPORT_RE = re.compile(
+    r'''(?:^|\n)\s*(?:import|export)\b[^;]*?from\s+["']\./([\w.-]+\.js)["']''')
+
+
+def module_graph(entry):
+    """Every module the browser will need, discovered by reading the imports.
+
+    Measured 2026-09-09: on a throttled search the module graph took 1794ms of
+    the 2271ms before the first API request left the browser, in three serial
+    waves. The browser cannot ask for opff.js until search-page.js has arrived
+    and been parsed, or for catalogue.js until opff.js has, so a four-level
+    graph costs four round trips before any work starts.
+
+    `modulepreload` collapses that into one wave: the head names the whole
+    graph, so every file is requested at once and the waterfall becomes a
+    batch.
+
+    The list is computed from the files rather than written down, because a
+    hand-maintained one is wrong the first time somebody adds an import and
+    nothing says so. Preloading a module the page does not use would waste a
+    request; preloading one it does is the entire point, and reading the
+    imports is what keeps those two apart without anybody having to remember.
+    """
+    seen, order, stack = set(), [], [entry]
+    while stack:
+        name = stack.pop(0)
+        if name in seen:
+            continue
+        seen.add(name)
+        path = os.path.join(JS_DIR, name)
+        if not os.path.isfile(path):
+            continue
+        order.append(name)
+        source = io.open(path, encoding='utf-8').read()
+        for dep in IMPORT_RE.findall(source):
+            if dep not in seen:
+                stack.append(dep)
+    # The entry itself is fetched by its own <script type="module">, so
+    # preloading it would be a duplicate request rather than an early one.
+    return order[1:]
+
+
+def modulepreload(module):
+    """<link rel=modulepreload> for everything `module` imports."""
+    if not module:
+        return ''
+    return ''.join(
+        '  <link rel="modulepreload" href="{{root}}assets/js/%s">\n' % dep
+        for dep in module_graph(module))
 
 
 def scripts(module=None, docs_js=True):

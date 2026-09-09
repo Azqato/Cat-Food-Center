@@ -491,6 +491,50 @@ async def main():
                                    'every page carries its own canonical',
                                    'all correct' if canonical_ok else '; '.join(wrong[:3])))
 
+            total += 1
+            # Every page preloads the whole module graph it is about to need
+            # (M24b).
+            #
+            # Read off disk and compared against the graph computed from the
+            # module sources, so what this catches is a built page that has
+            # fallen out of date with the code: somebody adds an import, does
+            # not rebuild, and the page quietly goes back to discovering that
+            # file one round trip late, which is invisible in every other
+            # number here. It is also how this shipped wrong the first time.
+            # The import pattern was line-bounded and missed catalogue.js,
+            # because opff.js imports five names from it across three lines.
+            # The list was short by one file, the page still worked, and
+            # nothing anywhere said so.
+            sys.path.insert(0, os.path.join(ROOT, 'tools', 'site'))
+            import chrome as site_chrome
+            import build as site_build
+
+            preload_wrong, checked = [], 0
+            for row in site_build.PAGES:
+                name, module = row[0], row[4]
+                if not module:
+                    continue  # a page with no module has no graph to preload
+                checked += 1
+                path = os.path.join(
+                    ROOT, 'index.html' if name == 'index'
+                    else os.path.join(name, 'index.html'))
+                html = io.open(path, encoding='utf-8').read()
+                found = set(re.findall(
+                    r'<link rel="modulepreload" href="[^"]*assets/js/([^"]+)">',
+                    html))
+                want = set(site_chrome.module_graph(module))
+                if found != want:
+                    preload_wrong.append('%s: missing %s' % (
+                        name, ', '.join(sorted(want - found)) or
+                        'nothing, but preloads ' + ', '.join(sorted(found - want))))
+            preload_ok = not preload_wrong
+            if not preload_ok:
+                failures.append('every page preloads its module graph')
+            print('%s %-44s %s' % ('PASS' if preload_ok else 'FAIL',
+                                   'module graph preloaded, not discovered',
+                                   ('all %d complete' % checked) if preload_ok
+                                   else '; '.join(preload_wrong[:3])))
+
             total += 3
             # The scorable-only default, and its disclosure (M26).
             #

@@ -110,7 +110,7 @@ def build(name, title, description, current, module, want_toc, want_search):
                '  </aside>\n' % '\n'.join(items))
     shell_class = 'shell shell-app-toc' if toc else 'shell shell-app'
     out = (
-        chrome.head(title, description)
+        chrome.head(title, description, module=module)
         + '<body>\n\n'
         + chrome.topbar(current, show_search=want_search)
         + '\n<div class="%s">\n\n' % shell_class

@@ -37,6 +37,7 @@ Lighthouse reads the same three numbers out of the same browser timeline.
 import asyncio
 import http.server
 import os
+import collections
 import socketserver
 import sys
 import threading
@@ -111,6 +112,17 @@ READ = """() => ({
     .reduce((n, r) => n + (r.transferSize || 0), 0)
     + (performance.getEntriesByType('navigation')[0] || {}).transferSize || 0,
   requests: performance.getEntriesByType('resource').length + 1,
+  /* Every file this repository serves, in request order, so a file asked for
+     twice can be seen. M24b shipped after a filtered search fetched
+     catalogue.json five times: five concurrent callers awaited a loader that
+     cached its result instead of its promise, so every one of them found an
+     empty cache and started a fetch of its own. Nothing on the page looked
+     wrong, and no gate here could have noticed, because every number this file
+     already collects counts requests without ever asking whether two of them
+     were for the same thing. */
+  local: performance.getEntriesByType('resource')
+    .map((r) => r.name)
+    .filter((n) => n.indexOf('/assets/') !== -1),
 })"""
 
 
@@ -157,6 +169,7 @@ async def main(report_only):
     httpd, port = serve()
     base = 'http://127.0.0.1:%d' % port
     breaches = []
+    duplicates = []
     rows = []
 
     print('CPU throttled %dx, network at roughly slow 4G, 412px viewport, '
@@ -171,6 +184,12 @@ async def main(report_only):
                 bad = [k for k, limit in BUDGET.items() if m[k] > limit]
                 if gated and bad:
                     breaches.append((label, {k: m[k] for k in bad}))
+                # Gated on every page, the API ones included. A file fetched
+                # twice is this repository's doing wherever it happens.
+                repeats = [(name.split('/')[-1], n) for name, n
+                           in collections.Counter(m['local']).items() if n > 1]
+                if repeats:
+                    duplicates.append((label, sorted(repeats)))
                 rows.append((label, gated, m, bad))
                 mark = '' if not bad else (' FAIL' if gated else ' over (not gated)')
                 print('%-28s %8.0fms %7.3f %7.0fms %7.0fkB %5d%s' % (
@@ -197,7 +216,16 @@ async def main(report_only):
     else:
         print('\nEvery gated page inside budget.')
 
-    return 0 if report_only else (1 if breaches else 0)
+    if duplicates:
+        print('\n%d page(s) asked for the same local file more than once:'
+              % len(duplicates))
+        for label, repeats in duplicates:
+            print('  %s: %s' % (label, ', '.join(
+                '%s x%d' % (name, n) for name, n in repeats)))
+    else:
+        print('No local file is fetched twice on any page.')
+
+    return 0 if report_only else (1 if breaches or duplicates else 0)
 
 
 if __name__ == '__main__':

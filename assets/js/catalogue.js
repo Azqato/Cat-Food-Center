@@ -57,7 +57,7 @@ export const DATA_FIELDS = [
    silence. Only a manufacturer entry outranks upstream data. */
 export const SOURCE_KINDS = ['manufacturer', 'retailer-listing'];
 
-let cache = null;
+let pending = null;
 
 /**
  * The catalogue, fetched once.
@@ -67,24 +67,34 @@ let cache = null;
  * is a working site. So this resolves to an empty catalogue rather than
  * throwing, and the gate is what stops a bad file being deployed.
  *
+ * What is cached is the promise, not the value it settles to. Caching the value
+ * only helps callers that arrive after the fetch has finished; the callers that
+ * matter here all arrive in the same tick. A filtered search fans out into five
+ * concurrent page requests, every one of them awaits this, and with a value
+ * cache every one of them found `null`, so catalogue.json was fetched five
+ * times on the critical path. Handing each of them the same in-flight promise
+ * makes it one fetch, which is what "fetched once" was always meant to say.
+ *
  * @returns {Promise<object>} barcode-keyed entries, possibly empty
  */
-export async function loadCatalogue(url = CATALOGUE_URL) {
-  if (cache) return cache;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(String(response.status));
-    const data = await response.json();
-    cache = (data && typeof data === 'object' && data.products) || {};
-  } catch {
-    cache = {};
-  }
-  return cache;
+export function loadCatalogue(url = CATALOGUE_URL) {
+  if (pending) return pending;
+  pending = (async () => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(String(response.status));
+      const data = await response.json();
+      return (data && typeof data === 'object' && data.products) || {};
+    } catch {
+      return {};
+    }
+  })();
+  return pending;
 }
 
 /** Test seam. */
 export function _resetCatalogue() {
-  cache = null;
+  pending = null;
 }
 
 function isPresent(value) {

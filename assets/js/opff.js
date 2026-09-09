@@ -406,14 +406,28 @@ export async function searchProducts(query, { page = 1, pageSize = 24, brand = '
      Curated-only matches are added on the first page only. Interleaving a local
      list into a remote pagination would either repeat them on every page or
      silently drop them, and both are worse than saying they are here. */
-  const catalogue = await loadCatalogue();
-  /* Counted on every page, shown only on the first. The count has to be
-     page-independent or the result line contradicts itself between pages: 1579
-     results on page one and 1578 on page two, for the same search. */
-  const curatedMatches = searchCatalogue(catalogue, { query: q, brandTags: b });
+  /* The request goes out before the catalogue is read, not after. Waiting on a
+     local file to decide what to ask a remote API is a dependency that does not
+     exist: the URL above is built entirely from the query. Measured on a
+     throttled search, awaiting the catalogue first put the whole of the local
+     data load, and every module that had to arrive before it, in front of the
+     first byte the site asked anybody for. Both are needed before results can
+     be rendered; only one of them has to happen first. */
+  const request = getJSON(url, signal);
+  /* Marks the rejection handled for the platform's unhandled-rejection check
+     while leaving `request` itself to be awaited and caught below. Without it,
+     a request that fails during the catalogue await is a rejection nobody has
+     claimed yet, and the console says so. */
+  request.catch(() => {});
 
+  let curatedMatches = [];
   try {
-    const data = await getJSON(url, signal);
+    const catalogue = await loadCatalogue();
+    /* Counted on every page, shown only on the first. The count has to be
+       page-independent or the result line contradicts itself between pages:
+       1579 results on page one and 1578 on page two, for the same search. */
+    curatedMatches = searchCatalogue(catalogue, { query: q, brandTags: b });
+    const data = await request;
     const fromApi = applyCurated((data.products || []).map(normalize), catalogue);
     const seen = new Set(fromApi.map((p) => p.barcode));
     const curatedOnly = page === 1
@@ -549,12 +563,18 @@ export async function fetchBrands({ minProducts = 2, signal } = {}) {
      They are exempt from `minProducts`. That threshold hides the database's
      long tail of one-product transcription noise; a brand somebody entered by
      hand is the opposite of noise, because entering it was a decision. */
+  /* Started before the catalogue is read, for the reason given in
+     searchProducts: BRANDS_URL is a constant, so nothing about the request
+     depends on the local file, and asking first costs nothing. */
+  const request = getJSON(BRANDS_URL, signal);
+  request.catch(() => {});
+
   const catalogue = await loadCatalogue();
   const curated = catalogueBrands(catalogue);
   const curatedNames = new Set(curated.map((c) => c.name.toLowerCase()));
 
   try {
-    const data = await getJSON(BRANDS_URL, signal);
+    const data = await request;
     const brands = mergeBrandTags([...(data.tags || []), ...curated])
       .filter((b) => b.count >= minProducts || curatedNames.has(b.name.toLowerCase()));
     return { brands };

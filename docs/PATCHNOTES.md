@@ -21,6 +21,53 @@ punctuation rather than content.
 
 ---
 
+## [0.28.0] - 2026-09-09
+
+**M24b: the search asks Open Pet Food Facts a second earlier, because it stopped waiting for
+three things it did not need to wait for.**
+
+Changed
+* **`<link rel="modulepreload">` for each page's whole module graph.** Eight modules used to
+  arrive in three serial waves, because the browser cannot ask for `opff.js` until
+  `search-page.js` has been parsed, or for `catalogue.js` until `opff.js` has. Naming the graph in
+  the head collapses that into one wave. The list is computed by reading the imports out of the
+  sources, never written down, so it cannot drift the way a hand-kept list does.
+* **`loadCatalogue` caches its promise instead of its result.** A filtered search fans out into
+  five concurrent page requests, all five awaited the catalogue in the same tick, all five found
+  an empty cache, and `catalogue.json` was fetched five times on the critical path. It is fetched
+  once now.
+* **`searchProducts` and `fetchBrands` issue their request before reading the catalogue.**
+  Neither URL depends on it. Both still merge curated data into the results exactly as before;
+  only the order changed.
+* Service worker `v9` to `v10`.
+
+Added
+* **A gate for duplicate local requests,** in `check-vitals.py`: no page may fetch the same file
+  from this repository twice, on any page, gated or not. Every number that file already collected
+  counted requests without ever asking whether two of them were for the same thing, which is why
+  five fetches of one file sat on the critical path in plain sight.
+* **A gate for the preload list,** in `check-live.py`: each built page's preloads must equal the
+  graph computed from the module sources. 28 live checks to 29.
+
+Fixed
+* **The first version of the preload list was silently short by one file.** The import pattern was
+  line-bounded and `opff.js` imports five names from `catalogue.js` across three lines, so the
+  module holding the entire curated catalogue was left out. The page worked, the preloads looked
+  right, and the waterfall it left behind was the one nobody would have gone looking for again.
+  This is the sixth time the instrument was the thing that was wrong, and the first time it was an
+  instrument built in the same commit as the fix it was measuring.
+
+Notes
+* Measured on the same throttle as the gate, `/search/?q=chicken`: **first API request 2271ms to
+  1361ms**, search LCP 3452ms to 2596ms, product page LCP to 2284ms.
+* The plan recorded in `[0.27.0]` was an inline head script that starts the fetch before any
+  module loads. It was not built. It duplicates URL construction in a second place, and the day
+  the two copies disagree the page issues two requests and nothing says so, because two requests
+  look exactly like one slow one. The three ordinary fixes above got most of the way there and
+  none of them add a second source of truth.
+* The API pages are still over the LCP budget and are still not gated on it. What is left is Open
+  Pet Food Facts' own response time, about a second on this throttle.
+
 ## [0.27.0] - 2026-09-09
 
 **M24a: every page says which address it lives at. And the LCP number in `[0.25.0]` was
