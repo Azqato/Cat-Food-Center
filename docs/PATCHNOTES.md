@@ -21,6 +21,39 @@ punctuation rather than content.
 
 ---
 
+## [0.24.2] - 2026-09-09
+
+**Two things `[0.24.1]` said an hour ago are not true. Corrected here rather than there,
+because section 23.6 means an entry is not edited to match what was later learned.**
+
+Fixed
+* **"Canonical tags on all twenty pages" describes something this site does not have.** There is
+  no `<link rel="canonical">` anywhere on it, verified by fetching the live home page and finding
+  none. What each of the twenty pages actually carries is one occurrence of the absolute URL, the
+  "Report a problem" link in the footer, written by `tools/site/chrome.py`. The rename was still
+  applied correctly and completely; the entry described the right work with the wrong noun.
+* **"GitHub redirects the old repository and Pages path" is half right.**
+  `https://github.com/Azqato/Cat-Food-Center` answers 301 to the new repository.
+  `https://azqato.github.io/Cat-Food-Center/` answers **404**. GitHub redirects the repository and
+  not the Pages path. Every link to the old site that exists anywhere is dead, not forwarded.
+* **The stale service worker is therefore a worse problem than `[0.24.1]` recorded, not a
+  smaller one.** That entry said the old worker "cannot serve stale pages here", which is true
+  and beside the point. A worker at the old path serves *that* path from its own cache, so a
+  returning visitor who opens the old URL gets a working copy of the site as it stood in early
+  September, served past a 404, with no way to notice. The site is pre-beta and has no such
+  visitors, so this is still recorded rather than fixed, but it is recorded as what it is.
+
+Notes
+* **Found by checking, which is the only reason it was found.** The rename commit passed 217
+  tests and 24 live checks, because no gate knows what the production URL is: `check-live.py`
+  drives a local server on `127.0.0.1`. Both errors were in prose, and prose is the part of this
+  repository nothing gates. The verification that caught them was three `curl` calls that could
+  have been skipped, on the grounds that the deploy was obviously fine, which it was.
+* **A canonical tag is worth adding and is not in this entry.** A site that has moved once and
+  has no canonical tag is a site that cannot tell a crawler which address is the real one. It is
+  a change to the page head on twenty pages rather than a URL correction, so it belongs in a
+  milestone of its own rather than in a chore.
+
 ## [0.24.1] - 2026-09-09
 
 **The repository was renamed, so the site moved.**
