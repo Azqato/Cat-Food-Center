@@ -597,9 +597,11 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M25: Curated products become discoverable | 2026-09-08 | Complete |
 | M23: Dr. Elsey’s | | Queued, blocked on barcodes |
 | M24: Premix groups | | Queued, see 16.11 |
+| M24a: Canonical tags | | Queued, see 21 |
+| M24b: Search LCP back under budget | | Queued, see 16.11 |
 | M26: Hide unscored products by default | 2026-09-09 | Complete |
-| M27: Our own product database | | Queued, requested 2026-09-09 |
 | M12: Public beta | 2027-01 | Planned |
+| M27: Our own product database | | Queued, after the beta |
 
 ### What shipped, and what was learned
 
@@ -824,11 +826,11 @@ now reports the same call the engine made, and a test pins it.
 |---|---|---|
 | - | ~~M25: curated products become discoverable~~ | **Shipped 2026-09-08.** See 16.5b |
 | - | ~~M26: hide unscored products by default~~ | **Shipped 2026-09-09.** |
-| 1 | **M24: premix groups** | Unblocked. It moves scores, so it wants a slot where nothing else is moving them, and both blocked milestones below leave exactly that |
+| 1 | **M24: premix groups**, with **M24a: canonical tags** and **M24b: search LCP** | Unblocked. M24 moves scores, so it wants a slot where nothing else is moving them, and both blocked milestones below leave exactly that. M24a and M24b were loose debt with no milestone; they were put here on 2026-09-09 because they have to be done before the beta and this is the slot before it |
 | 2 | **M22, finishing it: a coverage number** | M12's only open criterion. M25 is done; it still needs a barcode per SKU |
 | 3 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
-| 4 | **M27: our own product database** | Requested 2026-09-09. The destination the catalogue has been walking toward since M20, and the largest thing on this list. It is last because the four above are how you find out what it has to hold |
-| - | **M12: public beta** | Not work of its own. It is the gate the ones above roll up to |
+| 4 | **M12: public beta** | Ordered here 2026-09-09. It launches on Open Pet Food Facts plus the curated catalogue, which is the setup that exists, rather than waiting for the one that does not |
+| 5 | **M27: our own product database** | Requested 2026-09-09. The largest thing on this list, and now the first thing after launch rather than the last thing before it |
 
 **M25: curated products become discoverable.** *Shipped 2026-09-08.* Search and the brand index now consult the catalogue, a curated card carries its provenance, and a live check fails if a search card and a product page report different scores for the same barcode. Section 16.5b has what was built and why.
 
@@ -844,13 +846,27 @@ now reports the same call the engine made, and a test pins it.
 
 *Why it leads the queue now.* It is the only unblocked item left, and it wants a quiet slot: nothing else should be moving scores while it does. With M22 and M23 both waiting on a UPC source, this is the quietest the engine is going to get.
 
+**1a. M24a: canonical tags.** *Queued 2026-09-09.* Twenty pages, no `rel=canonical` on any of them. That was survivable while nothing linked here and the address never changed; both stopped being true on 2026-09-09, when the repository was renamed and the old Pages path started answering 404 rather than redirecting. Nothing on the site tells a crawler which address is the real one, and launch is the moment anybody starts linking to it. The work is a line in `tools/site/chrome.py` and one in the guide generator, plus the `{{root}}` handling that already exists for depth, so it is one change in two places rather than twenty. Section 21.
+
+**1b. M24b: search LCP, back under the budget.** *Queued 2026-09-09, caused by M26.* The filtered path fetches five pages of results in parallel and renders nothing until all five land, so making the filter the default took search LCP from about 1.0s to 3.3s, measured twice on the same machine. The fix is to render the first page's scorable results as soon as that page arrives and fill in as the rest do: the scan is already parallel, so this is a rendering change and not a fetching one. Section 16.11 carries it.
+
+*Both were loose debt and are now in a slot, at the project owner's direction on 2026-09-09.* They are grouped with M24 because it is the slot before the beta and they both have to be done before it, not because they are related to premix groups. They are numbered as their own milestones rather than folded into M24's scope so that "M24 moves scores" stays a true sentence about one change: a milestone that moves scores and also rewrites twenty page heads is one nobody can bisect.
+
 **2. M22, finishing it: a coverage number.** *Blocked on a barcode source.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
 
 **3. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
 
 *Blocked on something other than the panel.* Dr. Elsey's publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC; Amazon and Target do not show one either; and Open Pet Food Facts holds exactly one Dr. Elsey's record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription. It shares that blocker with M22, which is the argument for taking them together, and it is why both sit behind the two unblocked milestones rather than ahead of them.
 
-**4. M27: our own product database.** *Requested 2026-09-09: a product database like Open Pet Food Facts, hosted on this site.* This is where the curated catalogue has been heading since M20 without anybody naming the destination. `assets/data/catalogue.json` is already a small local database with a schema, a provenance model and a gate; M27 is that file growing into the thing the site is primarily served from, with Open Pet Food Facts becoming a source it reads rather than the source it depends on.
+**4. M12: public beta.** *Ordered here on 2026-09-09, ahead of M27 rather than after it.* Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open.** The API cannot deliver it: of 1000 products sampled, 338 carry an ingredient list, and the whole United States cat-food category is 86 records. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list of what to cover, M25 made entries reachable, and what remains is a barcode source and volume.
+
+*What launching here means.* The beta runs on Open Pet Food Facts plus the curated catalogue, which is the setup that exists today and the one M27 is explicitly designed to sit alongside rather than replace. That is the argument for this order: M27 is a large build whose shape depends on what real visitors ask for, and launching first is how you find that out. It also means the coverage number is a launch criterion rather than a pre-launch luxury, so M22 has to land either way.
+
+*Two things that are not criteria and still block launch* are M24a and M24b above, queued into the slot immediately before this one on 2026-09-09. A site with no canonical tag that has already changed address once should not be the site anybody starts linking to, and a search that takes 3.3s to paint should not be the first thing a visitor meets.
+
+*The fourth criterion, "analytics instrumented", was removed on 2026-09-07 rather than met.* It had been written before section 12 was measured and it contradicted section 14, which gives "no analytics means no visitor data to protect" as the reason for having none. A milestone cannot require closing a gap the same document defends. Section 14 now says which targets are therefore never going to be reported, instead of describing them as pending.
+
+**5. M27: our own product database.** *Requested 2026-09-09: a product database like Open Pet Food Facts, hosted on this site.* This is where the curated catalogue has been heading since M20 without anybody naming the destination. `assets/data/catalogue.json` is already a small local database with a schema, a provenance model and a gate; M27 is that file growing into the thing the site is primarily served from, with Open Pet Food Facts becoming a source it reads rather than the source it depends on.
 
 *It stays static, and that is not a compromise.* The architecture decision of 2026-09-08 was to keep the site a set of files with no backend, and a database does not require a server. What it requires is an index, and an index can be a file. The shape that fits ADR-001 is sharded JSON built at author time by a tool in `tools/`, plus a small index the browser loads once: a name and brand index for search, a barcode index for lookup, and one shard per bucket of products so a visitor downloads the few kilobytes their query touches rather than the whole database. The scoring engine already runs entirely in the browser and never fetches, so nothing about scoring changes.
 
@@ -868,13 +884,9 @@ Five things that has to get right, all of them recorded now because they are che
 4. **A structured issue form, not a free-text box.** GitHub issue forms give named fields, and named fields are parseable, checkable and much harder to smuggle prose through. It also tells a contributor what is actually needed, which is mostly a barcode and a link to a published panel.
 5. **The number that says whether this works is the backlog, not the intake.** Submissions received is a vanity figure. What matters is how many became records and how long the rest have been waiting, and section 24 should carry it, because an issue queue nobody empties is worse than a `/submit/` page that sends people upstream.
 
-*Still a roadmap item.* None of this goes live with the current beta. The site keeps reading Open Pet Food Facts, `/submit/` keeps pointing upstream, and the design above is written down now so that the decisions it depends on are made while they are cheap.
+*Still a roadmap item, and now explicitly a post-launch one.* None of this goes live with the beta. The site keeps reading Open Pet Food Facts, `/submit/` keeps pointing upstream, and the design above is written down now so that the decisions it depends on are made while they are cheap.
 
-*Why it is last.* M24, M22 and M23 are all cheap next to this, and three of them tell you what it has to hold: M22 says which products matter, M23 says what a full brand transcription actually takes, and the barcode blocker both share is the same blocker a local database has to solve on day one. Building the container before knowing what goes in it is the mistake this milestone is most likely to make.
-
-**M12: public beta.** Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open.** The API cannot deliver it: of 1000 products sampled, 338 carry an ingredient list, and the whole United States cat-food category is 86 records. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list of what to cover, M25 made entries reachable, and what remains is a barcode source and volume.
-
-*The fourth criterion, "analytics instrumented", was removed on 2026-09-07 rather than met.* It had been written before section 12 was measured and it contradicted section 14, which gives "no analytics means no visitor data to protect" as the reason for having none. A milestone cannot require closing a gap the same document defends. Section 14 now says which targets are therefore never going to be reported, instead of describing them as pending.
+*Why it is last, and now after the launch as well.* M24, M22 and M23 are all cheap next to this, and two of them tell you what it has to hold: M22 says which products matter, M23 says what a full brand transcription actually takes, and the barcode blocker both share is the same blocker a local database has to solve on day one. Putting the beta ahead of it adds a third source of that information, which is visitors: what they search for and fail to find is a better specification for a product database than anything that can be reasoned out in advance. Building the container before knowing what goes in it is the mistake this milestone is most likely to make, and launching first is the cheapest defence against it.
 
 ### Explicitly deferred
 
