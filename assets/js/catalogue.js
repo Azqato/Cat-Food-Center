@@ -19,6 +19,8 @@
    returns a new product. Nothing here fetches, and nothing here scores.
    ========================================================================== */
 
+import { expandGroups } from './ingredients.js';
+
 const CATALOGUE_URL = new URL('../data/catalogue.json', import.meta.url).href;
 
 /* Fields an entry may carry. Anything else is a typo or a misunderstanding,
@@ -284,9 +286,9 @@ function splitList(text) {
     }
   }
   out.push(current);
-  return out
+  return expandGroups(out
     .map((s) => s.replace(/\s+/g, ' ').trim().replace(/[.;]+$/, '').trim())
-    .filter(Boolean);
+    .filter(Boolean));
 }
 
 export const _internal = { splitList };

@@ -42,7 +42,7 @@
    precached under addresses that no longer exist, and would serve them from
    the shell cache indefinitely. Every one of those entries has to go, and
    bumping the version is the only lever that reaches a device we cannot. */
-const VERSION = 'v7';
+const VERSION = 'v8';
 const SHELL = `cfc-shell-${VERSION}`;
 const API = `cfc-api-${VERSION}`;
 const IMAGES = `cfc-images-${VERSION}`;
@@ -69,6 +69,7 @@ const SHELL_ASSETS = [
   './assets/cfc-docs.js',
   './assets/js/site.js',
   './assets/js/catalogue.js',
+  './assets/js/ingredients.js',
   './assets/js/opff.js',
   './assets/js/scoring.js',
   './assets/js/scanner.js',

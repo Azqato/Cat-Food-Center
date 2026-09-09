@@ -32,6 +32,7 @@
 import {
   loadCatalogue, mergeCurated, applyCurated, searchCatalogue, catalogueBrands,
 } from './catalogue.js';
+import { expandGroups } from './ingredients.js';
 
 const API = 'https://world.openpetfoodfacts.org/api/v2';
 
@@ -160,9 +161,12 @@ function splitIngredients(text) {
   }
   parts.push(current);
 
-  return parts
+  // Premix groups are expanded here rather than in the loop above, because the
+  // loop's job is bracket-aware splitting and expansion is a separate rule with
+  // its own reasons. See ingredients.js and PRD 16.11.
+  return expandGroups(parts
     .map((s) => s.replace(/\s+/g, ' ').trim().replace(/^[.·•\-–—]+/, '').replace(/\.+$/, '').trim())
-    .filter((s) => s.length > 1);
+    .filter((s) => s.length > 1));
 }
 
 /* ── Category interpretation ── */

@@ -21,6 +21,39 @@ punctuation rather than content.
 
 ---
 
+## [0.26.0] - 2026-09-09
+
+**M24: the flag goes on the ingredient that earned it.**
+
+Fixed
+* **A twelve-item vitamin premix no longer reads as high risk because one of the twelve is.**
+  Purina prints `VITAMINS [...]` and `MINERALS [...]`, the splitters kept bracketed groups whole,
+  and the product page put the Tier 3 chip menadione earns on the entire block. Cat Chow Complete
+  went from 28 ingredient rows to 38, and the chip now sits on `menadione sodium bisulfite complex
+  (Vitamin K)` alone.
+
+Added
+* `assets/js/ingredients.js`, and 24 assertions in `ingredients.test.js` written before the
+  change rather than after it, because a test written afterwards only records what the code does.
+* Both splitters, in `opff.js` and `catalogue.js`, run the expansion. Service worker `v7` to `v8`,
+  with the new module precached.
+
+Notes
+* **The rule is narrow, and the narrowest part is the point.** A group expands only when it uses
+  square brackets, has two or more members, and its heading names a group rather than an
+  ingredient. An earlier draft dropped every heading before a bracketed list. That is correct for
+  the two Purina prints in the catalogue and it silently deletes chicken fat the first time a
+  label writes `chicken fat [preserved with mixed tocopherols, rosemary extract]`. That case is
+  now a test, and the heading list contains words seen on labels rather than words that seemed
+  likely.
+* **This moved no scores, and it was measured rather than assumed.** All four catalogue products
+  scored the same after as before. Tier 2 and Tier 3 matching runs against the joined text of the
+  whole list, so menadione was found before and is found after, and the Tier 3 cap at 49 is
+  untouched. Only the Tier 0 beneficial credit is per entry, so the one way expansion can move a
+  score is upward. That is asserted in a test, not left as a paragraph.
+* The milestone was queued as "it moves scores, so write the tests first". It turned out to move
+  the page and not the scores, which is only knowable in that order.
+
 ## [0.25.0] - 2026-09-09
 
 **M26: the search page hides what it cannot score, and says so every time it does.**
