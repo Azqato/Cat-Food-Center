@@ -459,6 +459,72 @@ async def main():
                                                         card['score'] or 'no card')))
             await page.close()
 
+            total += 3
+            # The scorable-only default, and its disclosure (M26).
+            #
+            # The three CASES rows above cover both search paths and neither can
+            # tell which one ran: they assert the substring "can be scored",
+            # which the filtered label and the unfiltered label both contain. So
+            # when M26 changed what an unqualified search does, every existing
+            # check passed. These three are pointed at the change itself.
+            #
+            # The disclosure is checked as hard as the default is, because it is
+            # the condition this shipped under. Hiding most of a result set is a
+            # product decision; hiding it without saying so is a different site.
+            context = await browser.new_context()
+            page = await context.new_page()
+
+            await page.goto(base + '/search/?q=chicken')
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Searching')", timeout=30000)
+            await page.wait_for_timeout(2500)
+            default_label = await page.evaluate(
+                "(document.getElementById('results-label') || {}).textContent || ''")
+            filtered = 'that can be scored' in default_label
+            discloses = ('are hidden' in default_label or 'is hidden' in default_label) \
+                and 'Show everything' in default_label
+            if not (filtered and discloses):
+                failures.append('scorable-only is the default, and says so')
+            print('%s %-44s %s' % ('PASS' if filtered and discloses else 'FAIL',
+                                   'unqualified search filters, and discloses it',
+                                   'filtered=%s discloses=%s' % (filtered, discloses)))
+
+            await page.goto(base + '/search/?q=chicken&only=all')
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Searching')", timeout=30000)
+            await page.wait_for_timeout(2500)
+            all_label = await page.evaluate(
+                "(document.getElementById('results-label') || {}).textContent || ''")
+            # `only` in the URL wins over any stored preference, or a link stops
+            # meaning what its sender saw (section 16.7).
+            explicit_ok = all_label.startswith('Results') and 'that can be scored' not in all_label
+            if not explicit_ok:
+                failures.append('only=all in the URL wins')
+            print('%s %-44s %s' % ('PASS' if explicit_ok else 'FAIL',
+                                   'only=all in the URL shows everything',
+                                   all_label[:52] or 'no label'))
+
+            # Untick, then run a different search with no `only` at all.
+            await page.goto(base + '/search/?q=chicken')
+            await page.wait_for_timeout(2500)
+            await page.click('#only-scorable')
+            await page.wait_for_timeout(2500)
+            await page.goto(base + '/search/?q=salmon')
+            await page.wait_for_function(
+                "!document.body.textContent.includes('Searching')", timeout=30000)
+            await page.wait_for_timeout(2500)
+            next_label = await page.evaluate(
+                "(document.getElementById('results-label') || {}).textContent || ''")
+            stored = await page.evaluate("localStorage.getItem('cfc-only')")
+            remembered = stored == 'all' and 'that can be scored' not in next_label
+            if not remembered:
+                failures.append('the filter choice survives a navigation')
+            print('%s %-44s %s' % ('PASS' if remembered else 'FAIL',
+                                   'turning the filter off is remembered',
+                                   'stored=%s next search unfiltered=%s'
+                                   % (stored, 'that can be scored' not in next_label)))
+            await context.close()
+
             total += 2
             # Scope, and the guide pages.
             #

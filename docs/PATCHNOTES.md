@@ -21,6 +21,55 @@ punctuation rather than content.
 
 ---
 
+## [0.25.0] - 2026-09-09
+
+**M26: the search page hides what it cannot score, and says so every time it does.**
+
+Changed
+* **The scorable-only filter is on by default.** Two thirds of Open Pet Food Facts carries no
+  ingredient list, so a search used to open on a column of grey "Not scored" tiles. That was an
+  honest view of the database and a useless view of cat food.
+* **The label says what is missing, wherever anything is.** "Showing 1-24 of the 51 products in
+  all 83 results for "chicken" that can be scored - 32 with no ingredient list are hidden - Show
+  everything". The count and the way out are in the same sentence as the results, addressed to
+  somebody who never touched the control and may not know it exists. This was the condition the
+  milestone shipped under, not a nicety: it was queued behind the coverage number on the grounds
+  that hiding a gap before measuring it is the wrong order, and what that argument actually asks
+  for is disclosure rather than delay.
+* **The choice is remembered,** in `localStorage` under `cfc-only`. Fourth thing this site
+  stores, and the first that is not the visitor's own history. Unreadable storage means the
+  default, as everywhere else here.
+* **`only` in the URL always wins over what is stored,** and `urlFor` now always writes it. A
+  link whose meaning depends on the recipient's browser storage is not a link somebody can send,
+  and section 16.7 says every view is one.
+* The first-visit empty state and the "None of these can be scored" state both now say the page
+  filters by default, rather than describing a filter the visitor is assumed to have chosen.
+* Service worker `v6` to `v7`.
+
+Added
+* **Three live checks, because the existing ones could not see this.** All three search checks
+  passed unchanged after the default flipped: they assert the substring "can be scored", which
+  the filtered and the unfiltered label both contain, so the gate was blind to exactly the thing
+  the milestone changed. The new checks assert that an unqualified search filters and discloses
+  the hidden count, that `only=all` overrides the stored preference, and that turning the filter
+  off survives a navigation to a different search. 24 live checks to 27.
+
+Known cost
+* **This tripled LCP on a search.** The filtered path fetches five pages of results in parallel
+  and renders nothing until all five have landed, so making it the default made that the normal
+  experience: `search results (API)` measured about 1.0s before and 3.3s after, repeatably, on
+  the same machine and network. It is not a gate failure, because API pages sit outside the
+  vitals budget on the grounds that upstream latency is not ours. That reasoning is what let a
+  self-inflicted regression through, and it is worth revisiting rather than leaning on. Recorded
+  in section 16.11 with the fix, which is to render the first page's results as they land instead
+  of waiting for the fifth, and which should happen before the beta.
+
+Notes
+* **Fourth time a gate has been blind to the change under it,** after M20a, M21a and M25. The
+  pattern is now specific enough to name: a check that asserts a substring both branches of a
+  decision produce is not checking the decision. Worth a sweep of the other loose assertions
+  before the next milestone that changes a default.
+
 ## [0.24.2] - 2026-09-09
 
 **Two things `[0.24.1]` said an hour ago are not true. Corrected here rather than there,

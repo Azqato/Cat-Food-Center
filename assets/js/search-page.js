@@ -144,16 +144,58 @@ function empty(title, body) {
   </li>`;
 }
 
+/* ── The filter default (M26) ──
+
+   The scorable-only filter is on unless the visitor turns it off. Two thirds of
+   the database carries no ingredient list, so leaving it off meant the first
+   thing most searches showed was a column of grey "Not scored" tiles: an honest
+   view of the database and a useless view of cat food.
+
+   It is a default and not a concealment, which is a distinction the page has to
+   keep earning. Wherever the filter hides anything, the label says how many and
+   offers the way out, and it says it to somebody who never touched the control
+   and may not know it exists. That requirement was the condition on shipping
+   this ahead of the coverage number in M22, and it is written down in section
+   13 as well as here, because it is the part most likely to be tidied away.
+
+   `only` in the URL always wins. Section 16.7 says every view is a link
+   somebody can send, and a link whose meaning depends on the recipient's stored
+   preference is not one, so urlFor always writes `only` and never leaves it to
+   be inferred. */
+const ONLY_KEY = 'cfc-only';
+
+function storedOnly() {
+  try {
+    const value = localStorage.getItem(ONLY_KEY);
+    if (value === 'scorable' || value === 'all') return value;
+  } catch {
+    /* Storage throws in some private modes. A page that works is the priority
+       and the default below is a working page. */
+  }
+  return null;
+}
+
+function rememberOnly(value) {
+  try {
+    localStorage.setItem(ONLY_KEY, value);
+  } catch {
+    /* Nothing to do. The preference lasts this navigation instead of forever,
+       which is a smaller loss than an exception on a search. */
+  }
+}
+
 /* ── The URL is the state ──
    Every control on this page writes to the query string and re-reads it, so a
    filtered page 3 of a brand is a link somebody can send. */
 function readState() {
   const params = new URLSearchParams(window.location.search);
+  const only = params.get('only');
+  const explicit = only === 'scorable' || only === 'all';
   return {
     q: (params.get('q') || '').trim(),
     brand: (params.get('brand') || '').trim(),
     page: Math.max(1, parseInt(params.get('page') || '1', 10) || 1),
-    scorableOnly: params.get('only') === 'scorable',
+    scorableOnly: explicit ? only === 'scorable' : (storedOnly() || 'scorable') === 'scorable',
   };
 }
 
@@ -162,9 +204,14 @@ function urlFor(state) {
   if (state.q) params.set('q', state.q);
   if (state.brand) params.set('brand', state.brand);
   if (state.page > 1) params.set('page', String(state.page));
-  if (state.scorableOnly) params.set('only', 'scorable');
+  params.set('only', state.scorableOnly ? 'scorable' : 'all');
   const qs = params.toString();
   return SITE + 'search/' + (qs ? '?' + qs : '');
+}
+
+/** The way out of the filter, in the words a visitor who never chose it needs. */
+function showEverythingLink(state) {
+  return `<a href="${esc(urlFor({ ...state, scorableOnly: false, page: 1 }))}" class="text-accent">Show everything</a>`;
 }
 
 function go(state) {
@@ -214,7 +261,9 @@ async function run() {
     pager.hidden = true;
     empty('Search the catalogue',
       `Type a brand or product name above, or <a href="${SITE}brands/" class="text-accent">browse by brand</a>. `
-      + 'Results come from Open Pet Food Facts, a community-maintained database, and are scored live.');
+      + 'Results come from Open Pet Food Facts, a community-maintained database, and are scored live. '
+      + 'Most records there carry no ingredient list, so results are filtered to products that can '
+      + 'be scored; every result page says how many that hides and how to see them.');
     return;
   }
 
@@ -336,12 +385,13 @@ async function runFiltered(state, brandName) {
     pager.hidden = true;
     setLabel('');
     empty('None of these can be scored',
-      `No product in ${scope} carries an ingredient list, so none can be scored. `
+      `No product in ${scope} carries an ingredient list, so none can be scored, `
+      + `and this page hides products it cannot score unless you ask it not to. `
       + (exhausted
         ? 'That is the whole of what the database holds for this search.'
         : 'There may be scorable products further down the results; this page checked the first '
           + `${scanned}, because whether a product can be scored is only knowable after fetching it.`)
-      + ` <a href="${esc(urlFor({ ...state, scorableOnly: false }))}" class="text-accent">Show everything</a>.`);
+      + ` ${showEverythingLink(state)} to see ${scanned === 1 ? 'it' : 'them'} anyway.`);
     // empty() hides the controls, which is right for a failed search and wrong
     // here: the visitor's next move is almost certainly to untick the box, and
     // it has to be there to untick.
@@ -356,8 +406,15 @@ async function runFiltered(state, brandName) {
   list.innerHTML = slice.map(({ product, result }) => card(product, result)).join('');
 
   const first = (page - 1) * pageSize + 1;
+  // The hidden count is not an aside. A visitor who never touched the control
+  // has to be able to see that a filter is running and how much it is taking
+  // out, or the default is doing something to them rather than for them.
+  const hidden = scanned - scorable.length;
   setLabel(`Showing ${first}&ndash;${first + slice.length - 1} of the ${scorable.length} `
-    + `products in ${scope} that can be scored`);
+    + `products in ${scope} that can be scored`
+    + (hidden
+      ? ` · ${hidden} with no ingredient list ${hidden === 1 ? 'is' : 'are'} hidden · ${showEverythingLink(state)}`
+      : ''));
 
   renderPager({ ...state, page }, scorable.length, pageSize, slice.length);
 
@@ -369,8 +426,7 @@ async function runFiltered(state, brandName) {
       `<p class="text-micro text-ink-soft" style="max-width:52ch;margin:14px auto 0;text-align:center">
          That is every scorable product in the first ${scanned} results. The search matched
          ${total} in all, and the rest were not checked.
-         <a href="${esc(urlFor({ ...state, scorableOnly: false }))}" class="text-accent">Show everything</a>
-         to page through them yourself.
+         ${showEverythingLink(state)} to page through them yourself.
        </p>`);
   }
 }
@@ -381,6 +437,9 @@ if (onlyScorable) {
   // the list changes.
   onlyScorable.addEventListener('change', () => {
     const state = readState();
+    // Remembered, so the choice survives the next search. The URL still wins on
+    // arrival: a link somebody sent means what its sender saw.
+    rememberOnly(onlyScorable.checked ? 'scorable' : 'all');
     go({ ...state, scorableOnly: onlyScorable.checked, page: 1 });
   });
 }
