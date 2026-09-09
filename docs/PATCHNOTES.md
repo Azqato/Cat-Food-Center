@@ -21,6 +21,39 @@ punctuation rather than content.
 
 ---
 
+## [0.29.0] - 2026-09-09
+
+**M22 is finished: top-100 coverage is measurable, and it is 0%.**
+
+Added
+* **`tools/measure-coverage.py`,** which answers M12's oldest criterion. Coverage is measured
+  through the site's own search path, not through the catalogue: a visitor who wants a best-seller
+  types its name, so the tool runs each SKU's name through the same endpoint, category filter and
+  fields the search page uses, and asks whether the same product comes back with an ingredient
+  list. The barcode gap that held this milestone open turned out to be a question about the
+  catalogue's internals rather than about the criterion.
+* **`tools/data/coverage.json`,** every decision with its evidence: the query, the best candidate,
+  the words that matched, whether the brand was confirmed. `--review` prints the borderline calls.
+* PRD section 12.9, the measurement and what it can get wrong in both directions.
+
+Notes
+* **0 of 100.** Four best-sellers matched a database record that holds no ingredient list, twelve
+  were close enough to need a person and were different products on inspection, and 84 had no
+  candidate. Five more carry ingredients but are not tagged `cat-food`, so the site's own filter
+  hides them.
+* This is not an empty database. It holds 13 Fancy Feast records, 32 Friskies, 27 Sheba, and 89 of
+  the 100 best-sellers found a candidate of the right brand. What it does not hold is the specific
+  products people buy: "meow mix original choice" is in there, is unmistakably the number-five
+  best-seller, and cannot be scored.
+* **The matcher was wrong twice before it was right, and both times it printed a confident
+  percentage.** The first treated flavour words as noise, so every Fancy Feast matched every other
+  Fancy Feast at 1.0 and coverage looked real. The second asked for the brand plus four words, and
+  since every term narrows that endpoint, it found nothing at all and reported zero for the wrong
+  reason. Reading the rows caught both; reading the total would have caught neither. Seventh
+  instance, and the first where the same instrument failed in both directions inside an hour.
+* M12's target is 80%. The gap is not a gap, and what to do about it is the project owner's call,
+  recorded as an open decision rather than settled here.
+
 ## [0.28.0] - 2026-09-09
 
 **M24b: the search asks Open Pet Food Facts a second earlier, because it stopped waiting for

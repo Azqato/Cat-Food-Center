@@ -527,7 +527,7 @@ The third and fourth were live in English too. They had never fired because no E
 
 1. `python tools/capture-rankings.py`. Every previous capture is kept: a product falling off a best-seller list is information about the market, and a file that overwrites its history cannot show it.
 2. Re-read the storefront table above. If a source has started refusing, record that here and drop it. Never work around a refusal.
-3. Re-run the coverage measurement and record the number.
+3. `python tools/measure-coverage.py`, and record the number in section 12.9.
 4. Re-verify the oldest curated entries against their sources, oldest `checked` date first. A manufacturer reformulates without renaming, so an entry is a claim with an expiry date rather than a fact.
 
 **Why 80% and not 100%.** Some SKUs cannot be transcribed at any effort, because their manufacturer publishes the panel only as an image. That is measured in section 12.8 and is the reason the target has always had a margin in it.
@@ -547,6 +547,32 @@ Measured 2026-09-08, while transcribing the first curated entries.
 **A readable panel is not enough on its own: the entry needs a barcode.** The catalogue is keyed by barcode, because that is what a visitor scans and what the API is asked for. Dr. Elsey’s is the case that makes the point. Its site publishes a complete panel as text, which is better than Purina manages on the page itself, and no UPC anywhere; and Open Pet Food Facts holds one Dr. Elsey’s record, for cat litter. So a product whose data is entirely readable still cannot be entered, because nothing published anywhere states which number is printed on the bag. This is a distinct blocker from panel format and it is measured separately for that reason.
 
 **The consequence for coverage** is that the achievable ceiling is set by who publishes text, not by how much transcription anybody is willing to do. A Mars-heavy top-100 has a lower ceiling than a Purina-heavy one, and the 80% target in section 12.7 is the margin that acknowledges it.
+
+### 12.9 Top-100 coverage, measured
+
+**Measured 2026-09-09 by `python tools/measure-coverage.py`. The number is zero.**
+
+| | |
+|---|---|
+| Best-sellers a visitor could search for and get a score | **0 of 100** |
+| Matched a product in the database, which holds no ingredient list | 4 |
+| Matched something close enough to need a person's eye, all of them different products on inspection | 12 |
+| No candidate close enough to call a match | 84 |
+| Hold an ingredient list, but sit outside the `cat-food` category, so this site's search cannot reach them | 5 |
+
+**What is being measured, and why it is not barcodes.** M22 stalled for a day on the belief that coverage needed a UPC per SKU, because the catalogue is barcode-keyed and no storefront publishes one. That was answering a question about the catalogue's internals. The criterion asks whether a visitor who wants a best-seller can get a score for it here, and a visitor does not know the barcode either: they type the name into the search box. So the measurement runs each SKU's name through the same endpoint, the same category filter and the same fields the site's own search uses, and asks whether what comes back is the same product and whether it carries an ingredient list. Nothing about it needs a number nobody publishes.
+
+**Every decision is written out with its evidence** into `tools/data/coverage.json`: the query, the best candidate, which words matched, whether the brand was confirmed. A coverage figure nobody can audit is a claim rather than a measurement, and this project has now been wrong about a number often enough to build the audit trail first.
+
+**The matcher errs against the site, deliberately.** A candidate needs the right brand, at least two of the SKU's distinguishing words, and half of them, before it counts. Anything closer to the line than two thirds is marked `review` and counted as **not** covered until a person confirms it. A coverage figure that rounds in its own favour is worse than no figure.
+
+**It was wrong twice before it was right, both times in the direction of flattering the site, and both were caught by reading the rows rather than the total.** The first version treated flavour and texture words as noise, which left brand words to match on, so "Fancy Feast Grilled Seafood" matched "Fancy Feast Kitten Tender Chicken" at an overlap of 1.0 and was recorded as covered. The second asked the API for the brand plus four distinguishing words; every term is a further constraint on that endpoint, so the queries matched nothing at all and eleven of the first twelve best-sellers were recorded as absent from a database that holds thirteen Fancy Feasts. One version over-reported, the other under-reported, and both printed a confident percentage. What the tool asks for now is a brand at a time, which returns that brand's whole shelf, small enough to match against here: about twenty requests for a hundred SKUs rather than a hundred.
+
+**What the zero means, and what it does not.** It does not mean the database is empty of these brands. It holds 13 Fancy Feast records, 32 Friskies, 27 Sheba, and 89 of the 100 best-sellers found a candidate of the right brand. It means **the specific products Americans buy are either not in it, or are in it without an ingredient list**. The four closest matches in the whole run are exact name matches with no ingredients: "meow mix original choice" is in the database, is unmistakably the number-five best-seller, and cannot be scored. This is the same finding as section 12's coverage tables arriving at the level a visitor experiences: the database is European, contributor-driven, and thin on exactly the shelf a US visitor is standing in front of.
+
+**Five of the hundred are a different problem.** They carry an ingredient list and are not tagged `cat-food`, so the site's own category filter hides them. All five are Fancy Feast. That is fixable upstream rather than here, and it is recorded separately because "nobody entered it" and "somebody entered it and left off one tag" call for different work.
+
+**What this does to M12.** Section 12.7's target is 80% and the measurement is 0%, so the criterion is not close, and this is the first day it has been measurable at all. The decision it forces belongs to the project owner and is recorded in section 13 rather than settled here.
 
 ---
 
@@ -593,7 +619,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M20a: Status colours get an ink | 2026-09-08 | Complete |
 | M21: The catalogue grows, and a tool to fill it | 2026-09-08 | Complete |
 | M21a: The additive pill that could never wrap | 2026-09-08 | Complete |
-| M22: The product library, captured | 2026-09-08 | **Partial**, see below |
+| M22: The product library, and a coverage number | 2026-09-09 | Complete. The number is 0%, see 12.9 |
 | M25: Curated products become discoverable | 2026-09-08 | Complete |
 | M23: Dr. Elsey’s | | Queued, blocked on barcodes |
 | M24: Premix groups | 2026-09-09 | Complete |
@@ -808,9 +834,11 @@ now reports the same call the engine made, and a test pins it.
 
 *It was not caused by the catalogue, only found by it.* Every product flagging that additive has been failing reflow since the additive cards shipped. The accessibility gate audits 25 fixed page states and none of them was a product carrying that flag, which is the same gap M18, M19 and M20a each found somewhere else: the gate answers exactly the question it was pointed at.
 
-**M22: the product library, captured.** *2026-09-08. Partial.* `tools/capture-rankings.py` and 300 ranked rows in `tools/data/top-skus.json`, which is the first time this project has had a written answer to "which products should the site cover?".
+**M22: the product library, and a coverage number.** *2026-09-08, finished 2026-09-09.* `tools/capture-rankings.py` and 300 ranked rows in `tools/data/top-skus.json`, which is the first time this project has had a written answer to "which products should the site cover?".
 
-*The part that shipped* is the list and the tool that refreshes it. *The part that did not* is the coverage number, because a captured row is a product name and the catalogue is keyed by barcode. Nothing published by any storefront closes that gap, so M12's criterion is defined and still unmeasured. That is an improvement on undefined, and it is not the finish line.
+*The part that shipped on 2026-09-08* is the list and the tool that refreshes it. *The part that did not* was the coverage number, held up by the belief that it needed a UPC per SKU. It did not: the criterion asks whether a visitor can get a score for a best-seller, and a visitor searches by name. `tools/measure-coverage.py` measures exactly that, through the site's own search path, and section 12.9 holds the result and everything the tool can get wrong.
+
+*The number is 0 of 100, and it is the most important thing this project has measured.* Not because the database is empty of these brands, but because the products Americans actually buy are either absent from it or present without an ingredient list. The number-five best-seller is in there under its own name and cannot be scored. Whatever else follows from that, "the criterion is defined and unmeasured" is no longer the honest description; the criterion is measured and missed by the whole of its width.
 
 *A conclusion from the previous checkpoint was wrong and is corrected here.* Section 12.7 was written saying the capture had to be done by hand, on the evidence that Amazon returned HTTP 503 and Chewy 429. Those were facts about the fetching tool, not about the storefronts: driven through Edge, the way every other tool in this repository drives a browser, Amazon serves its best-seller pages normally. Three storefronts do refuse a real browser, so the original reading was half right, and the half that was wrong was the half that decided the design. The lesson is the same one section 24 keeps collecting: an instrument's failure was read as a fact about the world.
 
@@ -829,10 +857,10 @@ now reports the same call the engine made, and a test pins it.
 | - | ~~M24: premix groups~~ | **Shipped 2026-09-09.** |
 | - | ~~M24a: canonical tags~~ | **Shipped 2026-09-09.** |
 | - | ~~M24b: the wait before the first API request~~ | **Shipped 2026-09-09.** 2271ms to 1361ms |
-| 1 | **M22, finishing it: a coverage number** | M12's only open criterion. M25 is done; it still needs a barcode per SKU |
-| 2 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
-| 3 | **M12: public beta** | Ordered here 2026-09-09. It launches on Open Pet Food Facts plus the curated catalogue, which is the setup that exists, rather than waiting for the one that does not |
-| 4 | **M27: our own product database** | Requested 2026-09-09. The largest thing on this list, and now the first thing after launch rather than the last thing before it |
+| - | ~~M22, finishing it: a coverage number~~ | **Shipped 2026-09-09.** The number is 0%, see 12.9, and what to do about it is the decision below |
+| 1 | **M23: Dr. Elsey's** | Blocked on barcodes, as M22 is, so the two share a blocker and are best attacked together |
+| 2 | **M12: public beta** | Ordered here 2026-09-09. It launches on Open Pet Food Facts plus the curated catalogue, which is the setup that exists, rather than waiting for the one that does not |
+| 3 | **M27: our own product database** | Requested 2026-09-09. The largest thing on this list, and now the first thing after launch rather than the last thing before it |
 
 **M25: curated products become discoverable.** *Shipped 2026-09-08.* Search and the brand index now consult the catalogue, a curated card carries its provenance, and a live check fails if a search card and a product page report different scores for the same barcode. Section 16.5b has what was built and why.
 
@@ -887,13 +915,15 @@ The list is computed by reading the imports out of the module sources, never wri
 
 *Both were loose debt and were put in a slot, at the project owner's direction on 2026-09-09.* They are grouped with M24 because it is the slot before the beta and they both have to be done before it, not because they are related to premix groups. They are numbered as their own milestones rather than folded into M24's scope so that "M24 moves scores" stays a true sentence about one change: a milestone that moves scores and also rewrites twenty page heads is one nobody can bisect.
 
-**1. M22, finishing it: a coverage number.** *Blocked on a barcode source.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
+**M22, finished: a coverage number.** *Blocked on a barcode source.* The ranked list exists in `tools/data/top-skus.json` and nothing measures against it. A captured row is a product name, the catalogue is keyed by barcode, and no storefront publishes a UPC, so the measurement waits on the barcode problem in section 12.8 as much as on M25. Until then M12's only remaining criterion is defined and unmeasured, which is better than the undefined it was on 2026-09-07 and is not the same as done.
 
-**2. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
+**1. M23: Dr. Elsey's.** *Requested 2026-09-08.* Cleanprotein and the rest of the range, transcribed into the catalogue. It is called out separately from the ranking work because it is a brand this project wants covered on its merits rather than because a retailer ranks it: a high-protein, low-carbohydrate range is the part of the market where the scoring engine has the most to say, and the rankings in section 12.7 are Amazon-only and therefore supermarket food.
 
 *Blocked on something other than the panel.* Dr. Elsey's publishes the full ingredient list and guaranteed analysis as text on a page that fetches cleanly, which is the best panel source found anywhere. It publishes no UPC; Amazon and Target do not show one either; and Open Pet Food Facts holds exactly one Dr. Elsey's record, for cat litter. The catalogue is keyed by barcode, so the entry cannot be written from the panel alone. M23 therefore starts with finding a published UPC per SKU rather than with transcription. It shares that blocker with M22, which is the argument for taking them together, and it is why both sit behind the two unblocked milestones rather than ahead of them.
 
-**4. M12: public beta.** *Ordered here on 2026-09-09, ahead of M27 rather than after it.* Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open.** The API cannot deliver it: of 1000 products sampled, 338 carry an ingredient list, and the whole United States cat-food category is 86 records. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list of what to cover, M25 made entries reachable, and what remains is a barcode source and volume.
+**4. M12: public beta.** *Ordered here on 2026-09-09, ahead of M27 rather than after it.* Core Web Vitals targets met (done, M16b), WCAG AA validated (done, M16a), and top-100 SKU coverage at 80% or better. **Coverage is the only criterion still open, and as of 2026-09-09 it is measured: 0 of 100.** Section 12.9 has the run and the audit trail. The database's shape was already known from section 12, where 338 of 1000 sampled products carry an ingredient list and the whole United States category is 86 records; what 12.9 adds is that the gap falls exactly on the products people buy, which is the worst place for it to fall. Section 12.5 item 7 says a curated local catalogue is the only route; M20 built the mechanism, M21 put four products in it, M22 captured the list and now measures against it, M25 made entries reachable, and what remains is transcription volume.
+
+*The decision this forces, and it is the project owner's.* Four best-sellers cannot be covered at any effort, because Mars publishes their panels as images (section 12.8). Most of the rest are Purina, whose label decks are readable as text and are the best transcription source found. So 80% is reachable in principle and only by transcription, at roughly eighty entries. The options are to hold the beta until that is done, to launch with the number published and the criterion restated, or to launch behind a smaller number that says what the site does cover. Nothing here picks one.
 
 *What launching here means.* The beta runs on Open Pet Food Facts plus the curated catalogue, which is the setup that exists today and the one M27 is explicitly designed to sit alongside rather than replace. That is the argument for this order: M27 is a large build whose shape depends on what real visitors ask for, and launching first is how you find that out. It also means the coverage number is a launch criterion rather than a pre-launch luxury, so M22 has to land either way.
 
@@ -2023,7 +2053,7 @@ Every discrepancy found in the 2026-09-06 audit, kept rather than silently fixed
 | "Ingredient list, each item expandable for an explanation" | PRD §7, DESIGN §10 | **The chevron was never rendered.** Both documents said it was built and inert; the string never appears in any commit's code. The claim was wrong twice over | Built in M15c, for the rows the knowledge base can actually speak to. The documentation error is left here because a document that said "inert" for three milestones is the more useful record |
 | "Submit queue processing, 50 or fewer waiting, internal queue dashboard" | METRICS | No queue exists, so the metric is unmeasurable | Deleted. It measured a feature that was cancelled |
 | Score reveal count-up, ingredient expand transition, route transition fades, skeleton loaders, tier glyphs, Open Graph image | DESIGN §8, §9, §10, §12, all marked "planned" | None built | Kept, still marked as not built, in DESIGN.md |
-| A coverage number: what share of the top-100 list this site can actually score | PRD §12.7, §13 (M12) | **Nothing computes it.** The ranked list now exists, 300 rows in `tools/data/top-skus.json`, but its rows carry names and no barcodes, and coverage cannot be measured until something resolves one per SKU | Deliberate, and narrower than this row was on 2026-09-08, when the list did not exist either. Barcode resolution is §12.8 and the measurement is M22. Deleted when the tool reports a number |
+| A coverage number that meets the target | PRD 12.7, 12.9, 13 (M12) | **Measured 2026-09-09 and it is 0 of 100.** The tool exists and the number is real; what the number says is that this site cannot currently score a single US best-seller. M12 states 80% as a launch criterion | Open, and the decision it forces is the project owner's. Deleted when either the coverage rises or the criterion is restated |
 | Scan button "disabled with tooltip in MVP", `role="tooltip"` on it | DESIGN §7, §10 | The scanner shipped in M8. There is no disabled button and no tooltip | Trusted the code. Removed |
 | "Search by brand or product name", and every count and ranking claim that followed from it | PRD §6 and §13, DESIGN §5, PATCHNOTES M6 onward | **Text search never searched.** `/api/v2/search` ignored `search_terms` and returned the whole cat-food category for every query, including one that cannot match anything. The feature existed, was tested, and was documented; what it did was unrelated to what was typed | Fixed in M18 by moving text queries to `/cgi/search.pl`. The M15a entry that misread this as a ranking defect is left standing in §13 and in PATCHNOTES, with the correction recorded here |
 

@@ -1,0 +1,3079 @@
+{
+ "_readme": [
+  "Top-100 SKU coverage, written by tools/measure-coverage.py.",
+  "The reasoning, and what this number can get wrong, is in that file and in docs/PRD.md section 12.9.",
+  "",
+  "Coverage means: a visitor who searches for this best-seller by name gets a scored product back. Not: this barcode is in the local catalogue. No storefront publishes a UPC, and a visitor does not know one either.",
+  "",
+  "\"review\" rows are counted as not covered until a person confirms them, so the headline figure is the pessimistic reading."
+ ],
+ "measured": "2026-09-09",
+ "capture": {
+  "source": "amazon",
+  "list": "cat-food",
+  "captured": "2026-09-08"
+ },
+ "target": 80,
+ "coverage": 0.0,
+ "reachableIfTagged": 5,
+ "counts": {
+  "unmatched": 84,
+  "review": 12,
+  "no-ingredients": 4
+ },
+ "skus": [
+  {
+   "position": 1,
+   "title": "Purina Fancy Feast Gravy Lovers Wet Cat Food, 3 oz Cans, 30-Pack | Variety Pack with poultry and beef grilled gourmet recipes, made with no artificial colors or preservatives",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000040803",
+    "name": "Chicken Feast in Gravy, Grilled",
+    "brands": "Fancy Feast",
+    "overlap": 0.33,
+    "shared": [
+     "gravy"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "scorable",
+    "match": {
+     "barcode": "0050000578450",
+     "name": "Fancy feast Gravy lovers",
+     "brands": "",
+     "overlap": 0.67,
+     "shared": [
+      "gravy",
+      "lovers"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 2,
+   "title": "Sheba Perfect Portions Cuts Wet Cat Food, Multipack, 2.6 oz, 24 ct | Grain-free, Chicken, Salmon & Turkey flavors, protein-rich, no corn or soy, essential vitamins & minerals, twin-pack trays",
+   "brand": "Sheba",
+   "query": "sheba",
+   "verdict": "review",
+   "match": {
+    "barcode": "0023100118840",
+    "name": "Sheba Perfect Portions Seafood Variety Pack Paté",
+    "brands": "Sheba",
+    "overlap": 0.5,
+    "shared": [
+     "perfect",
+     "portions"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "4008429123368",
+     "name": "Sheba perfect portions",
+     "brands": "",
+     "overlap": 0.5,
+     "shared": [
+      "perfect",
+      "portions"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 3,
+   "title": "Purina Fancy Feast Grilled Seafood Wet Cat Food, 3 oz Cans, 24-Pack | Variety Pack, crafted with real seafood in savory gravy. Made with no Artificial Colors or Preservatives.",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000215621",
+    "name": "Fancy Feast Seafood Classic Paté Collection",
+    "brands": "Purina",
+    "overlap": 0.33,
+    "shared": [
+     "seafood"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0050000215621",
+     "name": "Fancy Feast Seafood Classic Paté Collection",
+     "brands": "Purina",
+     "overlap": 0.33,
+     "shared": [
+      "seafood"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 4,
+   "title": "Friskies Purina Gravy Swirlers Dry Cat Food, Chicken & Salmon, 3.15 lb Bag | Protein-packed cat food kibble with swirls of delicious gravy baked in, supports immune and heart health",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0056366006866",
+    "name": "Chicken dinner pate",
+    "brands": "Friskies",
+    "overlap": 0.2,
+    "shared": [
+     "chicken"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "8850125071360",
+     "name": "friskies kitten tuna chicken",
+     "brands": "purina",
+     "overlap": 0.2,
+     "shared": [
+      "chicken"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 5,
+   "title": "Meow Mix Original Choice Dry Cat Food, 6.3 Pound Bag",
+   "brand": "Meow Mix",
+   "query": "meow mix",
+   "verdict": "no-ingredients",
+   "match": {
+    "barcode": "0829274502252",
+    "name": "meow mix original choice",
+    "brands": "meow mix",
+    "overlap": 0.67,
+    "shared": [
+     "choice",
+     "original"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "no-ingredients",
+    "match": {
+     "barcode": "0829274502252",
+     "name": "meow mix original choice",
+     "brands": "meow mix",
+     "overlap": 0.67,
+     "shared": [
+      "choice",
+      "original"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 6,
+   "title": "Sheba Perfect Portions Pate Wet Cat Food, Seafood Variety, 2.6 oz, 24 ct | Grain-free, Sustainable Salmon, Signature Seafood & Whitefish Tuna, no artificial flavors, twin-pack trays, adult cat food",
+   "brand": "Sheba",
+   "query": "sheba",
+   "verdict": "no-ingredients",
+   "match": {
+    "barcode": "0023100118840",
+    "name": "Sheba Perfect Portions Seafood Variety Pack Paté",
+    "brands": "Sheba",
+    "overlap": 0.67,
+    "shared": [
+     "perfect",
+     "portions",
+     "seafood",
+     "variety"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "no-ingredients",
+    "match": {
+     "barcode": "0023100118840",
+     "name": "Sheba Perfect Portions Seafood Variety Pack Paté",
+     "brands": "Sheba",
+     "overlap": 0.67,
+     "shared": [
+      "perfect",
+      "portions",
+      "seafood",
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 7,
+   "title": "IAMS Proactive Health Indoor Dry Cat Food, Chicken & Turkey, 7 lb | Vet-recommended, Real Chicken #1 Ingredient, Proprietary Fiber Blend, Prebiotics for Healthy Digestion, Hairball Control",
+   "brand": "Iams",
+   "query": "iams",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8710255150543",
+    "name": "Iams Advanced Nutrition Light/Sterilised with Fresh Chicken 1+ years",
+    "brands": "Eukanuba, Iams",
+    "overlap": 0.17,
+    "shared": [
+     "chicken"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0019014711093",
+     "name": "Iams Proactive Health ",
+     "brands": "Iams",
+     "overlap": 0.33,
+     "shared": [
+      "health",
+      "proactive"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 8,
+   "title": "Friskies Purina Seafood Sensations Dry Cat Food, 22 lb Bag | Crunchy cat kibble with salmon, tuna and shrimp flavors, with protein for healthy muscles and fatty acids for skin and coat",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8445290950154",
+    "name": "Friskies 5 promesses bœuf poulet",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "no-ingredients",
+    "match": {
+     "barcode": "10505454",
+     "name": "Friskies cat food adult seafood sensations 2.5 kg",
+     "brands": "Purina",
+     "overlap": 0.67,
+     "shared": [
+      "seafood",
+      "sensations"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 9,
+   "title": "Purina ONE Tender Selects Dry Cat Food, Salmon, 7 lb Bag | Real salmon is the #1 ingredient made with carrots, peas, vitamins A and E for bright eyes, strong muscles and digestion",
+   "brand": "Purina ONE",
+   "query": "purina one",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "9300605102439",
+    "name": "PURINA ONE Adult Cat Food with Salmon and Tuna",
+    "brands": "Purina",
+    "overlap": 0.25,
+    "shared": [
+     "salmon"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "0017800431194",
+     "name": "Purina One Tender Selects Blend",
+     "brands": "Purina",
+     "overlap": 0.5,
+     "shared": [
+      "selects",
+      "tender"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 10,
+   "title": "Purina Friskies Wet Cat Food Variety Pack, Shreds, 40 Pack 5.5 oz Cans | Beef, turkey and cheese, chicken and salmon, and ocean whitefish and tuna recipes in savory gravy",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8445290950154",
+    "name": "Friskies 5 promesses bœuf poulet",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.33,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 11,
+   "title": "Meow Mix Gravy Bursts Dry Cat Food, 3 lb Bag | Crunchy cat kibble, gravy filled pieces, 100% complete & balanced nutrition",
+   "brand": "Meow Mix",
+   "query": "meow mix",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0829274502252",
+    "name": "meow mix original choice",
+    "brands": "meow mix",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0829274267533",
+     "name": "Dry Cat Food",
+     "brands": "Meow Mix",
+     "overlap": 0.33,
+     "shared": [
+      "dry"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 12,
+   "title": "Purina Friskies Prime Filets Cat Food Variety Pack, 40 Pack 5.5 oz Cans | Surfin' and Turfin' wet cat food favorites in a savory gravy, made with real meat, poultry and seafood",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8445290950154",
+    "name": "Friskies 5 promesses bœuf poulet",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.33,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 13,
+   "title": "Friskies Purina Tasty Treasures Cat Food, Prime Filets Variety, (12) 5.5 oz | Chicken and tuna, chicken, ocean fish and turkey wet cat food in gravy or sauce, 100% complete & balanced for adult cats",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8445290950154",
+    "name": "Friskies 5 promesses bœuf poulet",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.25,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 14,
+   "title": "Purina Fancy Feast Wet Kitten Food Variety Pack, 3 oz cans, 24-Pack | Oceanfish, Turkey, Chicken or Salmon Recipes with no artificial colors or preservatives. 100 percent complete and balanced",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000172351",
+    "name": "Fancy Feast Kitten Tender Chicken Feast",
+    "brands": "Purina",
+    "overlap": 0.33,
+    "shared": [
+     "kitten"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0050000172351",
+     "name": "Fancy Feast Kitten Tender Chicken Feast",
+     "brands": "Purina",
+     "overlap": 0.33,
+     "shared": [
+      "kitten"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 15,
+   "title": "Purina Fancy Feast Seafood Classic Pate Variety Pack, 3 oz Cans, 30-Pack | Grain free wet cat food made with no artificial colors or preservatives, 100 percent complete and balanced",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "no-ingredients",
+   "match": {
+    "barcode": "0050000428243",
+    "name": "Seafood Classic Pate Collection",
+    "brands": "Fancy Feast",
+    "overlap": 0.75,
+    "shared": [
+     "classic",
+     "pate",
+     "seafood"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "no-ingredients",
+    "match": {
+     "barcode": "0050000428243",
+     "name": "Seafood Classic Pate Collection",
+     "brands": "Fancy Feast",
+     "overlap": 0.75,
+     "shared": [
+      "classic",
+      "pate",
+      "seafood"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 16,
+   "title": "Hill's Science Diet Adult 1-6 Dry Cat Food | #1 Veterinarian Recommended, Chicken Recipe, 4 lb. Bag",
+   "brand": "Hill's",
+   "query": "hill's",
+   "verdict": "review",
+   "match": {
+    "barcode": "0052742012490",
+    "name": "Hill's Science Diet Hairball Control",
+    "brands": "Hill's Science Diet",
+    "overlap": 0.5,
+    "shared": [
+     "diet",
+     "science"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "0052742169804",
+     "name": "Hill's Science Plan Adult Light Mini Poulet",
+     "brands": "Hill’s Science Plan",
+     "overlap": 0.5,
+     "shared": [
+      "adult",
+      "science"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 17,
+   "title": "Purina ONE Natural Indoor Dry Cat Food, +Plus Indoor Advantage | Made with real turkey and 10% less fat, plus antioxidants and fiber to help minimize hairballs and aid in weight control",
+   "brand": "Purina ONE",
+   "query": "purina one",
+   "verdict": "review",
+   "match": {
+    "barcode": "8850127004922",
+    "name": "Purina one indoor advantage 380gr",
+    "brands": "Purina",
+    "overlap": 0.5,
+    "shared": [
+     "advantage",
+     "indoor"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "8850127004922",
+     "name": "Purina one indoor advantage 380gr",
+     "brands": "Purina",
+     "overlap": 0.5,
+     "shared": [
+      "advantage",
+      "indoor"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 18,
+   "title": "Purina Friskies Pate Wet Cat Food Variety, Seafood & Chicken, (40) 5.5 oz | Moist cat food with real seafood or chicken, smooth easy-to-chew pate texture, 40-count variety pack to stock up",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0056366006866",
+    "name": "Chicken dinner pate",
+    "brands": "Friskies",
+    "overlap": 0.4,
+    "shared": [
+     "chicken",
+     "pate"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0056366006989",
+     "name": "Friskies Seafood Supreme (pate)",
+     "brands": "Purina",
+     "overlap": 0.4,
+     "shared": [
+      "pate",
+      "seafood"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 19,
+   "title": "IAMS Proactive Health Healthy Adult Dry Cat Food, Chicken, 22 lb | Veterinarian-recommended, Real chicken #1 ingredient, chicken & egg protein, wholesome grains for energy, supports muscles",
+   "brand": "Iams",
+   "query": "iams",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0019014802333",
+    "name": "IAMS Perfect Portions Healthy Kitten Chicken Recipe Paté",
+    "brands": "IAMS",
+    "overlap": 0.33,
+    "shared": [
+     "chicken",
+     "healthy"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "8853301006644",
+     "name": "IAMS PH HEALTHY ADULT WITH CHICKEN 400 GR",
+     "brands": "",
+     "overlap": 0.5,
+     "shared": [
+      "adult",
+      "chicken",
+      "healthy"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 20,
+   "title": "Blue Buffalo Wilderness Salmon Adult Dry Cat Food, Grain-Free, 11 lb | Real Salmon #1 Ingredient, High Protein Nutrition, Supports Immunity with Antioxidant-Rich LifeSource Bits",
+   "brand": "Blue Buffalo",
+   "query": "blue buffalo",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0840243140510",
+    "name": "cat food",
+    "brands": "Blue Buffalo",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0840243105502",
+     "name": "Blue Buffalo small breed adult chicken",
+     "brands": "",
+     "overlap": 0.17,
+     "shared": [
+      "adult"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 21,
+   "title": "Purina Cat Chow Naturals Hairball, Indoor Dry Cat Food, 13 lb Bag | Healthy weight cat food with real turkey and chicken, a natural fiber blend helps control hairballs, for indoor cats",
+   "brand": "Cat Chow",
+   "query": "cat chow",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0017800134163",
+    "name": "Purina Cat Chow Indoor + immune health blend",
+    "brands": "Purina",
+    "overlap": 0.25,
+    "shared": [
+     "indoor"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0017800134163",
+     "name": "Purina Cat Chow Indoor + immune health blend",
+     "brands": "Purina",
+     "overlap": 0.25,
+     "shared": [
+      "indoor"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 22,
+   "title": "Purina Fancy Feast Classic Pate Wet Cat Food, 3 oz Cans, 30-Pack | Variety Pack, grain free recipes crafted with poultry and beef, made with no artificial colors or preservatives",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "no-ingredients",
+   "match": {
+    "barcode": "0050000428243",
+    "name": "Seafood Classic Pate Collection",
+    "brands": "Fancy Feast",
+    "overlap": 0.67,
+    "shared": [
+     "classic",
+     "pate"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "scorable",
+    "match": {
+     "barcode": "0050000429042",
+     "name": "Fancy Feast Tender Chicken & Liver Feast Classic Pate",
+     "brands": "Fancy Feast",
+     "overlap": 0.67,
+     "shared": [
+      "classic",
+      "pate"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 23,
+   "title": "Purina ONE Tender Selects Dry Cat Food, Chicken, 7 lb Bag | Protein rich blend made with real chicken as the #1 ingredient and microbiome balance for gut and immune support",
+   "brand": "Purina ONE",
+   "query": "purina one",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "7613033136351",
+    "name": "Purina One",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "0017800431194",
+     "name": "Purina One Tender Selects Blend",
+     "brands": "Purina",
+     "overlap": 0.5,
+     "shared": [
+      "selects",
+      "tender"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 24,
+   "title": "Delectables Lickable Treat Stew Wet Cat Treat Variety Pack, Food Topper, Hydrating, Grain-Free, No Fillers, No By-Products, No Added Preservatives, 1.4oz Pouch, 12ct",
+   "brand": null,
+   "query": "delectables lickable",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0032700120184",
+     "name": "Delectables Lickable Treats - Stew Senior 10+ Variety 12 Pack",
+     "brands": "Delectables",
+     "overlap": 0.29,
+     "shared": [
+      "delectables",
+      "lickable",
+      "stew",
+      "variety"
+     ],
+     "brandConfirmed": false,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 25,
+   "title": "Blue Buffalo Tastefuls Chicken Adult Indoor Dry Cat Food, 3 lb | Chicken & Brown Rice Recipe, Antioxidant-Rich LifeSource Bits, No Corn, Wheat, or Soy",
+   "brand": "Blue Buffalo",
+   "query": "blue buffalo",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0840243140510",
+    "name": "cat food",
+    "brands": "Blue Buffalo",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0840243105502",
+     "name": "Blue Buffalo small breed adult chicken",
+     "brands": "",
+     "overlap": 0.4,
+     "shared": [
+      "adult",
+      "chicken"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 26,
+   "title": "Purina ONE High Protein Natural Kitten Dry Cat Food, 7 lb Bag | Made with real chicken to support growing muscles, DHA for kitten brain development and antioxidants for immunity",
+   "brand": "Purina ONE",
+   "query": "purina one",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "7613033136351",
+    "name": "Purina One",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "7613033136351",
+     "name": "Purina One",
+     "brands": "Purina",
+     "overlap": 0.0,
+     "shared": [],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 27,
+   "title": "Blue Buffalo Wilderness Variety Pack Adult Paté Wet Cat Food, 3 oz, 12 ct | Chicken, Salmon, and Duck Patés (4 of Each), High Protein & Grain-Free Recipes, Supports Daily Hydration",
+   "brand": "Blue Buffalo",
+   "query": "blue buffalo",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0840243140510",
+    "name": "cat food",
+    "brands": "Blue Buffalo",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0840243105502",
+     "name": "Blue Buffalo small breed adult chicken",
+     "brands": "",
+     "overlap": 0.2,
+     "shared": [
+      "adult"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 28,
+   "title": "Blue Buffalo Tastefuls Variety Pack Wet Cat Food, 3 oz, 12 ct | Tuna, Chicken & Fish and Shrimp Entrées in Gravy (4 of Each), No Corn, Wheat, or Soy",
+   "brand": "Blue Buffalo",
+   "query": "blue buffalo",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0840243140510",
+    "name": "cat food",
+    "brands": "Blue Buffalo",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0840243122547",
+     "name": "Tastefuls Deliciously Healthy Kitten Food",
+     "brands": "Blue Buffalo",
+     "overlap": 0.33,
+     "shared": [
+      "tastefuls"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 29,
+   "title": "Meow Mix Seafood Favorites, Wet Food Variety Pack, 12 Cups",
+   "brand": "Meow Mix",
+   "query": "meow mix",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0829274502252",
+    "name": "meow mix original choice",
+    "brands": "meow mix",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0829274512329",
+     "name": "Meow mix seafood medley 3.15lb",
+     "brands": "",
+     "overlap": 0.2,
+     "shared": [
+      "seafood"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 30,
+   "title": "Hill's Science Diet Sensitive Stomach & Skin Dry Cat Food | #1 Veterinarian Recommended, Adult Formula, Chicken & Rice, 7 lb. Bag (Updated Formula)",
+   "brand": "Hill's",
+   "query": "hill's",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0052742012490",
+    "name": "Hill's Science Diet Hairball Control",
+    "brands": "Hill's Science Diet",
+    "overlap": 0.33,
+    "shared": [
+     "diet",
+     "science"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0052742000633",
+     "name": "Hill's - Prescription Diet Canine - Metabolic + Mobility - 12KG",
+     "brands": "Hills",
+     "overlap": 0.17,
+     "shared": [
+      "diet"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 31,
+   "title": "IAMS Proactive Health Urinary Tract Health Dry Cat Food, Chicken, 7 lb | Veterinarian-recommended, real chicken #1 ingredient, reduces urinary pH, antioxidants, antioxidants for immune support",
+   "brand": "Iams",
+   "query": "iams",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8710255150543",
+    "name": "Iams Advanced Nutrition Light/Sterilised with Fresh Chicken 1+ years",
+    "brands": "Eukanuba, Iams",
+    "overlap": 0.17,
+    "shared": [
+     "chicken"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0019014711093",
+     "name": "Iams Proactive Health ",
+     "brands": "Iams",
+     "overlap": 0.33,
+     "shared": [
+      "health",
+      "proactive"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 32,
+   "title": "Hill's Science Diet Adult Perfect Weight Dry Cat Food | #1 Veterinarian Recommended, Chicken Recipe, 7 lb. Bag",
+   "brand": "Hill's",
+   "query": "hill's",
+   "verdict": "review",
+   "match": {
+    "barcode": "0052742024523",
+    "name": "Science Plan Chicken Perfect Weight",
+    "brands": "Hill's",
+    "overlap": 0.5,
+    "shared": [
+     "perfect",
+     "science",
+     "weight"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "0052742024523",
+     "name": "Science Plan Chicken Perfect Weight",
+     "brands": "Hill's",
+     "overlap": 0.5,
+     "shared": [
+      "perfect",
+      "science",
+      "weight"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 33,
+   "title": "IAMS Proactive Health Healthy Kitten Dry Cat Food, Chicken, 3.5 lb | Veterinarian-recommended, real chicken #1 ingredient, Omega-3 DHA & taurine, supports digestion, skin health, immune system",
+   "brand": "Iams",
+   "query": "iams",
+   "verdict": "review",
+   "match": {
+    "barcode": "0019014802333",
+    "name": "IAMS Perfect Portions Healthy Kitten Chicken Recipe Paté",
+    "brands": "IAMS",
+    "overlap": 0.5,
+    "shared": [
+     "chicken",
+     "healthy",
+     "kitten"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "no-ingredients",
+    "match": {
+     "barcode": "0019014712502",
+     "name": "IAMs Proactive Health Healthy Kitten",
+     "brands": "",
+     "overlap": 0.67,
+     "shared": [
+      "health",
+      "healthy",
+      "kitten",
+      "proactive"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 34,
+   "title": "Purina Fancy Feast Gravy Lovers Wet Cat Food Variety Pack, 4.5 lb, 24 Pack | Pate in gravy recipies made with no artificial colors or preservatives, 100 percent complete and balanced nutrition",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000040803",
+    "name": "Chicken Feast in Gravy, Grilled",
+    "brands": "Fancy Feast",
+    "overlap": 0.25,
+    "shared": [
+     "gravy"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "0050000578450",
+     "name": "Fancy feast Gravy lovers",
+     "brands": "",
+     "overlap": 0.5,
+     "shared": [
+      "gravy",
+      "lovers"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 35,
+   "title": "Purina Friskies Extra Gravy Wet Cat Food Chunky Variety, (24) 5.5 oz. Cans | Variety Pack With Chicken, Turkey, Salmon, & Beef cat food in savory gravy, for tender, tasty meals",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8445290950154",
+    "name": "Friskies 5 promesses bœuf poulet",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.2,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 36,
+   "title": "Hill's Science Diet Adult 1-6 Indoor Dry Cat Food | #1 Veterinarian Recommended, Chicken Recipe, 7 lb. Bag",
+   "brand": "Hill's",
+   "query": "hill's",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0052742012490",
+    "name": "Hill's Science Diet Hairball Control",
+    "brands": "Hill's Science Diet",
+    "overlap": 0.4,
+    "shared": [
+     "diet",
+     "science"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0052742169804",
+     "name": "Hill's Science Plan Adult Light Mini Poulet",
+     "brands": "Hill’s Science Plan",
+     "overlap": 0.4,
+     "shared": [
+      "adult",
+      "science"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 37,
+   "title": "Sheba Perfect Portions Kitten Pate Wet Cat Food, Multipack, 2.6 oz, 24 ct | DHA for brain development, Vitamin E for immunity, real meat, all essential amino acids, complete & balanced, 48 servings",
+   "brand": "Sheba",
+   "query": "sheba",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0023100118840",
+    "name": "Sheba Perfect Portions Seafood Variety Pack Paté",
+    "brands": "Sheba",
+    "overlap": 0.4,
+    "shared": [
+     "perfect",
+     "portions"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4008429123368",
+     "name": "Sheba perfect portions",
+     "brands": "",
+     "overlap": 0.4,
+     "shared": [
+      "perfect",
+      "portions"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 38,
+   "title": "Meow Mix Poultry & Beef Favorites, Wet Food Variety Pack, 24 Cups",
+   "brand": "Meow Mix",
+   "query": "meow mix",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0829274502252",
+    "name": "meow mix original choice",
+    "brands": "meow mix",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0829274527170",
+     "name": "Meow Mix Irresistables - soft",
+     "brands": "Meow Mix",
+     "overlap": 0.0,
+     "shared": [],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 39,
+   "title": "Weruva B.F.F. OMG - Best Feline Friend Oh My Gravy!, Rainbow A Gogo Variety Pack! Cat Food, 3oz Pouch (Pack of 12)",
+   "brand": "Weruva",
+   "query": "weruva",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0878408008986",
+    "name": "omg gravy!  Tuna & Beef Baby Cakes Dinner in Gravy",
+    "brands": "Weruva",
+    "overlap": 0.25,
+    "shared": [
+     "gravy",
+     "omg"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0878408008986",
+     "name": "omg gravy!  Tuna & Beef Baby Cakes Dinner in Gravy",
+     "brands": "Weruva",
+     "overlap": 0.25,
+     "shared": [
+      "gravy",
+      "omg"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 40,
+   "title": "Royal Canin Feline Health Nutrition Indoor Adult Dry Cat Food, 7 lb Bag | Formulated For Indoor Cats, Optimal Cat Stool, For Adult Cats, Crunchy Kibble, Developed by Veterinarians",
+   "brand": "Royal Canin",
+   "query": "royal canin",
+   "verdict": "review",
+   "match": {
+    "barcode": "0030111541567",
+    "name": "Royal Canin Feline Health Nutrition Appetite Control Spayed / Neutered Dry Cat Food",
+    "brands": "Royal Canin",
+    "overlap": 0.6,
+    "shared": [
+     "dry",
+     "feline",
+     "health"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "3182550702614",
+     "name": "royal canin adult persian",
+     "brands": "royal canin",
+     "overlap": 0.2,
+     "shared": [
+      "adult"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 41,
+   "title": "Hill's Science Diet Adult Urinary & Hairball Control Dry Cat Food | #1 Veterinarian Recommended, Chicken Recipe, 7 lb. Bag",
+   "brand": "Hill's",
+   "query": "hill's",
+   "verdict": "review",
+   "match": {
+    "barcode": "0052742012490",
+    "name": "Hill's Science Diet Hairball Control",
+    "brands": "Hill's Science Diet",
+    "overlap": 0.57,
+    "shared": [
+     "control",
+     "diet",
+     "hairball",
+     "science"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0052742169804",
+     "name": "Hill's Science Plan Adult Light Mini Poulet",
+     "brands": "Hill’s Science Plan",
+     "overlap": 0.29,
+     "shared": [
+      "adult",
+      "science"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 42,
+   "title": "Purina ONE +Plus Sensitive Stomach Sensitive Skin, Natural Dry Cat Food | Easily digestible cat food with prebiotic fiber, calcium and antioxidants for cats with sensitive systems.",
+   "brand": "Purina ONE",
+   "query": "purina one",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "7613033136351",
+    "name": "Purina One",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "7613035610958",
+     "name": "Purina ONE Sensitive rijk aan kalkoen",
+     "brands": "Purina",
+     "overlap": 0.2,
+     "shared": [
+      "sensitive"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 43,
+   "title": "ORIJEN Grain Free WHOLEPREY Dry Cat Food Original Recipe 4lb Bag | 90% Animal Ingredients, Freeze Dried, Fresh or Raw Ingredients, High Protein, Heart Health, Free-Run Poultry",
+   "brand": "Orijen",
+   "query": "orijen",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0064992280178",
+    "name": "Original Cat",
+    "brands": "Orijen",
+    "overlap": 0.2,
+    "shared": [
+     "original"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0064992280178",
+     "name": "Original Cat",
+     "brands": "Orijen",
+     "overlap": 0.2,
+     "shared": [
+      "original"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 44,
+   "title": "Purina Fancy Feast Petites Gravy Wet Cat Food Variety Pack, 2.8 oz, 24-Pack | 48 single servings made with Chicken or Fish, and no artificial colors or preservatives. Convenient break-apart tubs",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000040803",
+    "name": "Chicken Feast in Gravy, Grilled",
+    "brands": "Fancy Feast",
+    "overlap": 0.25,
+    "shared": [
+     "gravy"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0050000836123",
+     "name": "Fancy Feast tuna Feast in gravy",
+     "brands": "",
+     "overlap": 0.25,
+     "shared": [
+      "gravy"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 45,
+   "title": "Purina Fancy Feast Broths, Classic Seafood Wet Cat Food, 1.4 oz, 12-Pack | Variety Pack with Lickable Grain-Free Wet Cat Food complements, made with no by-products, artificials flavors or colors",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "review",
+   "match": {
+    "barcode": "0050000215621",
+    "name": "Fancy Feast Seafood Classic Paté Collection",
+    "brands": "Purina",
+    "overlap": 0.5,
+    "shared": [
+     "classic",
+     "seafood"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "0050000215621",
+     "name": "Fancy Feast Seafood Classic Paté Collection",
+     "brands": "Purina",
+     "overlap": 0.5,
+     "shared": [
+      "classic",
+      "seafood"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 46,
+   "title": "Purina Cat Chow Naturals High Protein Dry Cat Food, 13 lb Bags | Indoor cat food with real chicken and salmon plus whole grains, natural nutrition with added vitamins, minerals and nutrients",
+   "brand": "Cat Chow",
+   "query": "cat chow",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "7501777001151",
+    "name": "purina Cat chow defense plus +",
+    "brands": "Nestlé",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "7501777001151",
+     "name": "purina Cat chow defense plus +",
+     "brands": "Nestlé",
+     "overlap": 0.0,
+     "shared": [],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 47,
+   "title": "Blue Buffalo Tastefuls Chicken Adult Sensitive Stomach Dry Cat Food, 3 lb | Chicken & Brown Rice Recipe, Whole Grains, Garden Veggies & Fruit, No Corn, Wheat, or Soy",
+   "brand": "Blue Buffalo",
+   "query": "blue buffalo",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0840243140510",
+    "name": "cat food",
+    "brands": "Blue Buffalo",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0840243105502",
+     "name": "Blue Buffalo small breed adult chicken",
+     "brands": "",
+     "overlap": 0.33,
+     "shared": [
+      "adult",
+      "chicken"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 48,
+   "title": "Purina Fancy Feast Delights with Cheddar Wet Cat Food, 3 oz cans, 24-Pack | Grilled Chicken, Turkey or Whitefish in Gravy recipes with no artificial colors or preservatives",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000168200",
+    "name": "creamy delights chicken feast with a touch of real milk",
+    "brands": "Fancy Feast",
+    "overlap": 0.33,
+    "shared": [
+     "delights"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "scorable",
+    "match": {
+     "barcode": "8850011072792",
+     "name": "Fancy Feast Petite Delights Tuna & Cod Wet Cat Food 50g x 6 pack",
+     "brands": "Fancy Feast",
+     "overlap": 0.67,
+     "shared": [
+      "delights",
+      "wet"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 49,
+   "title": "Meow Mix Tender Centers, Salmon & White Meat Chicken Flavors, 20 lb. Bag | Dry cat food with two texture kibble, meaty center surrounded by a crunchy outer layer.",
+   "brand": "Meow Mix",
+   "query": "meow mix",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0829274502252",
+    "name": "meow mix original choice",
+    "brands": "meow mix",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0829274512527",
+     "name": "Meow mix Tender Center 3.15lb",
+     "brands": "",
+     "overlap": 0.17,
+     "shared": [
+      "tender"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 50,
+   "title": "Reveal Fish Variety in Broth Wet Cat Food, 3-Flavor 12-Pack 2.47 oz Cans | 100% Natural, High Quality Protein, Limited Ingredient, Grain Free, No Fillers, No Artificial Additives, No By-Products",
+   "brand": null,
+   "query": "reveal fish",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": null
+   }
+  },
+  {
+   "position": 51,
+   "title": "Purina Friskies Wet Cat Food Variety Pack, Poultry, (32) 5.5 oz Cans | Shreds, Meaty Bits and Prime Filets recipes, high-protein cat food in gravy, made with real chicken or turkey",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8445290950154",
+    "name": "Friskies 5 promesses bœuf poulet",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.33,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 52,
+   "title": "Purina Fancy Feast Gems Salmon Variety Pack Wet Cat Food, 4 oz, 12-Pack | 24 single servings, mousse pate with savory gravy, made with no artificial preservatives, 100 percent complete and balanced",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000172375",
+    "name": "Fancy Feast Kitten Tender Salmon Feast",
+    "brands": "Purina",
+    "overlap": 0.25,
+    "shared": [
+     "salmon"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "8850011072839",
+     "name": "Fancy Feast Petite Delights Chicken & Salmon Wet Cat Food 50g x 6 pack",
+     "brands": "Fancy Feast",
+     "overlap": 0.5,
+     "shared": [
+      "salmon",
+      "wet"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 53,
+   "title": "Purina Pro Plan Complete Essentials Wet Cat Food Variety, (24) 3 oz Cans | Chicken & Rice, Turkey & Rice, and White Meat Chicken & Vegetables Entrees, with antioxidants for healthy immune system",
+   "brand": "Purina Pro Plan",
+   "query": "purina pro plan",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0038100105776",
+    "name": "Adult 7+ Complete Essentials Chicken & Rice Formula",
+    "brands": "Purina, Purina Pro Plan",
+    "overlap": 0.33,
+    "shared": [
+     "essentials"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0038100105776",
+     "name": "Adult 7+ Complete Essentials Chicken & Rice Formula",
+     "brands": "Purina, Purina Pro Plan",
+     "overlap": 0.33,
+     "shared": [
+      "essentials"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 54,
+   "title": "Purina Fancy Feast Poultry & Beef Wet Cat Food Variety Pack, 3 oz, 24-Pack | Recipes with grilled texture and no artificial colors or preservatives. 100 percent complete and balanced.",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000172351",
+    "name": "Fancy Feast Kitten Tender Chicken Feast",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "0050000292226",
+     "name": "Fancy Feast Poultry & Beef Collection 30 Cans",
+     "brands": "",
+     "overlap": 0.5,
+     "shared": [
+      "beef",
+      "poultry"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 55,
+   "title": "Purina ONE Sensitive Skin and Stomach Dry Cat Food 16 lb Bag | Real turkey is the first ingredient, easily digestible with prebiotic fiber, calcium and antioxidants for sensitive systems",
+   "brand": "Purina ONE",
+   "query": "purina one",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "7613033136351",
+    "name": "Purina One",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "7613035610958",
+     "name": "Purina ONE Sensitive rijk aan kalkoen",
+     "brands": "Purina",
+     "overlap": 0.25,
+     "shared": [
+      "sensitive"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 56,
+   "title": "Friskies Purina Shreds Wet Cat Food in Gravy Variety Pack, (24) 5.5 oz Cans | Beef, Chicken, and Turkey & Cheese wet cat food recipes, thin tender pieces in a savory gravy",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8445290950154",
+    "name": "Friskies 5 promesses bœuf poulet",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.25,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 57,
+   "title": "Purina Friskies Oceans of Delight Wet Cat Food Variety Pack, (40) 5.5 oz | Flaked and Prime Filets recipes with real fish or poultry, chunky wet cat food in gravy in four delicious flavors",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8850125073012",
+    "name": "purina friskies indoor delight",
+    "brands": "",
+    "overlap": 0.25,
+    "shared": [
+     "delight"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.25,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 58,
+   "title": "Purina Fancy Feast Gems Chicken Wet Cat Food Variety Box, 4 oz, 8-Pack | 16 single servings, mousse pate with savory gravy, made with no artificial preservatives, 100 percent complete and balanced",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000172351",
+    "name": "Fancy Feast Kitten Tender Chicken Feast",
+    "brands": "Purina",
+    "overlap": 0.25,
+    "shared": [
+     "chicken"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "8850011072815",
+     "name": "Fancy Feast Petite Delights Chicken & Turkey Wet Cat Food 50g x 6 pack",
+     "brands": "Fancy Feast",
+     "overlap": 0.5,
+     "shared": [
+      "chicken",
+      "wet"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 59,
+   "title": "Fancy Feast Purina Savory Centers Wet Cat Food, 3 oz. Cans, 24-Pack | Variety pack with chicken, salmon, beef and tuna pate recipes, 100 percent complete and balanced nutrition",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "05029709",
+    "name": "Fancy Feast Savory Cravings Checken",
+    "brands": "Fancy Feast, Pariena",
+    "overlap": 0.33,
+    "shared": [
+     "savory"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "05029709",
+     "name": "Fancy Feast Savory Cravings Checken",
+     "brands": "Fancy Feast, Pariena",
+     "overlap": 0.33,
+     "shared": [
+      "savory"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 60,
+   "title": "Purina Fancy Feast Wet Cat Food Variety Pack, Medleys White Meat Chicken in Sauce Collection - (Pack of 12) 3 oz. Cans",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000172351",
+    "name": "Fancy Feast Kitten Tender Chicken Feast",
+    "brands": "Purina",
+    "overlap": 0.12,
+    "shared": [
+     "chicken"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "8850011072815",
+     "name": "Fancy Feast Petite Delights Chicken & Turkey Wet Cat Food 50g x 6 pack",
+     "brands": "Fancy Feast",
+     "overlap": 0.25,
+     "shared": [
+      "chicken",
+      "wet"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 61,
+   "title": "Royal Canin Feline Health Nutrition Kitten Thin Slices in Gravy Cat Food, 3 oz (Pack of 24).",
+   "brand": "Royal Canin",
+   "query": "royal canin",
+   "verdict": "review",
+   "match": {
+    "barcode": "0030111715784",
+    "name": "Royal Canin spayed and neutered, thin slices in gravy.",
+    "brands": "Royal Canin",
+    "overlap": 0.5,
+    "shared": [
+     "gravy",
+     "slices",
+     "thin"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "3182550702423",
+     "name": "kitten 12mois",
+     "brands": "Royal canin",
+     "overlap": 0.17,
+     "shared": [
+      "kitten"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 62,
+   "title": "Purina ONE LiveClear Allergen-Reducing Dry Cat Food, 6.3 lb Bag | Real chicken is the #1 ingredient, reduces allergens in cat hair and dander by 47%, includes DHA for cat vision support",
+   "brand": "Purina ONE",
+   "query": "purina one",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "7613033136351",
+    "name": "Purina One",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "7613033136351",
+     "name": "Purina One",
+     "brands": "Purina",
+     "overlap": 0.0,
+     "shared": [],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 63,
+   "title": "Hill's Science Diet Kitten Formula Dry Cat Food | #1 Veterinarian Recommended, Chicken Recipe, 7 lb. Bag",
+   "brand": "Hill's",
+   "query": "hill's",
+   "verdict": "review",
+   "match": {
+    "barcode": "0052742012490",
+    "name": "Hill's Science Diet Hairball Control",
+    "brands": "Hill's Science Diet",
+    "overlap": 0.5,
+    "shared": [
+     "diet",
+     "science"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0052742000633",
+     "name": "Hill's - Prescription Diet Canine - Metabolic + Mobility - 12KG",
+     "brands": "Hills",
+     "overlap": 0.25,
+     "shared": [
+      "diet"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 64,
+   "title": "Nulo Freestyle Cat & Kitten Dry Food - Chicken & Cod Recipe, High Protein Grain Free Cat Food, Natural Kibble with Probiotics & Omega Fatty Acids, 4lb Bag",
+   "brand": "Nulo",
+   "query": "nulo",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0811939020409",
+    "name": "Nulo Freestyle Adult Trim Salmon & Lentils Recipe",
+    "brands": "Nulo Freestyle",
+    "overlap": 0.07,
+    "shared": [
+     "freestyle"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0811939025855",
+     "name": "Grain-free Cat & Kitten Chicken & Cod Recipe",
+     "brands": "Nulo Freestyle",
+     "overlap": 0.36,
+     "shared": [
+      "chicken",
+      "cod",
+      "free",
+      "grain",
+      "kitten"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 65,
+   "title": "Sheba Perfect Portions Pate Wet Cat Food, Sustainable Salmon, 2.6 oz, 24 ct | Grain-free, made in USA, Sustainable salmon, no fillers or artificial flavors, complete & balanced, twin-pack trays",
+   "brand": "Sheba",
+   "query": "sheba",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0023100118840",
+    "name": "Sheba Perfect Portions Seafood Variety Pack Paté",
+    "brands": "Sheba",
+    "overlap": 0.33,
+    "shared": [
+     "perfect",
+     "portions"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4008429123368",
+     "name": "Sheba perfect portions",
+     "brands": "",
+     "overlap": 0.33,
+     "shared": [
+      "perfect",
+      "portions"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 66,
+   "title": "Purina Fancy Feast Grilled Wet Cat Food, Poultry & Beef, 3 oz cans, 30-Pack | Variety Pack, tender grilled texture made with no artificial colors or preservatives, 100 percent complete and balanced",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000040803",
+    "name": "Chicken Feast in Gravy, Grilled",
+    "brands": "Fancy Feast",
+    "overlap": 0.25,
+    "shared": [
+     "grilled"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "review",
+    "match": {
+     "barcode": "0050000040704",
+     "name": "Fancy Feast Beef Feast In Gravy Grilled",
+     "brands": "Fancy Feast",
+     "overlap": 0.5,
+     "shared": [
+      "beef",
+      "grilled"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 67,
+   "title": "Weruva Kitten, Fur Baby Favorites Variety Pack, 3oz Can (Pack of 12)",
+   "brand": "Weruva",
+   "query": "weruva",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0878408008986",
+    "name": "omg gravy!  Tuna & Beef Baby Cakes Dinner in Gravy",
+    "brands": "Weruva",
+    "overlap": 0.2,
+    "shared": [
+     "baby"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0878408008986",
+     "name": "omg gravy!  Tuna & Beef Baby Cakes Dinner in Gravy",
+     "brands": "Weruva",
+     "overlap": 0.2,
+     "shared": [
+      "baby"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 68,
+   "title": "A Strong Heart Adult Cat Pate, Mixed Grill Dinner, 13.2oz Cans, 12pk | Chicken, liver & turkey pate, AAFCO complete & balanced, Made in USA, 12-pack",
+   "brand": null,
+   "query": "strong heart",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": null
+   }
+  },
+  {
+   "position": 69,
+   "title": "Purina Fancy Feast Chicken Classic Pate Wet Cat Food, Pack of 24, 3 oz Cans | Grain-free, gourmet recipe with a smooth, savory texture in rich gravy for a flavor-filled taste",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "review",
+   "match": {
+    "barcode": "0050000428243",
+    "name": "Seafood Classic Pate Collection",
+    "brands": "Fancy Feast",
+    "overlap": 0.5,
+    "shared": [
+     "classic",
+     "pate"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "scorable",
+    "match": {
+     "barcode": "0050000429042",
+     "name": "Fancy Feast Tender Chicken & Liver Feast Classic Pate",
+     "brands": "Fancy Feast",
+     "overlap": 0.75,
+     "shared": [
+      "chicken",
+      "classic",
+      "pate"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 70,
+   "title": "Purina ONE Indoor Advantage Senior Dry Cat Food, High Protein, 3.5 lb Bag | Made with real chicken and a natural fiber blend that helps minimize hairballs and supports immune health for senior cats",
+   "brand": "Purina ONE",
+   "query": "purina one",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8850127004922",
+    "name": "Purina one indoor advantage 380gr",
+    "brands": "Purina",
+    "overlap": 0.33,
+    "shared": [
+     "advantage",
+     "indoor"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "8850127004922",
+     "name": "Purina one indoor advantage 380gr",
+     "brands": "Purina",
+     "overlap": 0.33,
+     "shared": [
+      "advantage",
+      "indoor"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 71,
+   "title": "Purina ONE High Protein Urinary Tract Health Dry Cat Food, 16 lb Bag | Made with real chicken, no artificial flavors or colors. Low-magnesium formula balances pH and boosts immune defense",
+   "brand": "Purina ONE",
+   "query": "purina one",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "00680910",
+    "name": "Urinary Care",
+    "brands": "ONE, Purina",
+    "overlap": 0.17,
+    "shared": [
+     "urinary"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "8850126001793",
+     "name": "Cat food Purina ONE urinary care",
+     "brands": "",
+     "overlap": 0.17,
+     "shared": [
+      "urinary"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 72,
+   "title": "Nutrish Indoor Complete Dry Cat Food, 14 lb. Bag (Rachael Ray) | Chicken, Lentils & Salmon Recipe, Crafted for Adult Indoor Cats, Veterinarian Reviewed Formula",
+   "brand": null,
+   "query": "nutrish indoor",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0071190826176",
+     "name": "Indoor Complete Chicken, Lentils & Salmon Recipe Dry Cat Food",
+     "brands": "Nutrish",
+     "overlap": 0.4,
+     "shared": [
+      "dry",
+      "indoor"
+     ],
+     "brandConfirmed": false,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 73,
+   "title": "Purina Friskies Wet Cat Food Pate Variety Pack, (24) 5.5 oz Cans | Salmon Dinner, Turkey and Giblets Dinner, and Mixed Grill recipes for tasty mealtime enjoyment, smooth pate cat food texture",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0056366115797",
+    "name": "Turkey & giblets dinner pate",
+    "brands": "Friskies",
+    "overlap": 0.33,
+    "shared": [
+     "pate"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.33,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 74,
+   "title": "Purina Friskies Lil Soups Topper Variety Pack, 30 Count, 1.2 oz Cups | Grain-free lickable recipe with real seafood in a velvety broth, salmon, tuna or shrimp",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8445290950154",
+    "name": "Friskies 5 promesses bœuf poulet",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.2,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 75,
+   "title": "Reveal Fish Variety in Broth Wet Cat Food, 5-Flavor 30-Pack 2.47 oz Cans | 100% Natural, High Quality Protein, Limited Ingredient, Grain Free, No Fillers, No Artificial Additives, No By-Products",
+   "brand": null,
+   "query": "reveal fish",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": null
+   }
+  },
+  {
+   "position": 76,
+   "title": "Vital Essentials Freeze Dried Raw Chicken Hearts Cat Treats, 0.8 oz Bag | Single Ingredient, Premium Quality Protein, Grain-Free, USA Made with U.S. & Globally Sourced Ingredients",
+   "brand": null,
+   "query": "vital essentials",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0033211005106",
+     "name": "Duck nibs",
+     "brands": "Vital Essentials",
+     "overlap": 0.0,
+     "shared": [],
+     "brandConfirmed": false,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 77,
+   "title": "I and Love and You Wet Cat Food Variety Pack, 3oz | 12 Pack | Grain-free variety pack featuring natural wet cat food recipes.",
+   "brand": null,
+   "query": "love you",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": null
+   }
+  },
+  {
+   "position": 78,
+   "title": "IAMS Proactive Health Sensitive Digestion Dry Cat Food, Turkey, 13 lb | Veterinarian-recommended, Real turkey #1 ingredient, prebiotics & fiber blend, Omega 6 & 3 for coat shine",
+   "brand": "Iams",
+   "query": "iams",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "8710255150543",
+    "name": "Iams Advanced Nutrition Light/Sterilised with Fresh Chicken 1+ years",
+    "brands": "Eukanuba, Iams",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0019014711093",
+     "name": "Iams Proactive Health ",
+     "brands": "Iams",
+     "overlap": 0.33,
+     "shared": [
+      "health",
+      "proactive"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 79,
+   "title": "Purina Fancy Feast Dry Cat Food with Ocean Fish and Salmon - 3 lb. Bag | 100% Complete & Balanced Cat Food with real ocean fish and salmon & accents of Garden Greens for a crunchy kibble cats love.",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000172375",
+    "name": "Fancy Feast Kitten Tender Salmon Feast",
+    "brands": "Purina",
+    "overlap": 0.25,
+    "shared": [
+     "salmon"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "9300605097537",
+     "name": "Fancy feast, salmon spinach courgette & green beans",
+     "brands": "Purina",
+     "overlap": 0.25,
+     "shared": [
+      "salmon"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 80,
+   "title": "Nutrish Ocean Lover's Wet Cat Food Variety Pack, 2.8 oz. Cup (Rachael Ray) | Includes 12 Cups of Three Grain Free Recipes: Fisha-A-Licious, Chicken & Shrimp Pawttenesa and Tuna Purrfection",
+   "brand": null,
+   "query": "nutrish ocean",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": null
+   }
+  },
+  {
+   "position": 81,
+   "title": "Weruva B.F.F. OMG - Best Feline Friend Oh My Gravy!, Variety Pack, Rainbow Road, Wet Cat Food By, 2.8oz Can (Pack of 12)",
+   "brand": "Weruva",
+   "query": "weruva",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0878408008986",
+    "name": "omg gravy!  Tuna & Beef Baby Cakes Dinner in Gravy",
+    "brands": "Weruva",
+    "overlap": 0.22,
+    "shared": [
+     "gravy",
+     "omg"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0878408008986",
+     "name": "omg gravy!  Tuna & Beef Baby Cakes Dinner in Gravy",
+     "brands": "Weruva",
+     "overlap": 0.22,
+     "shared": [
+      "gravy",
+      "omg"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 82,
+   "title": "Sheba Selections Filets Wet Cat Food Complement, Variety, 1.3 oz, 24 ct | Grain-free, Real chicken #1 ingredient, no corn or soy, no artificial flavors, peel & serve topper or treat, 1.3 oz. Cups",
+   "brand": "Sheba",
+   "query": "sheba",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "4008429134869",
+    "name": "Sheba Filets kip met duurzame tonijn",
+    "brands": "Sheba",
+    "overlap": 0.2,
+    "shared": [
+     "filets"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "3065890108523",
+     "name": "Sheba - Saveurs Océanes Avec Des Mini-filets",
+     "brands": "Sheba",
+     "overlap": 0.2,
+     "shared": [
+      "filets"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 83,
+   "title": "Sheba Gravy Indulgence Wet Cat Food, Variety Pack, 2.6 oz, 12 Count, 2-Pack | Grain-free, 70% gravy, real meat cuts, no by-products or fillers, essential amino acids & healthy fats, twin-pack trays",
+   "brand": "Sheba",
+   "query": "sheba",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0023100118840",
+    "name": "Sheba Perfect Portions Seafood Variety Pack Paté",
+    "brands": "Sheba",
+    "overlap": 0.25,
+    "shared": [
+     "variety"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0023100118840",
+     "name": "Sheba Perfect Portions Seafood Variety Pack Paté",
+     "brands": "Sheba",
+     "overlap": 0.25,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 84,
+   "title": "Purina Cat Chow Gentle Sensitive Stomach & Skin Dry Cat Food, 13 lb Bag | Gentle cat food with farm-raised turkey, easily digestible for sensitive systems, omega-6 fatty acids nourish skin and coat",
+   "brand": "Cat Chow",
+   "query": "cat chow",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "7501777001151",
+    "name": "purina Cat chow defense plus +",
+    "brands": "Nestlé",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "7501777001151",
+     "name": "purina Cat chow defense plus +",
+     "brands": "Nestlé",
+     "overlap": 0.0,
+     "shared": [],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 85,
+   "title": "Delectables Lickable Treat Stew Non-Seafood Wet Cat Treat Variety Pack, Food Topper, Hydrating, Grain-Free, No Fillers, No By-Products, No Added Preservatives, 1.4oz Pouch, 12ct",
+   "brand": null,
+   "query": "delectables lickable",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0032700120184",
+     "name": "Delectables Lickable Treats - Stew Senior 10+ Variety 12 Pack",
+     "brands": "Delectables",
+     "overlap": 0.25,
+     "shared": [
+      "delectables",
+      "lickable",
+      "stew",
+      "variety"
+     ],
+     "brandConfirmed": false,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 86,
+   "title": "Delectables Lickable Treat Bisque Non-Seafood Wet Cat Treat Variety Pack, Food Topper, Hydrating, Grain-Free, No Fillers, No By-Products, No Added Preservatives, 1.4oz Pouch, 12ct",
+   "brand": null,
+   "query": "delectables lickable",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0032700120184",
+     "name": "Delectables Lickable Treats - Stew Senior 10+ Variety 12 Pack",
+     "brands": "Delectables",
+     "overlap": 0.19,
+     "shared": [
+      "delectables",
+      "lickable",
+      "variety"
+     ],
+     "brandConfirmed": false,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 87,
+   "title": "Weruva Cats in the Kitchen, Kitchen Cuties Variety Pack, Wet Cat Food, 3.2oz Can (Pack of 12)",
+   "brand": "Weruva",
+   "query": "weruva",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0878408008986",
+    "name": "omg gravy!  Tuna & Beef Baby Cakes Dinner in Gravy",
+    "brands": "Weruva",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0878408009068",
+     "name": "chicken frick 'a zee",
+     "brands": "weruva",
+     "overlap": 0.0,
+     "shared": [],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 88,
+   "title": "IAMS Perfect Portions Cuts in Gravy Wet Cat Food, Tuna & Salmon, 12 Count | Tuna & Salmon cuts in gravy, 2.6 oz. snap-peel-serve twin packs, Vitamin E immune support, prebiotic fiber, protein rich",
+   "brand": "Iams",
+   "query": "iams",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0019014802333",
+    "name": "IAMS Perfect Portions Healthy Kitten Chicken Recipe Paté",
+    "brands": "IAMS",
+    "overlap": 0.29,
+    "shared": [
+     "perfect",
+     "portions"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "8853301006781",
+     "name": "IAMS PH ADULT WITH TUNA SALMON 3KG",
+     "brands": "",
+     "overlap": 0.29,
+     "shared": [
+      "salmon",
+      "tuna"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 89,
+   "title": "Friskies Purina Meaty Bits Cat Food Variety Pack, 24 Pack 5.5 oz Cans | High protein beef and poultry flavors in savory gravy, with taurine to support healthy vision",
+   "brand": "Friskies",
+   "query": "friskies",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "5300647109964",
+    "name": "FRISKIES MEATY GRILL ADULT 1KG",
+    "brands": "",
+    "overlap": 0.33,
+    "shared": [
+     "meaty"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4000487199811",
+     "name": "Friskies Picnic Variety Snack Pour Chiens",
+     "brands": "Purina",
+     "overlap": 0.33,
+     "shared": [
+      "variety"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 90,
+   "title": "A Strong Heart Cat Food Dinner Variety Pack, Shreds & Cuts, 32pk | Chicken, turkey & salmon flavors, mixed pate & shreds textures, made in USA",
+   "brand": null,
+   "query": "strong heart",
+   "verdict": "unmatched",
+   "match": null,
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": null
+   }
+  },
+  {
+   "position": 91,
+   "title": "Purina Kitten Chow Year One Essentials Dry Kitten Food, 14 lb Bags | Healthy Development high protein cat food for kittens, real farm-raised chicken, with DHA for brain and vision development",
+   "brand": "Purina",
+   "query": "purina",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "7613033136351",
+    "name": "Purina One",
+    "brands": "Purina",
+    "overlap": 0.17,
+    "shared": [
+     "one"
+    ],
+    "brandConfirmed": false,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "7613033136351",
+     "name": "Purina One",
+     "brands": "Purina",
+     "overlap": 0.17,
+     "shared": [
+      "one"
+     ],
+     "brandConfirmed": false,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 92,
+   "title": "Sheba Perfect Portions Cuts Wet Cat Food, Roasted Chicken, 2.6 oz, 24 ct | Grain-free, Roasted Chicken, 48 servings, no fillers or artificial flavors, essential vitamins & minerals, twin-pack trays",
+   "brand": "Sheba",
+   "query": "sheba",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0023100118840",
+    "name": "Sheba Perfect Portions Seafood Variety Pack Paté",
+    "brands": "Sheba",
+    "overlap": 0.33,
+    "shared": [
+     "perfect",
+     "portions"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "4008429123368",
+     "name": "Sheba perfect portions",
+     "brands": "",
+     "overlap": 0.33,
+     "shared": [
+      "perfect",
+      "portions"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 93,
+   "title": "IAMS Perfect Portions Pate Wet Cat Food, Variety, 12 Count, 2-Pack | Grain-free, prebiotics & beet pulp for easy digestion, Omega 6 & 3 for skin & coat, snap-peel-serve 2.6 oz. twin-pack trays",
+   "brand": "Iams",
+   "query": "iams",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0019014802333",
+    "name": "IAMS Perfect Portions Healthy Kitten Chicken Recipe Paté",
+    "brands": "IAMS",
+    "overlap": 0.4,
+    "shared": [
+     "perfect",
+     "portions"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0019014802333",
+     "name": "IAMS Perfect Portions Healthy Kitten Chicken Recipe Paté",
+     "brands": "IAMS",
+     "overlap": 0.4,
+     "shared": [
+      "perfect",
+      "portions"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 94,
+   "title": "Blue Buffalo Wilderness Chicken Adult Dry Cat Food, Grain-Free, 11 lb | High Protein, Real Chicken #1 Ingredient, Supports Immunity with Antioxidant-Rich LifeSource Bits, Promotes Strong Muscles",
+   "brand": "Blue Buffalo",
+   "query": "blue buffalo",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0840243140510",
+    "name": "cat food",
+    "brands": "Blue Buffalo",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0840243105502",
+     "name": "Blue Buffalo small breed adult chicken",
+     "brands": "",
+     "overlap": 0.33,
+     "shared": [
+      "adult",
+      "chicken"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 95,
+   "title": "Tiki Cat After Dark Wet Cat Food, Variety Pack, 2.8 oz. Cans (12 Count) | High Protein with Organ Meat for Muscle Support, Grain-free, Supports Hydration, Non-GMO Ingredients, For All Life Stages",
+   "brand": "Tiki Cat",
+   "query": "tiki cat",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0693804480965",
+    "name": "Tuna and Mackerel Recipe In Tuna Broth",
+    "brands": "Tiki Cat",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0693804480965",
+     "name": "Tuna and Mackerel Recipe In Tuna Broth",
+     "brands": "Tiki Cat",
+     "overlap": 0.0,
+     "shared": [],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 96,
+   "title": "Fancy Feast Purina Gravy Lovers Chicken Wet Cat Food, 3 oz Cans, 24-Pack | Variety Pack with poultry grilled gourmet recipes, made with no artificial colors or preservatives, 100% complete and balance",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "review",
+   "match": {
+    "barcode": "0050000040803",
+    "name": "Chicken Feast in Gravy, Grilled",
+    "brands": "Fancy Feast",
+    "overlap": 0.5,
+    "shared": [
+     "chicken",
+     "gravy"
+    ],
+    "brandConfirmed": true,
+    "scorable": false
+   },
+   "outsideCategory": {
+    "verdict": "scorable",
+    "match": {
+     "barcode": "8850125071674",
+     "name": "Fancy Feast Gravy Lovers With Chicken Cat Food 85g",
+     "brands": "Fancy Feast",
+     "overlap": 0.75,
+     "shared": [
+      "chicken",
+      "gravy",
+      "lovers"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 97,
+   "title": "Fancy Feast Purina Savory Farm-Raised Chicken & Turkey Dry Cat Food 3lb Bag | 100% Complete & Balanced Cat Food crafted with High - Quality Ingredients",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000172351",
+    "name": "Fancy Feast Kitten Tender Chicken Feast",
+    "brands": "Purina",
+    "overlap": 0.17,
+    "shared": [
+     "chicken"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "8850011072815",
+     "name": "Fancy Feast Petite Delights Chicken & Turkey Wet Cat Food 50g x 6 pack",
+     "brands": "Fancy Feast",
+     "overlap": 0.33,
+     "shared": [
+      "chicken",
+      "turkey"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 98,
+   "title": "Blue Buffalo Tastefuls Variety Pack Paté Wet Cat Food, 5.5 oz, 24 ct | Chicken, Turkey & Chicken, Ocean Fish & Tuna Entrées (8 of Each), Paté Style",
+   "brand": "Blue Buffalo",
+   "query": "blue buffalo",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0840243140510",
+    "name": "cat food",
+    "brands": "Blue Buffalo",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0840243122547",
+     "name": "Tastefuls Deliciously Healthy Kitten Food",
+     "brands": "Blue Buffalo",
+     "overlap": 0.25,
+     "shared": [
+      "tastefuls"
+     ],
+     "brandConfirmed": true,
+     "scorable": false
+    }
+   }
+  },
+  {
+   "position": 99,
+   "title": "Purina Fancy Feast Medleys Primavera Wet Cat Food, 3 oz. Cans, 24 Pack | Variety Pack, Gravy recipes made with no artificial colors and preservatives, 100 percent complete and balanced nutrition",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000172351",
+    "name": "Fancy Feast Kitten Tender Chicken Feast",
+    "brands": "Purina",
+    "overlap": 0.0,
+    "shared": [],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "8850011072792",
+     "name": "Fancy Feast Petite Delights Tuna & Cod Wet Cat Food 50g x 6 pack",
+     "brands": "Fancy Feast",
+     "overlap": 0.33,
+     "shared": [
+      "wet"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  },
+  {
+   "position": 100,
+   "title": "Purina Fancy Feast Broths Creamy Wet Cat Food, 1.4 oz, 12 Pouches | Variety Pack with lickable broth topper. Contain no by-products, artificial flavors, colors or preservatives",
+   "brand": "Fancy Feast",
+   "query": "fancy feast",
+   "verdict": "unmatched",
+   "match": {
+    "barcode": "0050000168200",
+    "name": "creamy delights chicken feast with a touch of real milk",
+    "brands": "Fancy Feast",
+    "overlap": 0.33,
+    "shared": [
+     "creamy"
+    ],
+    "brandConfirmed": true,
+    "scorable": true
+   },
+   "outsideCategory": {
+    "verdict": "unmatched",
+    "match": {
+     "barcode": "0050000168200",
+     "name": "creamy delights chicken feast with a touch of real milk",
+     "brands": "Fancy Feast",
+     "overlap": 0.33,
+     "shared": [
+      "creamy"
+     ],
+     "brandConfirmed": true,
+     "scorable": true
+    }
+   }
+  }
+ ]
+}
