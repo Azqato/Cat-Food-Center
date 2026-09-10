@@ -15,20 +15,21 @@ purina.com/sites/default/files with opaque filenames like
 guessed from a product name and which no search engine has indexed. This walks
 the site to build the mapping the guessing could not.
 
-**purina.com refuses a program and answers a person, and that distinction is
-narrower than it sounds.** A plain urllib request for any page returns 403. So
-does Playwright driving Edge in headless mode, byte for byte the same 403 page.
-The same Playwright script with `headless=False` gets 200 and the full document.
-The file store under /sites/default/files is the exception that made the
-earlier work possible: it serves PDFs to anything, which is why
-tools/label-deck.py needs no browser and this does. Section 12.14 records the
-measurement.
+**purina.com wants a user agent, and that is the whole of it.** A plain urllib
+request for any page returns 403, and so does Playwright driving Edge when the
+context leaves the user agent at its default. Setting one explicitly gets 200
+and the full document, headless, every time. It is not headless against headed:
+that was the first reading here and it was wrong, because the headful run that
+appeared to prove it differed in the user agent too. The file store under
+/sites/default/files is the exception that made the earlier work possible at
+all: it serves PDFs to anything, which is why tools/label-deck.py needs no
+browser and this one does. Section 12.14 records both the measurement and the
+correction.
 
-**So this is a maintenance tool that opens a visible browser window**, run by
-the maintainer on a desktop, a handful of times, and never by the site. Nothing
-a visitor loads runs it and the site does not depend on it. It needs Playwright
-and the Edge channel, which section 19 already requires for the test gate, so
-it adds no dependency the project did not have.
+**So this runs headless, like the test gate**, and opens no window. It is a
+maintenance tool: nothing a visitor loads runs it, the site does not depend on
+it, and it needs only Playwright and the Edge channel that section 19 already
+requires, so it adds no dependency the project did not have.
 
 **It proposes and a person decides**, which is section 12.10's rule. Matching
 "Purina Fancy Feast Gravy Lovers Wet Cat Food, 3 oz Cans, 30-Pack" to a slug on
@@ -50,6 +51,10 @@ SKUS = os.path.join(ROOT, 'tools', 'data', 'top-skus.json')
 OUT = os.path.join(ROOT, 'tools', 'data', 'purina-index.json')
 
 BASE = 'https://www.purina.com'
+# Any stated user agent is served. This is the Edge the test gate drives,
+# named honestly rather than disguised as something else.
+UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+      '(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0')
 # The cat food categories. Wet and dry are the two that partition the range;
 # the others (indoor, kitten, senior, natural) are filtered views of the same
 # products and are crawled only because a product occasionally sits in one and
@@ -151,8 +156,24 @@ def save(data):
 
 
 def browser(playwright):
-    """Headful, and not by preference. See the module docstring."""
-    return playwright.chromium.launch(channel='msedge', headless=False)
+    """Headless, with a user agent, which is the part that matters."""
+    engine = playwright.chromium.launch(channel='msedge', headless=True)
+    return engine, engine.new_context(
+        user_agent=UA, locale='en-US', viewport={'width': 1440, 'height': 900})
+
+
+def settle(page):
+    """Let the page finish arriving.
+
+    The deck link sits well down the document. Scrolling is cheap insurance
+    against a component that renders when it comes into view, and costs a few
+    seconds on a crawl that is already paced for politeness.
+    """
+    page.wait_for_timeout(SETTLE)
+    for _ in range(6):
+        page.mouse.wheel(0, 1500)
+        page.wait_for_timeout(500)
+    page.wait_for_timeout(1500)
 
 
 def crawl(limit_pages):
@@ -162,8 +183,8 @@ def crawl(limit_pages):
     products = data.setdefault('products', {})
     started = len(products)
     with sync_playwright() as playwright:
-        engine = browser(playwright)
-        page = engine.new_page()
+        engine, context = browser(playwright)
+        page = context.new_page()
         for category in CATEGORIES:
             stale = 0
             for number in range(1, (limit_pages or MAX_PAGES) + 1):
@@ -218,13 +239,13 @@ def decks(limit):
           % (len(todo), len(todo) * (PAUSE + SETTLE / 1000.0) / 60.0))
     found = 0
     with sync_playwright() as playwright:
-        engine = browser(playwright)
-        page = engine.new_page()
+        engine, context = browser(playwright)
+        page = context.new_page()
         for slug in todo:
             url = BASE + products[slug]['path']
             try:
                 page.goto(url, timeout=60000, wait_until='domcontentloaded')
-                page.wait_for_timeout(SETTLE)
+                settle(page)
                 html = page.content()
             except Exception as err:
                 print('  %-52s ERR %s' % (slug[-52:], str(err)[:50]))

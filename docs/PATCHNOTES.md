@@ -21,6 +21,33 @@ punctuation rather than content.
 
 ---
 
+## [0.39.0] - 2026-09-10
+
+**The crawler runs headless after all. `[0.38.0]`, published an hour ago, said it could not, and
+that was wrong in a way worth reading: the experiment that proved it changed two things at once.**
+
+Changed
+* **`tools/purina-index.py` now runs headless**, with a user agent set on the browser context, and
+  opens no window. It also scrolls each product page before reading it, which is cheap insurance
+  against a component that renders when it comes into view.
+
+Fixed
+* **`[0.38.0]` said purina.com "refuses a headless browser and answers a headed one". It does not.**
+  Entries are not rewritten, so the correction is here and PRD section 12.14 carries it. What the
+  site wants is a user agent: headless with Playwright's default is refused, headless with a stated
+  agent is served, and the version in the string changes nothing. The headful run that appeared to
+  settle it had a different user agent too, and only one of the two changes was doing any work.
+  Changing two things and crediting the interesting one is how that entry came to be written.
+* **The probe scripts reported zero deck links on pages that had one, and that was the shell.** The
+  heredoc that wrote them halves backslashes, which corrupted a character class into one that
+  matches nothing and raises no error. It read as a fact about the browser for twenty minutes. The regular
+  expression inside the tool, written to disk directly rather than through a heredoc, was correct
+  the whole time and is unchanged.
+
+Notes
+* Verified after the change: five product pages read headless, five deck links found, no window.
+* No site code changed, so no gate behaviour changed.
+
 ## [0.38.0] - 2026-09-10
 
 **Nearly half the top 100 is one manufacturer, and that manufacturer's panels turned out to be
