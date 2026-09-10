@@ -21,6 +21,43 @@ punctuation rather than content.
 
 ---
 
+## [0.34.0] - 2026-09-09
+
+**M23 batch 1: three more Dr. Elsey's kibbles, and the gate now catches a wrong number that looks
+right.**
+
+Added
+* **Three entries, 4 of 19 Dr. Elsey's food SKUs now in.** Salmon `000338016605`, turkey
+  `000338036603`, and duck and chicken `000338056601`, each with its panel captured: 11 printed
+  figures apiece, including the EPA, DHA, omega-3, vitamin E, taurine percentage and kcal/cup that
+  no catalogue field can hold. The duck entry carries no `quantity`, because the aggregator's title
+  states the flavour and that it is dry and states no size, and this range is sold in two. The panel
+  is the same on both bags, so the entry is right either way; a pack size invented to match its
+  neighbours would not be.
+* **`check-catalogue.py` cross-checks every entry against its capture.** Protein, fat, fibre,
+  moisture, ash and calories, wherever both hold the figure. A capture that missed a line is a
+  thinner record and passes; a disagreement fails, because one of two readings of one panel is
+  wrong. Verified by setting salmon's protein to 45% where the panel says 54%: inside the plausible
+  band, believable as a score, ordinary in a diff, and refused. **This is the only check here that
+  can catch a right-looking wrong number.**
+
+Changed
+* Section 12.10's step 4 now separates the half a machine does from the half it cannot: the figures
+  are compared automatically, and what is left for a person is the ingredient list's order, the name
+  and pack size, the AAFCO sentence, and whether the barcode belongs to this product at all.
+
+Notes
+* **Batch 1 was five products and landed three.** Pork and rabbit-and-chicken parsed perfectly and
+  could not be written: the catalogue is keyed by barcode and neither has one that anybody
+  publishes. Dr. Elsey's markup carries no `gtin`, `sku` or `upc`, checked directly.
+* **The four resolved codes form an obvious family** and pork's almost certainly sits in it.
+  Nothing was inferred from it. A guessed barcode attaches one product's panel to another product's
+  scan, looks wrong nowhere, and no gate can catch it.
+* **Two findings about the resolver, both of which matter more for M27b than for M23.** Queries
+  naming the pack type return 404 where brand, line and flavour return rows. And the trial endpoint
+  429s after about three to five queries, so a lookup is scarce. The top 100 needs at least a
+  hundred of them, and that is a constraint transcribing faster does not touch.
+
 ## [0.33.0] - 2026-09-09
 
 **The panel capture from section 12.11 is built, and it goes in a sidecar rather than on the entry,

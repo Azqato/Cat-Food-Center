@@ -72,6 +72,20 @@ PANEL_REQUIRED = {'barcode', 'source', 'sourceKind', 'checked', 'text'}
 PANEL_OPTIONAL = {'capturedFrom', 'analysis', 'statements'}
 CAPTURE_KINDS = {'html', 'pdf', 'photo', 'manual'}
 
+# A capture is a second reading of the panel the entry was read from, so the
+# two can be compared, and a transcription error shows up as a disagreement
+# between them. This is not the plausible bands by another name: the bands
+# judge the label, and ask whether 59% protein can be true. This judges the
+# transcription, and asks whether the entry says what the panel said. It is the
+# only check in this project that can catch a right-looking wrong number.
+CROSS_CHECK = {
+    'crudeProteinPct': 'crude protein',
+    'crudeFatPct': 'crude fat',
+    'crudeFibrePct': 'crude fib',
+    'moisturePct': 'moisture',
+    'ashPct': 'crude ash',
+}
+
 FORMATS = {'wet', 'dry', 'unknown'}
 LIFE_STAGES = {'growth', 'adult', 'all', 'unknown'}
 
@@ -209,6 +223,45 @@ def check_panel(panel, key, entry, problems):
 
 
 
+def cross_check(entry, panel, key, problems):
+    """What the entry claims against what the capture recorded.
+
+    Only where both hold the figure. A capture whose reader missed a line is a
+    thinner record, not a contradiction, and failing the gate for it would
+    punish the entry for the reader's gap. A disagreement is different: one of
+    the two readings of one panel is wrong, and neither the score nor the
+    record can be trusted until somebody says which.
+    """
+    def bad(message):
+        problems.append('%s: %s' % (key, message))
+
+    analysis = panel.get('analysis') or {}
+    if not isinstance(analysis, dict):
+        return
+    for field, needle in CROSS_CHECK.items():
+        if field not in entry:
+            continue
+        printed = [v for label, v in analysis.items()
+                   if isinstance(label, str) and needle in label.lower()]
+        if not printed:
+            continue
+        number = re.match(r'([\d.]+)', str(printed[0]).strip())
+        if not number:
+            continue
+        if abs(float(number.group(1)) - entry[field]) > 0.001:
+            bad('%s is %s and the captured panel prints %r. One of the two readings is wrong'
+                % (field, entry[field], printed[0]))
+
+    kcal = [v for v in analysis.values() if isinstance(v, str) and 'kcal/kg' in v]
+    if kcal and 'kcalPer100g' in entry:
+        number = re.match(r'([\d,]+)', kcal[0].strip())
+        if number:
+            perkg = float(number.group(1).replace(',', ''))
+            if abs(entry['kcalPer100g'] - perkg / 10.0) > 0.05:
+                bad('kcalPer100g is %s and the captured panel prints %r'
+                    % (entry['kcalPer100g'], kcal[0]))
+
+
 def read_panels(problems):
     """Every capture on disk, keyed by barcode."""
     found = {}
@@ -247,6 +300,8 @@ def main():
     panels = read_panels(problems)
     for key in sorted(panels):
         check_panel(panels[key], key, products.get(key), problems)
+        if isinstance(panels[key], dict) and key in products:
+            cross_check(products[key], panels[key], key, problems)
 
     for key in sorted(products):
         entry = products[key]
@@ -271,7 +326,8 @@ def main():
         return 1
     # Not a failure. Captures are backfilled as products are revisited, and an
     # entry written before PRD 12.11 existed is not wrong, only thinner.
-    print('%d entr%s, all sourced and within the plausible bands. %d raw panel(s) captured.'
+    print('%d entr%s, all sourced, within the plausible bands, and agreeing with '
+          'the %d raw panel(s) captured.'
           % (len(products), 'y' if len(products) == 1 else 'ies', len(panels)))
     return 0
 

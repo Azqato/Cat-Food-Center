@@ -588,6 +588,10 @@ Measured 2026-09-08, while transcribing the first curated entries.
 2. **Resolve a barcode.** `python tools/transcribe.py <url> --find-barcode "<brand> <product> <size>"` prints candidates with the titles they are filed under. **Choose one by reading it.** The tool never chooses, and a multipack listing is not the product: a title reading "Pack Of 2" is a reseller's own code and belongs to a bundle, not to the bag on the shelf.
 3. **Propose the entry, and capture everything the panel prints.** Section 12.11 is the standing decision here: every published figure is read, including the ones no score uses, and the panel's text is kept verbatim beside them. A figure skipped today is the whole transcription repeated the day it matters. `python tools/transcribe.py <url> --barcode N --name "..." --brand "..." --quantity "..."`. Name, brand and pack size are given by hand because no panel states them and a product the database has never heard of has no name without them. Nothing is written yet.
 4. **Read every figure against the source.** This is the step the tooling exists to make possible, not to replace. `label-deck.py` misread three things on its first run (section 13, M21), and the parser here has met a handful of layouts, not all of them.
+
+   *Half of this step is now mechanical, and it is the half a person is worst at.* The capture from 12.11 is a second reading of the same panel, so `check-catalogue.py` compares the two and fails on any disagreement in protein, fat, fibre, moisture, ash or calories. **This is the only check in the project that catches a wrong number that looks right**: 45% protein where the label says 54% sits comfortably inside the plausible band, produces a believable score, and reads as perfectly ordinary in a diff. It is not the bands by another name. The bands ask whether a label can be true; this asks whether the entry says what the label said.
+
+   *What is left for a person is what the machine cannot see.* Whether the ingredient list is this product's and in printed order, whether the name and pack size match the bag, whether the AAFCO sentence means what the two derived fields claim, and whether the barcode belongs to this product at all. The gate cannot check any of those, and the last one is the error that cannot be recovered from.
 5. **Write it.** Add `--write`. The entry goes into `assets/data/catalogue.json` and `check-catalogue.py` runs immediately; if the gate refuses, the file is restored and nothing is left behind.
 6. **Verify what the visitor sees.** Load `/product/?barcode=<code>` and read the score, the reasoning, the provenance box and the confidence line. A gate checks the shape of an entry; only the page shows whether it says something true.
 
@@ -701,7 +705,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M21a: The additive pill that could never wrap | 2026-09-08 | Complete |
 | M22: The product library, and a coverage number | 2026-09-09 | Complete. The number is 0%, see 12.9 |
 | M25: Curated products become discoverable | 2026-09-08 | Complete |
-| M23: Dr. Elsey’s | | **In progress.** Unblocked 2026-09-09, 1 of 19 food SKUs transcribed |
+| M23: Dr. Elsey’s | | **In progress.** 4 of 19 food SKUs transcribed, batch 1 of 2026-09-09 |
 | M24: Premix groups | 2026-09-09 | Complete |
 | M24a: Canonical tags | 2026-09-09 | Complete |
 | M24b: The wait before the first API request | 2026-09-09 | Complete. Reopened the same day it was closed, once it was measured rather than assumed |
@@ -942,7 +946,7 @@ now reports the same call the engine made, and a test pins it.
 | - | ~~M24b: the wait before the first API request~~ | **Shipped 2026-09-09.** 2271ms to 1361ms |
 | - | ~~M22, finishing it: a coverage number~~ | **Shipped 2026-09-09.** The number is 0%, see 12.9, and what to do about it is the decision below |
 | - | ~~M27a: the transcription process~~ | **Shipped 2026-09-09.** Section 12.10. It is listed here because M23, M12 and M27b are all this procedure repeated, and it was unwritten until the day it blocked three milestones at once |
-| 1 | **M23: the rest of Dr. Elsey's** | Unblocked 2026-09-09 and started: one product in, about 19 food SKUs on the manufacturer's sitemap. The test case for the process, in batches of five |
+| 1 | **M23: the rest of Dr. Elsey's** | 4 of 19 in after batch 1 on 2026-09-09. The test case for the process, in batches of five, and the milestone that keeps finding the barcode resolver's limits |
 | 2 | **M27b: the top 100, transcribed** | Ordered here by the project owner on 2026-09-09, ahead of the beta. Batches of five, each one a checkpoint with the gates, a commit and a re-measured coverage number, so section 12.9 moves visibly rather than in one unverifiable jump |
 | 3 | **M12: public beta** | Deferred 2026-09-09 rather than decided. It launches when the coverage number is one the owner is willing to publish, which is what M23 and M27b exist to produce |
 | 4 | **M27c: contributions through GitHub issues** | After the beta. A database other people can add to is worth building once there is a database worth adding to |
@@ -1010,7 +1014,13 @@ The list is computed by reading the imports out of the module sources, never wri
 
 *Unblocked 2026-09-09, by reading "published" less narrowly.* Aggregators hold the UPC even when the manufacturer does not print it: UPCitemdb returns `000338026604` for cleanprotein Chicken Recipe Kibble 6.6lb, under a title a person can check the product against. That is evidence rather than a manufacturer statement, so section 12.10 has a person choose from candidates and never lets a tool pick. The same route serves M27b, since the top-100 rows carry names and no barcodes either.
 
-*Where it stands.* One product transcribed, verified against the printed panel, and scoring 90: 59% crude protein, 67% on a dry-matter basis, no flagged additives, supplemental taurine declared, penalised for being dry. The manufacturer's sitemap lists about 19 food SKUs, which is four batches of five. The panels are identical in structure across the range, so the remaining work is volume rather than discovery.
+*Where it stands.* Four transcribed after batch 1 on 2026-09-09: chicken, salmon, turkey, and duck and chicken. Every figure on all four agrees with its captured panel, checked by the gate rather than by eye. The sitemap lists 19 food SKUs, six kibbles, three pouches and ten pates, plus six treats which are not food and are not in scope. The panels are identical in structure across the range, so the transcription is volume rather than discovery.
+
+*The remaining work is not transcription, it is barcodes.* Batch 1 was five products and landed three. Pork and rabbit-and-chicken parsed perfectly and cannot be written, because the catalogue is keyed by barcode and no barcode for either could be found. Dr. Elsey's publishes no UPC in its markup, checked directly: no `gtin`, no `sku`, no `upc` anywhere on the page. So every remaining SKU depends on an aggregator having a row for it, and some do not.
+
+*Two things batch 1 taught about the resolver, both worth knowing before the top 100.* A query that names the pack type returns nothing: "Dr. Elsey's cleanprotein duck chicken kibble cat food" 404s where "Dr. Elsey's cleanprotein duck" returns two rows. Brand, line and flavour, and no more. And the trial endpoint rate-limits hard, around three to five queries before 429s, which makes a lookup a scarce resource rather than a free one. A batch of five costs five queries at best, and the top 100 costs at least a hundred. **That is the constraint M27b runs into, and it is not solved by transcribing faster.**
+
+*The pattern in the codes, and why it is not being used.* The four resolved dry 6.6lb bags are chicken 000338026604, salmon 000338016605, turkey 000338036603 and duck 000338056601, which is one barcode family with a flavour digit and a check digit. Pork's and rabbit's codes almost certainly sit in it. **Nothing will be inferred from that pattern.** A guessed barcode is the one error section 12.10 calls unrecoverable: it does not look wrong anywhere, it attaches one product's panel to another product's scan, and no gate can catch it, because both halves are individually valid. A product with no published code stays out of the catalogue.
 
 *What the first product cost, which was not transcription time.* It broke a gate and exposed a false sentence on the product page, both recorded in 12.10. That is the argument for a test case: the first product of a new kind is where the site finds out what it had assumed, and finding it on one product is cheap.
 
