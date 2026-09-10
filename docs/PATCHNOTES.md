@@ -21,6 +21,29 @@ punctuation rather than content.
 
 ---
 
+## [0.40.0] - 2026-09-10
+
+**A dropped connection walked the crawler through 354 pages in seconds, recorded nothing, and
+exited 0 with a summary that read like a real result.**
+
+Fixed
+* **`tools/purina-index.py` now stops after eight consecutive page-load failures** and returns a
+  non-zero status saying the run did not finish. The first full deck run met a network drop partway
+  through, and because each failure was caught and skipped individually it worked through every
+  remaining product in seconds, learned nothing from any of them, and printed "45 of 456 read pages
+  carried exactly one deck". That is indistinguishable from a genuine low yield. **A run that cannot
+  tell "this page has no deck" from "there is no network" reports damage as data**, and the fix is
+  for the tool to know the difference rather than for a person to notice afterwards.
+* **The work queue was keyed off a missing deck URL, so the 57 products that genuinely have no deck
+  would have been re-read on every future run**, forever, and never recorded as answered. It now
+  keys off whether the page was read at all. A page with no deck is an answer.
+
+Notes
+* The network drop also interrupted `tools/resolve-barcodes.py`, which handled it correctly: it
+  saved the seven rows it had, slept, and carried on. That tool was built to be resumable and this
+  is the first unplanned test of it.
+* No site code changed, so no gate behaviour changed.
+
 ## [0.39.0] - 2026-09-10
 
 **The crawler runs headless after all. `[0.38.0]`, published an hour ago, said it could not, and

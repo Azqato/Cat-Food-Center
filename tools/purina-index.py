@@ -76,6 +76,14 @@ MAX_PAGES = 60
 # already known, and "nothing new" ended the category before it began. A page
 # that adds nothing is normal; several in a row means the listing is repeating.
 STALE_PAGES = 4
+# How many page loads may fail in a row before a run gives up. A single failure
+# is a page; a run of them is the network, and there is nothing to be learned
+# by asking 354 more times. This is not caution: the first deck run met a
+# dropped connection, worked through the entire remaining list in seconds
+# recording nothing, and exited 0 with a summary that read like a real and
+# disappointing result. A run that cannot tell "no deck on this page" from
+# "no network" reports damage as data.
+CONSECUTIVE_FAILURES = 8
 # Politeness. Nothing here is urgent and the whole crawl is a few minutes
 # either way, so there is no reason to lean on somebody else's server.
 PAUSE = 2.0
@@ -229,7 +237,12 @@ def decks(limit):
 
     data = load()
     products = data.get('products') or {}
-    todo = [slug for slug in sorted(products) if not products[slug].get('deck')]
+    # Read once, not forever. A page that carries no deck has been answered,
+    # and 'deckCount' is what records that it was asked: keying the work off a
+    # missing deck URL instead would put the 57 products that genuinely have
+    # none back in the queue on every single run.
+    todo = [slug for slug in sorted(products)
+            if products[slug].get('deckCount') is None]
     if limit:
         todo = todo[:limit]
     if not todo:
@@ -238,6 +251,8 @@ def decks(limit):
     print('%d product page(s) to read, about %.0f minutes.'
           % (len(todo), len(todo) * (PAUSE + SETTLE / 1000.0) / 60.0))
     found = 0
+    failures = 0
+    aborted = False
     with sync_playwright() as playwright:
         engine, context = browser(playwright)
         page = context.new_page()
@@ -248,8 +263,18 @@ def decks(limit):
                 settle(page)
                 html = page.content()
             except Exception as err:
+                failures += 1
                 print('  %-52s ERR %s' % (slug[-52:], str(err)[:50]))
+                if failures >= CONSECUTIVE_FAILURES:
+                    print('')
+                    print('%d page loads failed in a row, which is the network rather than '
+                          'the pages. Stopping.' % failures)
+                    print('Nothing is lost: what was read is saved, and a rerun picks up '
+                          'the rest.')
+                    aborted = True
+                    break
                 continue
+            failures = 0
             hits = sorted(set(DECK.findall(html)))
             # More than one deck on a page would mean the page covers more
             # than one product, and choosing between them is not this tool's
@@ -263,6 +288,9 @@ def decks(limit):
         engine.close()
     print('')
     print('%d of %d read pages carried exactly one deck.' % (found, len(todo)))
+    if aborted:
+        print('THIS RUN DID NOT FINISH. The number above counts only what it reached.')
+        return 2
     return 0
 
 
