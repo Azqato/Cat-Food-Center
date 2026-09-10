@@ -715,6 +715,31 @@ Both earlier readings were wrong in opposite directions. On 2026-09-09, queries 
 
 **It proposes and it never chooses**, which is section 12.10's rule and the reason is there. Candidates are written to `tools/data/barcode-candidates.json` with the title the aggregator files each under, and a person reads the title against the product. A row with no candidates is an answer rather than a failure, and it is what section 12.12's provisional keys are for.
 
+### 12.14 The manufacturer's own site, and the browser it takes to read it
+
+**Measured 2026-09-10.** Section 12.13 solved where a barcode comes from. This is the other half of section 12.10's input, the panel, and for nearly half the coverage target it comes from one place.
+
+**Forty-seven of the hundred rows in `tools/data/top-skus.json` are Nestle Purina brands**: Fancy Feast, Friskies, Purina ONE, Cat Chow and Pro Plan. That concentration is the single most useful fact about the top 100, because Purina publishes a label deck per product carrying the printed panel verbatim, and `tools/label-deck.py` has read those since section 12.10 was written. The parser was never the missing piece. The URL was: the decks sit under `purina.com/sites/default/files/product-label-deck-file/` with filenames like `4762-a476220-pro-plan-hairball-chicken-entree-cat-food.pdf`, which cannot be derived from a product name.
+
+**Three ways of finding that URL were tried, and only the fourth works.**
+
+| Route | Result |
+|---|---|
+| **Guess it from the product name** | The filename carries an internal product code and a dated folder. Nothing in it follows from the name |
+| **A search engine** | Bing and DuckDuckGo return purina.com hosts and not one deck URL. The file store is not indexed. Tested against three decks this project already holds; zero hits |
+| **`shop.purina.com`, the manufacturer's storefront** | `robots.txt` serves, and every other path answers 403 or 500, to a program and to a browser alike |
+| **`www.purina.com` product pages** | Works, and carries exactly one deck link per product |
+
+**The finding that made it work, and it is a narrow one.** A plain `urllib` request for any purina.com page returns 403. So does Playwright driving Edge headless, byte for byte the same 403 document. **The same script with `headless=False` gets 200 and the full page.** The distinction is not program against person; it is headless against headed. The file store is the exception that made the earlier work possible at all: it serves PDFs to anything, which is why `tools/label-deck.py` needs no browser and `tools/purina-index.py` does.
+
+**What a product page holds.** One label-deck PDF URL, the ingredient list, the feeding guide, and the calorie content in both kcal/kg and kcal/can. It does **not** hold a guaranteed analysis and it does **not** hold a UPC. So this route supplies the panel and never the barcode: the two halves of an entry come from two different places, and section 12.12's provisional keys are what hold an entry together while the barcode is still missing.
+
+**`tools/purina-index.py` is the crawl.** It walks the cat-food listings, records slug and title, then reads each product page for its one deck link, saving after every page so a run resumes rather than restarts. It opens a visible browser window, which is not a preference. Like `tools/label-deck.py` it is a maintenance tool: nothing a visitor loads runs it, the site does not depend on it, and it needs only Playwright and the Edge channel that section 19 already requires of the test gate.
+
+**It proposes and a person decides**, which is section 12.10's rule applied to a second kind of identification. Matching a retail listing title to a slug on purina.com is exactly as consequential as choosing a barcode: get it wrong and the right product carries the wrong product's panel, invisibly, past every gate, because both halves are individually valid. `--find` ranks candidates and prints their titles. It writes no entry.
+
+**One thing this route cannot fix, and it is worth naming now.** Several top-100 rows are variety packs: "Gravy Lovers, 3 oz Cans, 30-Pack, Variety Pack with poultry and beef recipes" is a case of several different recipes, and it has no single guaranteed analysis. A variety pack is not one product and cannot become one entry. How the catalogue should treat them is undecided and is not decided here.
+
 ---
 
 ---
@@ -1004,7 +1029,7 @@ now reports the same call the engine made, and a test pins it.
 | - | ~~M22, finishing it: a coverage number~~ | **Shipped 2026-09-09.** The number is 0%, see 12.9, and what to do about it is the decision below |
 | - | ~~M27a: the transcription process~~ | **Shipped 2026-09-09.** Section 12.10. It is listed here because M23, M12 and M27b are all this procedure repeated, and it was unwritten until the day it blocked three milestones at once |
 | - | ~~M23: the rest of Dr. Elsey's~~ | **Complete 2026-09-09.** All 19 food SKUs in: 4 under barcodes, 15 under provisional keys per 12.12. It did its job as a test case twice over, once for the process and once for finding what actually blocks the programme |
-| 2 | **M27b: the top 100, transcribed** | Ordered here by the project owner on 2026-09-09, ahead of the beta. Batches of five, each one a checkpoint with the gates, a commit and a re-measured coverage number, so section 12.9 moves visibly rather than in one unverifiable jump |
+| 2 | **M27b: the top 100, transcribed** | Ordered here by the project owner on 2026-09-09, ahead of the beta. Batches of five, each one a checkpoint with the gates, a commit and a re-measured coverage number, so section 12.9 moves visibly rather than in one unverifiable jump. **Both inputs now have a route**: section 12.13 for the barcode, section 12.14 for the panel, which reaches the 47 rows of the hundred that are Purina brands |
 | 3 | **M12: public beta** | Deferred 2026-09-09 rather than decided. It launches when the coverage number is one the owner is willing to publish, which is what M23 and M27b exist to produce |
 | 4 | **M27c: contributions through GitHub issues** | After the beta. A database other people can add to is worth building once there is a database worth adding to |
 

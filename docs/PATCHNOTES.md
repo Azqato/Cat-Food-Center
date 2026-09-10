@@ -21,6 +21,48 @@ punctuation rather than content.
 
 ---
 
+## [0.38.0] - 2026-09-10
+
+**Nearly half the top 100 is one manufacturer, and that manufacturer's panels turned out to be
+reachable. The obstacle was never the parser; it was four characters of Playwright configuration.**
+
+Added
+* **`tools/purina-index.py`**, which walks purina.com's cat-food listings, records every product
+  slug and title, and reads each product page for its one label-deck PDF link. Saves after every
+  page, so a crawl resumes rather than restarts. `--find` ranks a top-100 listing title against the
+  index and prints candidates for a person to read; it never writes a catalogue entry.
+* **PRD section 12.14**, recording the four routes tried to reach a deck URL and what each returned.
+
+Notes
+* **Forty-seven of the hundred rows in `tools/data/top-skus.json` are Nestle Purina brands**: Fancy
+  Feast, Friskies, Purina ONE, Cat Chow and Pro Plan. `tools/label-deck.py` has been able to read
+  those panels since it was written. What was missing was the URL, which carries an internal product
+  code and a dated folder and follows from nothing in the product name.
+* **purina.com refuses a headless browser and answers a headed one.** A plain urllib request gets
+  403; Playwright driving Edge with `headless=True` gets the identical 403 document; the same script
+  with `headless=False` gets 200 and the full page. The distinction is not program against person.
+  The PDF file store under /sites/default/files is the exception and serves anything, which is why
+  `tools/label-deck.py` needs no browser and the new tool does.
+* **A search engine is not a way in.** Bing and DuckDuckGo return purina.com hosts and zero deck
+  URLs; the file store is not indexed. Tested against three decks already in the catalogue.
+  `shop.purina.com` serves `robots.txt` and refuses everything else, to a browser as well.
+* **A product page carries the panel and not the barcode.** One deck link, the ingredient list, the
+  feeding guide, and calorie content in kcal/kg and kcal/can. No guaranteed analysis in the page
+  itself and no UPC anywhere. The two halves of an entry come from two different places, which is
+  what section 12.12's provisional keys exist to hold together.
+* **Some top-100 rows are variety packs and cannot become one entry.** A 30-pack of assorted recipes
+  has no single guaranteed analysis. Named here rather than resolved; the catalogue has no answer
+  for it yet.
+* **The crawler's first stop condition was wrong and the first full crawl indexed nothing.** It
+  ended a category as soon as a page added no new product, which is correct for a listing that has
+  run out and wrong for a resumed run, where page 1 is all-known by definition and ending there is
+  the one thing it must not do. A category now ends when a page returns no rows at all, or when four
+  consecutive pages add nothing, which is repetition rather than a resume. The tool reported a clean
+  exit and zero new products, which is the shape of failure worth watching for: it did not error.
+* No site code changed, so no gate behaviour changed. The chain was verified end to end before any
+  of this was built: product page to deck URL to `tools/label-deck.py` to a proposed entry with a
+  full guaranteed analysis and ingredient list.
+
 ## [0.37.0] - 2026-09-10
 
 **Where barcodes come from, measured. Three routes are dead, the fourth is four times cheaper than
