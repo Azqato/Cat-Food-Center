@@ -689,6 +689,36 @@ The shape is `CFC-<host>-<product slug>`, built from the manufacturer's own host
 
 ---
 
+### 12.13 Where barcodes come from
+
+**Decided 2026-09-09 by the project owner, then measured on 2026-09-10, and the measurement changed the answer.**
+
+The catalogue needs a barcode per product and no storefront publishes one. Four routes were tried.
+
+| Route | Result |
+|---|---|
+| **Retailer specification pages** | The owner's choice, and it does not work. Chewy answers 429, Petco 403, PetSmart 404. Walmart and Target answer 200 and return a JavaScript shell: no UPC in the markup at all, for a search or a product |
+| **A general web search for the product name** | No UPCs in the results. Tested against three products whose barcodes this project already knows, on two engines, and not one of the six attempts found the right code. One returned an unrelated 12-digit number, which is worse than nothing |
+| **The coverage matcher's own suggestions** | `tools/data/coverage.json` carries a `match.barcode` for every row and **it must never be used as a barcode source.** It is a name-similarity guess: it offers `0052742012490` as the match for three different Hill's products and `0050000428243` for three different Fancy Feast products. It answers "which record is nearest", not "which product is this" |
+| **UPCitemdb, the aggregator already in use** | The only one that works. It resolved four of four Dr. Elsey's kibbles when asked properly, and its limit is pacing rather than capability |
+
+**The retailer route was the owner's decision and it was a reasonable one; it simply failed on contact.** Storefronts that publish a UPC beside a pack size would have fixed the exact failure batch 2 hit, which is why it was chosen. They will not serve the page.
+
+**What the aggregator actually allows, measured rather than inferred.** Two meters, reported on different responses, which is what made this confusing enough to get wrong twice.
+
+* **20 requests per hour**, reported only on a refusal, as `X-RateLimit-Limit: 20` with `Retry-After` counting out the rest of the hour.
+* **100 requests per day**, reported on every success, as `X-RateLimit-Limit: 100` with `X-RateLimit-Remaining` counting down.
+
+Both earlier readings were wrong in opposite directions. On 2026-09-09, queries 7 and 12 seconds apart drew 429s and the conclusion recorded was three to five a day. On 2026-09-10, eight queries 22 seconds apart all succeeded and the conclusion drawn was 100 a day at any spacing; those eight were the tail of an hourly window with room in it, and the twenty-first query of that hour was refused at any gap. **The truth is 20 an hour, so the top 100 is about five hours unattended.**
+
+**`tools/resolve-barcodes.py` is that, paced.** One query every 185 seconds, which spreads the hourly allowance evenly and never trips the window; a save after every single query, so a run stops and resumes anywhere; the full `Retry-After` slept out if it is throttled anyway, because retrying sooner is how a rate limit becomes a ban; and a floor of five queries left in the day, so a run never spends the last of an allowance somebody else may need.
+
+**It proposes and it never chooses**, which is section 12.10's rule and the reason is there. Candidates are written to `tools/data/barcode-candidates.json` with the title the aggregator files each under, and a person reads the title against the product. A row with no candidates is an answer rather than a failure, and it is what section 12.12's provisional keys are for.
+
+---
+
+---
+
 ## 13. Roadmap
 
 ### Current phase
@@ -1049,11 +1079,13 @@ The list is computed by reading the imports out of the module sources, never wri
 
 *Why that is disqualifying rather than a detail.* Section 12.10 accepts an aggregator's barcode on one condition: it arrives with a title a person can check the product against. That is the whole safeguard. Here the check was run and the title failed it. The listing may be a retailer's sloppy transcription of a 5.3 oz can, or it may be a genuine 5.5 oz can from an older formulation with a different panel, and **the two possibilities are indistinguishable from here and have opposite consequences.** Writing the entry would attach this panel to a can that may never have carried it, and no gate downstream could tell. The rule is not "accept a barcode unless it looks wrong". It is "accept a barcode that checks out", and these do not.
 
-*Two things batch 1 taught about the resolver, both worth knowing before the top 100.* A query that names the pack type returns nothing: "Dr. Elsey's cleanprotein duck chicken kibble cat food" 404s where "Dr. Elsey's cleanprotein duck" returns two rows. Brand, line and flavour, and no more. And the trial endpoint rate-limits hard, around three to five queries before 429s, which makes a lookup a scarce resource rather than a free one. A batch of five costs five queries at best, and the top 100 costs at least a hundred. **That is the constraint M27b runs into, and it is not solved by transcribing faster.**
+*Two things batch 1 taught about the resolver.* A query that names the pack type returns nothing: "Dr. Elsey's cleanprotein duck chicken kibble cat food" 404s where "Dr. Elsey's cleanprotein duck" returns two rows. Brand, line and flavour, and no more. And the trial endpoint rate-limits hard.
+
+*How hard was measured on 2026-09-10, and it is not what this section said on 2026-09-09.* The claim here was "around three to five queries before 429s", which made a lookup scarce, made the top 100 look like twenty days, and made the barcode problem look structural. **That reading was wrong, and section 12.13 has the measurement.** The endpoint allows 20 an hour and 100 a day. Three to five was what a burst looked like from inside a window that was already nearly spent. The correction does not change what batch 2 refused, which failed on evidence rather than on quota, but it does change what M27b costs.
 
 **What M23 actually proved, which is not what it was scheduled to prove.** It was queued as the test case for the transcription process, on the reasoning that the panels are uniform and the work is volume. That reasoning held: 15 of 19 panels parse cleanly on the first attempt, wet and dry, and the four entries written agree with their captures on every figure. **The transcription is solved. The barcode is not, and it is the harder half by a wide margin.** Four SKUs are in. Two have no listing at all, five have listings that fail their own check, and the remaining eight have not been looked up because the resolver rations queries. A milestone that ends at 4 of 19 with every panel readable is not a milestone that ran out of time; it is one that found a different problem than the one it was sent to find.
 
-*What this means for M27b, before it starts.* The top 100 is the same procedure at twenty times the scale, and the top-100 rows carry names and no barcodes by construction, which `tools/data/top-skus.json` says in its own header. So M27b needs at least a hundred successful resolutions from a source that rations queries to a handful and has already returned nothing, or something wrong, for seven of the twelve products asked of it. **Transcribing faster does not touch this.** The next decision on the roadmap is a barcode source, and until there is one, the coverage number in 12.9 cannot move much whatever else is built. That decision belongs to the project owner and is not taken here.
+*What this means for M27b.* The top 100 is the same procedure at twenty times the scale, and the top-100 rows carry names and no barcodes by construction, which `tools/data/top-skus.json` says in its own header. So M27b needs a hundred resolutions. **On 2026-09-10 that was measured at about five hours unattended rather than the twenty days this section implied**, and `tools/resolve-barcodes.py` is the tool that spends them. It is still the slowest part of the programme and it is no longer the thing that blocks it.
 
 *The pattern in the codes, and why it is not being used.* The four resolved dry 6.6lb bags are chicken 000338026604, salmon 000338016605, turkey 000338036603 and duck 000338056601, which is one barcode family with a flavour digit and a check digit. Pork's and rabbit's codes almost certainly sit in it. **Nothing will be inferred from that pattern.** A guessed barcode is the one error section 12.10 calls unrecoverable: it does not look wrong anywhere, it attaches one product's panel to another product's scan, and no gate can catch it, because both halves are individually valid. A product with no published code stays out of the catalogue.
 

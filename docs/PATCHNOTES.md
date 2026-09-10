@@ -21,6 +21,46 @@ punctuation rather than content.
 
 ---
 
+## [0.37.0] - 2026-09-10
+
+**Where barcodes come from, measured. Three routes are dead, the fourth is four times cheaper than
+this changelog said yesterday.**
+
+Added
+* **`tools/resolve-barcodes.py`**, which asks the aggregator for a barcode for each top-100 SKU and
+  never chooses one. Candidates go to `tools/data/barcode-candidates.json` with the title each is
+  filed under, for a person to read against the product. A row with no candidates is an answer, not
+  a failure, and it is what provisional keys are for.
+* **PRD section 12.13**, recording all four routes tried and what each returned.
+
+Fixed
+* **`[0.35.0]` said the trial endpoint "429s after about three to five queries" and that the top 100
+  therefore needed a source that did not exist. That reading was wrong.** Entries are not rewritten,
+  so the correction is here. Measured on 2026-09-10: **20 requests per hour and 100 per day.** Three
+  to five was what a burst looked like from inside an hourly window that was already nearly spent.
+  The top 100 is about five hours unattended, not twenty days, and the barcode problem is pacing
+  rather than structure. The roadmap had been reshaped around the wrong number.
+* **A second wrong reading, caught the same hour.** Eight queries 22 seconds apart all succeeded and
+  the conclusion drawn was 100 a day at any spacing. Those eight were the tail of a window with room
+  in it; the twenty-first query of that hour was refused at any gap. The endpoint reports the hourly
+  meter only when refusing and the daily meter only when answering, which is what made this easy to
+  get wrong twice in opposite directions.
+
+Notes
+* **The retailer specification pages the owner chose on 2026-09-09 do not work.** Chewy answers 429,
+  Petco 403, PetSmart 404, and Walmart and Target answer 200 with a JavaScript shell carrying no UPC
+  in the markup. It was a reasonable choice, since a UPC printed beside a pack size is exactly what
+  batch 2 needed, and it failed on contact rather than on reasoning.
+* **A general web search does not carry UPCs.** Tested against three products whose barcodes this
+  project already holds, on two engines: none of the six attempts found the right code, and one
+  returned an unrelated 12-digit number, which is worse than nothing.
+* **`coverage.json`'s `match.barcode` must never be used as a barcode source.** It is a
+  name-similarity guess and it offers one Hill's code for three different Hill's products, and one
+  Fancy Feast code for three different Fancy Feast products. It answers which record is nearest, not
+  which product this is.
+* No site code changed, so no gates were affected. The meter handling is unit-checked: a spent hour
+  must not read as a spent day, which is the bug that would stop a run with 80 queries left.
+
 ## [0.36.0] - 2026-09-09
 
 **An entry may now exist before its barcode does, and M23 finishes: all 19 Dr. Elsey's food SKUs
