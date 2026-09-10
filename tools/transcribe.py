@@ -156,7 +156,12 @@ def find_kcal(flat):
     curated figure is a published figure, and a kcal/kg computed from the
     guaranteed analysis is a calculation this project would be inventing.
     """
-    match = re.search(r'([\d,]{3,6})\s*(?:kcal|calories)\s*(?:ME\s*)?(?:/|per\s*)\s*kg',
+    # The decimal point is not optional decoration. Every dry panel in this
+    # range prints "3,953 kcal/kg" and every wet one prints "1,245.0 kcal/kg",
+    # and a pattern that stopped at the comma group matched the first and
+    # silently dropped the second: five wet products parsed with no calorie
+    # figure at all, which reads exactly like a label that does not state one.
+    match = re.search(r'([\d,]+(?:\.\d+)?)\s*(?:kcal|calories)\s*(?:ME\s*)?(?:/|per\s*)\s*kg',
                       flat, re.I)
     return float(match.group(1).replace(',', '')) if match else None
 

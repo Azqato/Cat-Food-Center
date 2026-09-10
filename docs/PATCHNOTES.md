@@ -21,6 +21,41 @@ punctuation rather than content.
 
 ---
 
+## [0.35.0] - 2026-09-09
+
+**M23 batch 2 was refused in full, and the milestone stalls at 4 of 19. Not on transcription: on
+barcodes.**
+
+Notes
+* **Five pates parsed cleanly and none was written.** Their barcodes were already in hand from batch
+  1's lookups, so the batch cost no quota. Every aggregator listing describes a 5.5 oz can, and Dr.
+  Elsey's own pages name 2.75 oz and 5.3 oz. A 5.5 oz can is not a size this manufacturer appears to
+  sell.
+* **That is disqualifying, not a detail.** Section 12.10 accepts an aggregator's barcode on one
+  condition: a title a person can check the product against. The check was run and the title failed
+  it. The listing may be a retailer mistyping 5.3, or a real 5.5 oz can from an older formulation
+  with a different panel, and the two are indistinguishable from here with opposite consequences.
+* **M23 proved something other than what it was queued to prove.** It was the test case for the
+  transcription process, and the process passed: 15 of 19 panels parse cleanly, wet and dry, and all
+  four written entries agree with their captures on every figure. The barcode is the unsolved half,
+  and it is the harder one. Two SKUs have no listing, five have listings that fail their own check,
+  eight are unlooked-up because the resolver rations queries.
+* **This lands on M27b before it starts.** The top 100 is the same procedure at twenty times the
+  scale, against rows that carry no barcodes by construction. It needs a hundred good resolutions
+  from a source that has returned nothing, or something wrong, for seven of the twelve products
+  asked of it so far. Recorded in section 13 as the next decision on the roadmap, which belongs to
+  the project owner.
+
+Fixed
+* **`find_kcal` met a decimal point and refused it.** Dry panels print "3,953 kcal/kg" and wet ones
+  print "1,245.0 kcal/kg"; the pattern stopped at the comma group, so every wet product parsed with
+  no calorie figure at all, which reads exactly like a label that does not state one. Found because
+  five wet panels arrived at once. Dry figures are unchanged.
+
+Notes
+* **The wet pages carry no AAFCO statement**, checked directly: the word does not appear. So
+  `aafcoComplete` and `lifeStage` are absent from those proposals, correctly, rather than missed.
+
 ## [0.34.0] - 2026-09-09
 
 **M23 batch 1: three more Dr. Elsey's kibbles, and the gate now catches a wrong number that looks
