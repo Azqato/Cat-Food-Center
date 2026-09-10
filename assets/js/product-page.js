@@ -12,6 +12,7 @@
    ========================================================================== */
 import { SITE } from './site.js';
 import { fetchProduct } from './opff.js';
+import { isProvisional } from './catalogue.js';
 import { scoreProduct, loadKnowledgeBase, toDryMatter, explainIngredient } from './scoring.js';
 import { recordView } from './history.js';
 
@@ -389,7 +390,9 @@ function renderMeta(product) {
   return `<div class="border-t border-hairline pt-4" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
     <div style="display:flex;align-items:center;gap:6px">${glyph}<span class="text-micro text-ink-soft">${completeness}</span></div>
     ${product.lastModified ? `<span class="text-micro text-ink-soft">Record updated: ${esc(product.lastModified)}</span>` : ''}
-    <span class="text-micro text-ink-soft">Barcode: ${esc(product.barcode)}</span>
+    ${isProvisional(product.barcode)
+      ? `<span class="text-micro text-ink-soft">No published barcode, so this product cannot be scanned yet</span>`
+      : `<span class="text-micro text-ink-soft">Barcode: ${esc(product.barcode)}</span>`}
   </div>
   <p style="margin:12px 0 0">${source}</p>`;
 }

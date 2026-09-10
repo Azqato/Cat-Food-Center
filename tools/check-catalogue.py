@@ -46,6 +46,17 @@ META_FIELDS = {'barcode', 'source', 'sourceKind', 'checked', 'note'}
 MODIFIER_FIELDS = {'ingredientsLang'}
 SOURCE_KINDS = {'manufacturer', 'retailer-listing'}
 
+# Mirrors PROVISIONAL_KEY in assets/js/catalogue.js. An entry may be filed
+# under one of these while its panel is published and its barcode is not.
+#
+# It can never be all digits, and that is the safety property rather than a
+# naming convention: every 6 to 14 digit string is somebody's real barcode, so
+# a numeric placeholder could be scanned into by a visitor holding an unrelated
+# product, who would be shown this product's score with nothing indicating a
+# mistake. A scanner emits digits only, so a key with letters in it cannot be
+# produced by one.
+PROVISIONAL = re.compile(r'^CFC-[a-z0-9]+(?:-[a-z0-9]+)+$')
+
 # The same plausibility gate the normaliser applies to upstream figures
 # (PRD 12.5 item 2). Ours are not exempt: a transcription error is as wrong as
 # a data-entry error, and being ours does not make it truer.
@@ -104,8 +115,19 @@ def check(entry, key, problems):
 
     if entry.get('barcode') != key:
         bad('barcode field %r does not match its key' % entry.get('barcode'))
-    if not re.match(r'^\d{6,14}$', str(key)):
-        bad('key is not a 6 to 14 digit barcode')
+    if not re.match(r'^\d{6,14}$', str(key)) and not PROVISIONAL.match(str(key)):
+        bad('key is neither a 6 to 14 digit barcode nor a provisional CFC-... key')
+
+    if PROVISIONAL.match(str(key)):
+        # The point of a provisional key is that it is temporary, and the thing
+        # that makes a temporary key permanent is nobody being able to see why
+        # it was needed. So the entry has to say.
+        if 'note' not in entry or 'barcode' not in (entry.get('note') or '').lower():
+            bad('a provisional key needs a note saying what was searched and what '
+                'came back, or it will still be here in a year')
+        if entry.get('sourceKind') != 'manufacturer':
+            bad('a provisional key is only for a manufacturer panel. A retailer '
+                'listing that cannot be tied to a barcode is not evidence of a product')
 
     source = (entry.get('source') or '').strip()
     if not source:
@@ -297,6 +319,8 @@ def main():
     for key in sorted(products):
         check(products[key], key, problems)
 
+    provisional = sorted(k for k in products if PROVISIONAL.match(str(k)))
+
     panels = read_panels(problems)
     for key in sorted(panels):
         check_panel(panels[key], key, products.get(key), problems)
@@ -316,6 +340,14 @@ def main():
             print('  %-14s panel captured, %d characters%s' % (
                 '', len(panel.get('text') or ''),
                 ', %d figures' % len(panel['analysis']) if panel.get('analysis') else ''))
+
+    if provisional:
+        print('')
+        print('  %d entr%s awaiting a real barcode. Each is searchable and scorable,'
+              % (len(provisional), 'y' if len(provisional) == 1 else 'ies'))
+        print('  and none of them can be scanned. See PRD section 12.12.')
+        for key in provisional:
+            print('    %-46s %s' % (key, (products[key].get('name') or '')[:30]))
 
     print('')
     if problems:

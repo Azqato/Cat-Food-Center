@@ -5,7 +5,7 @@
  * manufacturer panel outranks the database. It is the rule most likely to be
  * "simplified" later by somebody who reads the code without the reason. */
 import {
-  mergeCurated, applyCurated, searchCatalogue, catalogueBrands,
+  mergeCurated, applyCurated, searchCatalogue, catalogueBrands, isProvisional, PROVISIONAL_KEY,
 } from './catalogue.js';
 import { suite } from './test-runner.js';
 
@@ -204,4 +204,47 @@ suite('catalogueBrands: a brand entered by hand is not noise', (t) => {
     'and flagged, so fetchBrands can exempt it from the minimum-product threshold '
     + 'that exists to hide the database long tail');
   t.equal(catalogueBrands(null).length, 0, 'no catalogue, no brands, no error');
+});
+
+suite('a provisional key is never something a scanner can produce', (t) => {
+  t.equal(isProvisional('CFC-drelseys-pork-recipe-kibble'), true, 'the shape the tools write');
+  t.equal(isProvisional('CFC-a-b'), true, 'two segments is enough');
+
+  // The whole safety property. Every string of 6 to 14 digits belongs to some
+  // real product, so a numeric placeholder could be scanned into by a visitor
+  // holding an unrelated tin, who would be shown this product's panel and this
+  // product's score with nothing anywhere saying otherwise. A scanner emits
+  // digits and only digits.
+  t.equal(isProvisional('000338026604'), false, 'a real barcode is not provisional');
+  t.equal(isProvisional('0000000000'), false, 'and neither is a placeholder made of digits');
+  t.equal(isProvisional('9999999999999'), false, 'however unlikely the digits look');
+  t.equal(PROVISIONAL_KEY.test('CFC-'), false, 'a bare prefix names no product');
+  t.equal(PROVISIONAL_KEY.test('CFC-Pork-Kibble'), false, 'capitals are refused, so one product has one key');
+  t.equal(PROVISIONAL_KEY.test('cfc-pork-kibble'), false, 'and the prefix is not optional');
+  t.equal(isProvisional(''), false, 'empty is not a key');
+  t.equal(isProvisional(null), false, 'and neither is nothing at all');
+});
+
+suite('a provisional entry is searchable, and merges like any other', (t) => {
+  const entry = {
+    barcode: 'CFC-drelseys-pork-recipe-kibble',
+    source: 'https://example.invalid/pork',
+    sourceKind: 'manufacturer',
+    checked: '2026-09-09',
+    name: 'cleanprotein Pork Recipe Kibble',
+    brand: "Dr. Elsey's",
+    crudeProteinPct: 57,
+    ingredientsText: 'Hydrolyzed Pork, Pork Plasma, Dried Chicken, Gelatin, Salt',
+    ingredientsLang: 'en',
+  };
+  const catalogue = { 'CFC-drelseys-pork-recipe-kibble': entry };
+
+  const found = searchCatalogue(catalogue, { query: 'pork' });
+  t.equal(found.length, 1, 'a visitor searching by name finds it');
+  t.equal(found[0].barcode, 'CFC-drelseys-pork-recipe-kibble', 'under its provisional key');
+
+  const merged = mergeCurated(null, entry);
+  t.equal(merged.curated.only, true,
+    'and the page still says the whole record is ours, because it is');
+  t.equal(merged.nutrition.crudeProteinPct, 57, 'the panel is merged as usual');
 });

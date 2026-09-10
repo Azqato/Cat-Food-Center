@@ -166,6 +166,27 @@ def find_kcal(flat):
     return float(match.group(1).replace(',', '')) if match else None
 
 
+def provisional_key(url):
+    """A key for a product whose panel is published and whose barcode is not.
+
+    Built from the manufacturer's host and the product's own slug, so it is
+    derived from the source rather than invented, reads as what it is, and
+    lands on the same string every time it is generated for the same product.
+
+    Never digits. Mirrors PROVISIONAL_KEY in assets/js/catalogue.js and the
+    reasoning is there: a numeric placeholder is somebody's real barcode, and a
+    scanner cannot emit letters.
+    """
+    parts = urllib.parse.urlparse(url)
+    host = re.sub(r'^www\.', '', parts.netloc.lower())
+    host = re.sub(r'\.[a-z.]+$', '', host)
+    slug = [bit for bit in parts.path.lower().split('/') if bit]
+    slug = slug[-1] if slug else 'product'
+    key = 'CFC-%s-%s' % (host, slug)
+    key = re.sub(r'[^a-z0-9-]+', '-', key[4:].lower())
+    return 'CFC-' + re.sub(r'-+', '-', key).strip('-')
+
+
 def resolve_barcode(query, limit=8):
     """Ask an aggregator what UPC this product carries. Never decide.
 
@@ -452,6 +473,20 @@ def write_panel(panel):
     io.open(path, 'w', encoding='utf-8', newline=chr(10)).write(
         json.dumps(panel, ensure_ascii=False, indent=1) + chr(10))
     return path
+
+
+def provisional_note(searched):
+    """Why this entry has no barcode, in the entry, where it cannot be lost.
+
+    check-catalogue.py refuses a provisional entry without one. A placeholder
+    becomes permanent when nobody can see why it was needed, and a note saying
+    what was searched and what came back is what lets somebody else pick the
+    search up later rather than starting it again.
+    """
+    return ('This entry has no barcode yet, so it is filed under a provisional key and cannot '
+            'be scanned. It is searchable and scorable, and every figure is read from the '
+            "manufacturer's published panel as usual. %s Replace the key with the real barcode "
+            'once one is found and checked against the pack size on the panel.' % searched)
 
 
 def write_entry(entry, panel=None):

@@ -30,7 +30,7 @@
    ========================================================================== */
 
 import {
-  loadCatalogue, mergeCurated, applyCurated, searchCatalogue, catalogueBrands,
+  loadCatalogue, mergeCurated, applyCurated, searchCatalogue, catalogueBrands, isProvisional,
 } from './catalogue.js';
 import { expandGroups } from './ingredients.js';
 
@@ -328,10 +328,27 @@ async function getJSON(url, signal) {
  */
 export async function fetchProduct(barcode, { signal } = {}) {
   const code = String(barcode || '').trim();
-  if (!/^\d{6,14}$/.test(code)) {
+  const provisional = isProvisional(code);
+  if (!provisional && !/^\d{6,14}$/.test(code)) {
     return { found: false, error: 'That does not look like a barcode.' };
   }
   if (cache.has(code)) return cache.get(code);
+
+  /* A provisional key means "this site holds a panel for this product and
+     nobody publishes its barcode". Open Pet Food Facts is keyed by barcode and
+     has never heard of this string, so asking it is a request that can only
+     fail, and one that would put an identifier of ours into somebody else's
+     logs for no purpose. The catalogue below is the whole answer. */
+  if (provisional) {
+    const catalogue = await loadCatalogue();
+    const entry = catalogue[code];
+    const merged = entry ? mergeCurated(null, entry) : null;
+    const answer = merged && merged.curated
+      ? { found: true, product: merged }
+      : { found: false };
+    cache.set(code, answer);
+    return answer;
+  }
 
   let result;
   try {

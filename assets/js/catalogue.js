@@ -57,6 +57,33 @@ export const DATA_FIELDS = [
    silence. Only a manufacturer entry outranks upstream data. */
 export const SOURCE_KINDS = ['manufacturer', 'retailer-listing'];
 
+/* A key for a product whose panel is published and whose barcode is not.
+
+   Transcription kept stalling on the same thing: the manufacturer prints the
+   full guaranteed analysis and no UPC, aggregators either have no row for the
+   product or have one that fails its own check, and the catalogue is keyed by
+   barcode, so a perfectly readable panel could not be recorded at all. Fifteen
+   Dr. Elsey's products sat in exactly that state.
+
+   So an entry may be filed under a provisional key until a real barcode is
+   found. The product becomes searchable and scorable; it does not become
+   scannable, and that is the entire safety property.
+
+   **The shape is not cosmetic.** A provisional key can never be all digits.
+   Every string of 6 to 14 digits is somebody's real barcode, so a numeric
+   placeholder could one day be scanned into by a visitor holding an unrelated
+   product, who would be shown this product's panel and this product's score
+   with nothing anywhere indicating a mistake. A scanner emits digits and only
+   digits, so a key with letters and hyphens in it cannot be produced by one.
+   The scan path is closed by construction rather than by a check somebody has
+   to remember to write. */
+export const PROVISIONAL_KEY = /^CFC-[a-z0-9]+(?:-[a-z0-9]+)+$/;
+
+/** @param {string} key @returns {boolean} */
+export function isProvisional(key) {
+  return PROVISIONAL_KEY.test(String(key || ''));
+}
+
 let pending = null;
 
 /**

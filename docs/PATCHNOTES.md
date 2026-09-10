@@ -21,6 +21,48 @@ punctuation rather than content.
 
 ---
 
+## [0.36.0] - 2026-09-09
+
+**An entry may now exist before its barcode does, and M23 finishes: all 19 Dr. Elsey's food SKUs
+are in.**
+
+Added
+* **Provisional keys, PRD section 12.12.** A product whose manufacturer publishes a complete panel
+  and no UPC can be recorded under a key like `CFC-drelseys-pork-recipe-kibble`. It becomes
+  searchable and scorable; it does not become scannable.
+* **The key can never be all digits, and that is the safety property.** Every 6 to 14 digit string
+  is somebody's real barcode, so a numeric placeholder could be scanned by a visitor holding an
+  unrelated tin, who would be shown this product's score with nothing indicating a mistake. A
+  scanner emits digits only, so a key with letters in it cannot be produced by one. **The scan path
+  is closed by construction rather than by a check somebody has to remember to write.** Locked by
+  tests that assert `0000000000` and `9999999999999` are not provisional keys.
+* **Fifteen entries, and M23 is complete at 19 of 19.** Two kibbles, ten pates and three pouches,
+  each with its panel captured. Every one cross-checks against its capture with no disagreement.
+* **`check-catalogue.py` prints the debt on every run**, every provisional entry by key and name.
+  Not a dismissable warning and not a number in a file somebody has to go and look at: it is in the
+  output of a gate that runs constantly, and it stays there until the keys are replaced. It also
+  refuses a provisional entry whose note does not say what was searched and what came back, and
+  refuses one that is not a manufacturer panel.
+
+Changed
+* **`fetchProduct` never sends a provisional key to Open Pet Food Facts.** The database is keyed by
+  barcode and has never heard of the string, so the request could only fail, and it would put an
+  identifier of ours into somebody else's logs for nothing. Verified in a browser: zero requests.
+* **Service worker to `v12`.** `catalogue.json` is precached, and it went from 13.6KB to 36.5KB
+  with this batch, so an install left on `v11` would keep serving a catalogue missing 15 products.
+* **The product page does not call a provisional key a barcode.** It says "No published barcode, so
+  this product cannot be scanned yet" where it would otherwise print the code. Verified in a
+  browser, along with the score rendering and a digit string being unable to reach the entry.
+
+Notes
+* **14 assertions added, 257 total.**
+* **The tuna pate carries no guaranteed analysis and that is correct.** The product is discontinued
+  and its page publishes the ingredient list without the panel; the word "protein" does not appear
+  on it. The entry holds the list and nothing it cannot support, which is what partial scoring is
+  for.
+* The barcode source decision was taken the same day: retailer specification pages, because they
+  publish a UPC next to the pack size, which is the check the pate listings failed. Not built yet.
+
 ## [0.35.0] - 2026-09-09
 
 **M23 batch 2 was refused in full, and the milestone stalls at 4 of 19. Not on transcription: on

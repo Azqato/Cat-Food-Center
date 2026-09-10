@@ -662,6 +662,33 @@ Measured 2026-09-08, while transcribing the first curated entries.
 
 ---
 
+### 12.12 An entry may exist before its barcode does
+
+**Decided 2026-09-09 by the project owner, after M23 stalled at 4 of 19 with fifteen readable panels it could not record.**
+
+The catalogue is keyed by barcode, and that was load-bearing: a barcode is what a scanner produces, so a barcode-keyed file is scannable by construction. But it also meant a product whose manufacturer publishes a complete guaranteed analysis and no UPC could not be recorded at all, however good the panel. That is not a rare case. Dr. Elsey's publishes no UPC anywhere in its markup, no `gtin`, no `sku`, no `upc`, checked directly; aggregators had no row for two of its products and a row that failed its own check for five more.
+
+**So an entry may be filed under a provisional key until a real barcode is found.** The product becomes searchable and scorable. It does not become scannable, and the gap between those two is the whole design.
+
+**The key can never be all digits, and that is a safety property rather than a naming convention.** Every string of 6 to 14 digits is somebody's real barcode. A numeric placeholder could one day be scanned by a visitor holding an unrelated tin, who would be shown this product's panel and this product's score with nothing anywhere indicating a mistake, which is precisely the unrecoverable error section 12.10 refuses to risk when it declines to guess a barcode. A scanner emits digits and only digits, so a key containing letters cannot be produced by one. **The scan path is closed by construction, not by a check somebody has to remember to write.**
+
+The shape is `CFC-<host>-<product slug>`, built from the manufacturer's own host and the product's own URL slug, so it is derived rather than invented and lands on the same string every time it is generated for the same product. `PROVISIONAL_KEY` in `assets/js/catalogue.js` and `PROVISIONAL` in `tools/check-catalogue.py` are the same pattern in two places, as `DATA_FIELDS` already is.
+
+**Four rules, and the last two exist because temporary things become permanent.**
+
+1. **It never reaches Open Pet Food Facts.** `fetchProduct` recognises a provisional key and goes straight to the catalogue. The database is keyed by barcode and has never heard of this string, so the request could only fail, and it would put an identifier of ours into somebody else's logs for nothing.
+2. **The page does not call it a barcode.** A product page filed under one says "No published barcode, so this product cannot be scanned yet" where it would otherwise print the code. The site holds a real panel from a real manufacturer, and the only thing it does not have is the number; saying so plainly is cheaper than any wording that implies otherwise.
+3. **The entry has to say what was searched.** `check-catalogue.py` refuses a provisional entry whose note does not mention the barcode search: what was looked for, and what came back. A placeholder becomes permanent when nobody can see why it was needed, and a note is what lets somebody pick the search up later instead of starting it again.
+4. **Provisional entries are only for manufacturer panels.** A retailer listing that cannot be tied to a barcode is a description of a product from a source that may be out of date, with nothing to file it under. That is not evidence of a product, and section 12.4 is what happens when this project treats it as one.
+
+**The debt is counted on every run.** `check-catalogue.py` prints every provisional entry, by key and name, on every invocation. It is not a warning that can be dismissed and not a number in a file somebody has to go and look at; it is in the output of a gate that runs constantly, and it will stay there until the keys are replaced.
+
+**What this is not.** It is not a second class of data. Every figure in a provisional entry is read from the manufacturer's published panel by the same process, checked by the same gate, cross-checked against the same capture, and scored by the same engine. The only thing missing is the identifier, and the only thing lost is the scan.
+
+---
+
+---
+
 ## 13. Roadmap
 
 ### Current phase
@@ -705,7 +732,7 @@ MVP, live and running on real data. Search, brand browse, product pages, scannin
 | M21a: The additive pill that could never wrap | 2026-09-08 | Complete |
 | M22: The product library, and a coverage number | 2026-09-09 | Complete. The number is 0%, see 12.9 |
 | M25: Curated products become discoverable | 2026-09-08 | Complete |
-| M23: Dr. Elsey’s | | **Stalled at 4 of 19**, 2026-09-09. Not on transcription: on barcodes |
+| M23: Dr. Elsey’s | 2026-09-09 | **Complete.** 19 of 19 food SKUs, 4 with barcodes and 15 provisional |
 | M24: Premix groups | 2026-09-09 | Complete |
 | M24a: Canonical tags | 2026-09-09 | Complete |
 | M24b: The wait before the first API request | 2026-09-09 | Complete. Reopened the same day it was closed, once it was measured rather than assumed |
@@ -946,7 +973,7 @@ now reports the same call the engine made, and a test pins it.
 | - | ~~M24b: the wait before the first API request~~ | **Shipped 2026-09-09.** 2271ms to 1361ms |
 | - | ~~M22, finishing it: a coverage number~~ | **Shipped 2026-09-09.** The number is 0%, see 12.9, and what to do about it is the decision below |
 | - | ~~M27a: the transcription process~~ | **Shipped 2026-09-09.** Section 12.10. It is listed here because M23, M12 and M27b are all this procedure repeated, and it was unwritten until the day it blocked three milestones at once |
-| 1 | **M23: the rest of Dr. Elsey's** | **Stalled at 4 of 19 on 2026-09-09,** with 15 panels that parse cleanly and no barcode anybody publishes. It did its job as a test case: it found the thing that actually blocks this programme |
+| - | ~~M23: the rest of Dr. Elsey's~~ | **Complete 2026-09-09.** All 19 food SKUs in: 4 under barcodes, 15 under provisional keys per 12.12. It did its job as a test case twice over, once for the process and once for finding what actually blocks the programme |
 | 2 | **M27b: the top 100, transcribed** | Ordered here by the project owner on 2026-09-09, ahead of the beta. Batches of five, each one a checkpoint with the gates, a commit and a re-measured coverage number, so section 12.9 moves visibly rather than in one unverifiable jump |
 | 3 | **M12: public beta** | Deferred 2026-09-09 rather than decided. It launches when the coverage number is one the owner is willing to publish, which is what M23 and M27b exist to produce |
 | 4 | **M27c: contributions through GitHub issues** | After the beta. A database other people can add to is worth building once there is a database worth adding to |
