@@ -78,6 +78,21 @@ HOURLY = 20
 # pack type returns nothing: on 2026-09-09 "Dr. Elsey's cleanprotein duck
 # chicken kibble cat food" drew a 404 where "Dr. Elsey's cleanprotein duck"
 # returned two rows. Brand, line and flavour, and no more.
+# Assorted recipes in one box. PRD section 12.15: a variety pack has no
+# guaranteed analysis, so no entry can be written for it, so a barcode for it
+# has nothing to key. Fifty-three of the hundred ranked rows are these, and
+# querying them spent more than half of a 20-an-hour allowance on answers that
+# could never be used. Mirrors VARIETY in tools/purina-index.py.
+VARIETY = re.compile(
+    r'\bvariet(?:y|ies)\b|\bmultipack\b|\bsampler\b|\bassort\w*\b|'
+    r'\bcollection\b|\bmixed\s+(?:flavou?rs?|recipes?|pack)\b',
+    re.I)
+
+
+def is_variety(title):
+    return bool(VARIETY.search(title or ''))
+
+
 NOISE = re.compile(
     r'\b(?:wet|dry|cat|food|cats|kitten|adult|cans?|can|pouch(?:es)?|bags?|tubs?|'
     r'count|ct|pack|packs|variety|multipack|oz|ounce|lb|lbs|pound|pounds|'
@@ -230,7 +245,12 @@ def main(argv):
     resolved = load_done()
     endpoint = Endpoint()
 
-    todo = [item for item in capture['items'] if item['ref'] not in resolved]
+    todo = [item for item in capture['items']
+            if item['ref'] not in resolved and not is_variety(item['title'])]
+    skipped = sum(1 for item in capture['items'] if is_variety(item['title']))
+    if skipped:
+        print('%d assorted-recipe row(s) skipped: no entry can exist for them '
+              '(PRD 12.15).' % skipped)
     if args.limit:
         todo = todo[:args.limit]
     print('%d of %d already done. Querying %d, about %.1f hours at %d an hour.'

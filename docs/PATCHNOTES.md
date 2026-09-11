@@ -44,6 +44,38 @@ Notes
   is the first unplanned test of it.
 * No site code changed, so no gate behaviour changed.
 
+## [0.42.0] - 2026-09-11
+
+**The first provisional key becomes a real barcode, chosen by the owner rather than by the tool.**
+
+Changed
+* **Friskies Gravy Swirlers is now keyed `050000168620`.** It had been filed under the provisional
+  key `CFC-purina-friskies-gravy-swirlers` (section 12.12), searchable and scorable but not
+  scannable; it is scannable now. Its raw panel sidecar moved with it, from
+  `tools/data/panels/CFC-purina-friskies-gravy-swirlers.json` to `tools/data/panels/050000168620.json`.
+  Twenty provisional keys remain, and `check-catalogue.py` keeps printing them.
+* **The entry's note records where the number came from**, which section 12.10 requires and which no
+  gate can supply: the project owner chose it on 2026-09-11 from the UPCitemdb candidates, where it
+  is filed under "Purina Friskies Gravy Swirlers with Flavors of Chicken, Salmon & Gravy Adult Dry
+  Cat Food". The ranked listing is a 3.15 lb bag and **no candidate stated a pack size, so the recipe
+  is confirmed and the pack size is not**, and the note says so rather than implying a certainty that
+  was not available. The two other Gravy Swirlers candidates were rejected on inspection: one an
+  Indoor variant, which is a different recipe, and one an explicit 6.3 lb bag.
+* **`tools/resolve-barcodes.py` skips assorted-recipe rows.** It mirrors the `VARIETY` pattern in
+  `tools/purina-index.py` and it shipped one commit late: the decision in section 12.15 was recorded
+  in `[0.40.0]` and taught to the indexer and the coverage measurement there, but the resolver went
+  on spending a rationed twenty-an-hour allowance on rows that can never become an entry. Fifty-three
+  of the hundred ranked rows are assortments, so more than half of every hour was being spent on
+  answers with nothing to key. The skipped count is printed rather than passed over in silence.
+* `sw.js` to `v14`. `catalogue.json` is precached, and this release changes which key a scanned code
+  finds, which is exactly the kind of change a stale cache would hide.
+
+Notes
+* Gates after the re-key: 29 entries, all sourced, within the plausible bands, and agreeing with the
+  25 raw panels captured; 257 tests passing.
+* Coverage is unchanged at 5 of 47. A barcode makes an entry scannable; it does not make it findable,
+  and the search that coverage measures was already finding this product by name.
+
 ## [0.41.0] - 2026-09-11
 
 **Coverage is 11%. It was zero, and getting there meant fixing the transcriber, the capture, the
