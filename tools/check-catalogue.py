@@ -89,12 +89,24 @@ CAPTURE_KINDS = {'html', 'pdf', 'photo', 'manual'}
 # judge the label, and ask whether 59% protein can be true. This judges the
 # transcription, and asks whether the entry says what the panel said. It is the
 # only check in this project that can catch a right-looking wrong number.
+# What each entry field is called on a printed panel. More than one spelling
+# per field, because more than one spelling exists: Purina's older decks print
+# "Crude Protein (Min)" and its newer table decks print "Protein (Min)" in a
+# grid headed "Nutrients / Guaranteed / per cup". The fallbacks are ordered
+# after the specific ones and matched the same way.
+#
+# **A field whose printed label is not listed here is not cross-checked, and
+# that failure is silent.** It does not fail the gate, it does not warn, and
+# the entry looks exactly as verified as one that passed. That is the argument
+# for keeping this list honest: the cross-check is the only thing in the
+# project that catches a wrong number which looks right, and a label it cannot
+# recognise switches it off for that figure without saying so.
 CROSS_CHECK = {
-    'crudeProteinPct': 'crude protein',
-    'crudeFatPct': 'crude fat',
-    'crudeFibrePct': 'crude fib',
-    'moisturePct': 'moisture',
-    'ashPct': 'crude ash',
+    'crudeProteinPct': ('crude protein', 'protein'),
+    'crudeFatPct': ('crude fat', 'fat'),
+    'crudeFibrePct': ('crude fib', 'dietary fib', 'fib'),
+    'moisturePct': ('moisture',),
+    'ashPct': ('crude ash', 'ash'),
 }
 
 FORMATS = {'wet', 'dry', 'unknown'}
@@ -260,11 +272,19 @@ def cross_check(entry, panel, key, problems):
     analysis = panel.get('analysis') or {}
     if not isinstance(analysis, dict):
         return
-    for field, needle in CROSS_CHECK.items():
+    for field, needles in CROSS_CHECK.items():
         if field not in entry:
             continue
-        printed = [v for label, v in analysis.items()
-                   if isinstance(label, str) and needle in label.lower()]
+        printed = []
+        for needle in needles:
+            # Most specific spelling first, and the first one that matches
+            # wins: "fat" would otherwise pick up "Crude Fat" and "Total Fat"
+            # indifferently, and the specific spelling is the one the panel
+            # actually used.
+            printed = [v for label, v in analysis.items()
+                       if isinstance(label, str) and needle in label.lower()]
+            if printed:
+                break
         if not printed:
             continue
         number = re.match(r'([\d.]+)', str(printed[0]).strip())

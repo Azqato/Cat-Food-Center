@@ -230,10 +230,12 @@ def propose(url, barcode, raw, kind, meta=None):
         'sourceKind': 'manufacturer',
         'checked': __import__('time').strftime('%Y-%m-%d'),
     }
-    for field, label in deck.GA_FIELDS:
-        value = deck.find_percent(flat, label)
-        if value is not None:
-            entry[field] = value
+    for field, labels in deck.GA_FIELDS:
+        for label in labels:
+            value = deck.find_percent(flat, label)
+            if value is not None:
+                entry[field] = value
+                break
     if re.search(r'\btaurine\b', raw, re.I):
         entry['taurinePresent'] = True
     kcal = find_kcal(flat)
@@ -246,7 +248,7 @@ def propose(url, barcode, raw, kind, meta=None):
         entry['ingredientsLang'] = 'en'
 
     title = first_title(raw, kind)
-    fmt = deck.product_format(title, url)
+    fmt = deck.product_format(title, url, entry.get('moisturePct'))
     if fmt:
         entry['format'] = fmt
     for field in ('name', 'brand', 'quantity'):
@@ -294,8 +296,14 @@ PRINTED_FIGURE = re.compile(
 # and marketing contains numbers with percent signs beside them: this page
 # advertises "95% chicken" and footnotes a facility that is "not 100%
 # Gluten-Free". Both parse perfectly as guarantees and neither is one.
+# Where a panel starts printing numbers. The last two are Purina's newer
+# table layout, which heads its grid "Nutrients / Guaranteed / per cup" and
+# never says "guaranteed analysis" at all. Kitten Chow Year One Essentials
+# captured zero figures because of it, which left its entry with nothing for
+# the cross-check to read against.
 FIGURE_BLOCKS = (r'guaranteed\s+analysis', r'calorie\s+content', r'caloric\s+content',
-                 r'calorie\s+information')
+                 r'calorie\s+information', r'nutrients\s+guaranteed',
+                 r'calories\s+per\s+cup')
 
 
 def figure_blocks(text):
@@ -313,17 +321,43 @@ def figure_blocks(text):
     return blocks
 
 
+# A figure standing alone on its own line, with no label in front of it.
+BARE_VALUE = re.compile(
+    r'^[\d,]+(?:\.\d+)?\s*(?:%|' + UNITS + r')\s*$', re.I)
+
+
 def figure_segments(block):
     """One printed figure per segment.
 
     Split on line breaks, semicolons, and commas that do not sit inside a
     number: "3,953 kcal/kg" is one figure and splitting it produced a figure
     of 953.
+
+    **A label and its figure are rejoined when the panel is a table.** Purina's
+    newer decks print a three-column grid, and extracted from the PDF it
+    arrives as "Protein (Min)", then "40.0%", then "4.4 g", each on its own
+    line. Every row of it read as a label with no number followed by a number
+    with no label, so the whole guarantee captured as nothing at all, and the
+    cross-check in check-catalogue.py had nothing to compare the entry against.
+    That check is the only one in the project that catches a wrong number which
+    looks right, so a layout that silently switches it off is worth this.
     """
+    parts = []
     for segment in re.split(r'[;\n]|,(?!\d)', block):
         segment = ' '.join(segment.split()).strip(' .:')
         if segment:
-            yield segment
+            parts.append(segment)
+    index = 0
+    while index < len(parts):
+        segment = parts[index]
+        following = parts[index + 1] if index + 1 < len(parts) else ''
+        if (following and not re.search(r'\d', segment)
+                and BARE_VALUE.match(following)):
+            yield '%s %s' % (segment, following)
+            index += 2
+            continue
+        yield segment
+        index += 1
 
 
 def printed_figures(text):
@@ -383,9 +417,17 @@ def dedupe(figures):
     return dict((k, v) for k, v in figures.items() if k not in drop)
 
 
+# The same headings FIGURE_BLOCKS knows about, for the same reason and found
+# by the same product. Without the last two the window on a Purina table deck
+# began 300 characters before the word "Ingredients", which landed in the
+# middle of the nutrient grid: the heading and the protein, fat and fibre rows
+# fell outside the capture, so the figures could not be read from it even once
+# the parser knew how. A window that starts after the numbers is not a capture
+# of the panel.
 PANEL_ANCHORS = (r'crude\s+protein', r'guaranteed\s+analysis', r'ingredients?\b',
                  r'calorie\s+content', r'caloric\s+content',
-                 r'\bAAFCO\b', r'feeding\s+(guide|instructions|directions)')
+                 r'\bAAFCO\b', r'feeding\s+(guide|instructions|directions)',
+                 r'nutrients\s+guaranteed', r'calories\s+per\s+cup')
 
 
 def panel_window(text):

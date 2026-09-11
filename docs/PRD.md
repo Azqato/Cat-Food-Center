@@ -552,15 +552,20 @@ Measured 2026-09-08, while transcribing the first curated entries.
 
 ### 12.9 Top-100 coverage, measured
 
-**Measured 2026-09-09 by `python tools/measure-coverage.py`. The number is zero.**
+**Measured 2026-09-11 by `python tools/measure-coverage.py`. It is 11%, and on 2026-09-09 it was zero.**
 
 | | |
 |---|---|
-| Best-sellers a visitor could search for and get a score | **0 of 100** |
-| Matched a product in the database, which holds no ingredient list | 4 |
-| Matched something close enough to need a person's eye, all of them different products on inspection | 12 |
-| No candidate close enough to call a match | 84 |
-| Hold an ingredient list, but sit outside the `cat-food` category, so this site's search cannot reach them | 5 |
+| Best-sellers a visitor could search for and get a score | **5 of 47** |
+| Assorted-recipe listings, outside the denominator by section 12.15 | 53 |
+| Matched a product in the database, which holds no ingredient list | 1 |
+| Matched something close enough to need a person's eye | 8 |
+| No candidate close enough to call a match | 33 |
+| Hold an ingredient list, but sit outside the `cat-food` category, so this site's search cannot reach them | 1 |
+
+**All five come from the curated catalogue and none from upstream**, which is what section 12.10's transcription programme was built to produce and the first evidence that it works end to end.
+
+*Two things changed in the measurement itself on 2026-09-11, and a number measured now is not comparable to the 0 of 100 above.* The denominator dropped the 53 assorted-recipe listings, for the reason in section 12.15. And **the measurement had been asking only the upstream database, which was a defect**: this section's own definition of coverage is whether a visitor searching by name gets a scored product back, and the site's search reads the curated catalogue alongside upstream records. Verified in a browser against the running site rather than assumed. Measuring upstream alone would have reported every product transcribed under 12.10 as uncovered, so the transcription programme would have looked like it changed nothing while it was working.
 
 **What is being measured, and why it is not barcodes.** M22 stalled for a day on the belief that coverage needed a UPC per SKU, because the catalogue is barcode-keyed and no storefront publishes one. That was answering a question about the catalogue's internals. The criterion asks whether a visitor who wants a best-seller can get a score for it here, and a visitor does not know the barcode either: they type the name into the search box. So the measurement runs each SKU's name through the same endpoint, the same category filter and the same fields the site's own search uses, and asks whether what comes back is the same product and whether it carries an ingredient list. Nothing about it needs a number nobody publishes.
 

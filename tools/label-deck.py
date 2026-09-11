@@ -43,12 +43,29 @@ import urllib.request
 # too. A guaranteed minimum is not the assayed value, and neither is the
 # database's number; treating them alike is the honest option, and the
 # alternative, inventing a midpoint, would be a figure nobody published.
+# Each field is tried in order of specificity, most specific first.
+#
+# **The second pattern in each pair is a different label layout, and it was
+# found the hard way.** Kitten Chow Year One Essentials prints a table headed
+# "Nutrients / Guaranteed / per cup" with rows reading "Protein (Min) 40.0%",
+# where every other deck this tool had met prints "Crude Protein (Min) 40.0%".
+# The parser found moisture, which is spelled the same either way, and quietly
+# reported no protein, fat or fibre. A product that states no protein and a
+# product whose protein this tool cannot read are indistinguishable in the
+# output, which is what made this worth fixing rather than working around.
+#
+# The fallbacks require the printed "(Min)" or "(Max)" and that is not
+# decoration: a bare search for "protein" finds "corn protein meal" in the
+# ingredient list, and a bare search for "fat" finds "animal fat preserved
+# with mixed tocopherols". The guarantee always qualifies its figures and an
+# ingredient list never does.
 GA_FIELDS = [
-    ('crudeProteinPct', r'crude\s+protein'),
-    ('crudeFatPct', r'crude\s+fat'),
-    ('crudeFibrePct', r'crude\s+fib(?:er|re)'),
-    ('moisturePct', r'moisture'),
-    ('ashPct', r'ash'),
+    ('crudeProteinPct', [r'crude\s+protein', r'\bprotein\s*\((?:min|max)']),
+    ('crudeFatPct', [r'crude\s+fat', r'\bfat\s*\((?:min|max)']),
+    ('crudeFibrePct', [r'crude\s+fib(?:er|re)',
+                       r'\b(?:dietary\s+)?fib(?:er|re)\s*\((?:min|max)']),
+    ('moisturePct', [r'moisture']),
+    ('ashPct', [r'(?:crude\s+)?ash']),
 ]
 TAURINE = r'taurine'
 
@@ -139,23 +156,50 @@ def find_aafco(text):
     return None
 
 
-FORMAT_WORDS = [
-    ('wet', r'\b(?:wet|pat[eé]|gravy|in sauce|chunks|entr[eé]e|canned|mousse)\b'),
-    ('dry', r'\b(?:dry|kibble|crunchy)\b'),
+# Words that state the format outright, and words that only imply it.
+#
+# **The distinction exists because "Gravy Swirlers" is a dry food.** The first
+# version of this tested the implying words first and labelled Friskies Gravy
+# Swirlers wet, from a title and a file name that both say "dry", because
+# "gravy" appeared earlier in the list. A texture word names what the food is
+# like; only "wet", "dry", "canned" and "kibble" name what it is.
+FORMAT_STATED = [
+    ('dry', r'\b(?:dry|kibble)\b'),
+    ('wet', r'\b(?:wet|canned)\b'),
+]
+FORMAT_IMPLIED = [
+    ('wet', r'\b(?:pat[eé]|gravy|in sauce|chunks|entr[eé]e|mousse|broth)\b'),
+    ('dry', r'\b(?:crunchy|crisps)\b'),
 ]
 
 
-def product_format(title, url):
+def product_format(title, url, moisture=None):
     """Wet or dry, from the deck title and the file name, or nothing.
 
     Guessing here is cheap to get wrong and the entry is better without it: an
     unknown format costs a filter facet, while a wrong one puts the product in
     the wrong comparison and changes how its moisture reads.
+
+    Moisture settles a disagreement when it is known, and it settles it the
+    right way round: no wet food is 12% water and no dry food is 78%. It is
+    passed in rather than read here because this decides the label's claim and
+    the caller is what holds the label's figures.
     """
     hay = '%s %s' % (title or '', url or '')
-    for value, pattern in FORMAT_WORDS:
-        if re.search(pattern, hay, re.I):
-            return value
+    for words in (FORMAT_STATED, FORMAT_IMPLIED):
+        for value, pattern in words:
+            if re.search(pattern, hay, re.I):
+                if moisture is None:
+                    return value
+                # A stated format that contradicts the guarantee is a reading
+                # error somewhere, and the guarantee is the harder evidence.
+                if value == 'wet' and moisture <= 20:
+                    return 'dry'
+                if value == 'dry' and moisture >= 60:
+                    return 'wet'
+                return value
+    if moisture is not None:
+        return 'dry' if moisture <= 20 else 'wet' if moisture >= 60 else None
     return None
 
 
@@ -193,10 +237,12 @@ def main(argv):
 
     entry = {'barcode': barcode, 'source': url, 'sourceKind': 'manufacturer'}
 
-    for field, label in GA_FIELDS:
-        value = find_percent(flat, label)
-        if value is not None:
-            entry[field] = value
+    for field, labels in GA_FIELDS:
+        for label in labels:
+            value = find_percent(flat, label)
+            if value is not None:
+                entry[field] = value
+                break
 
     # Only a positive declaration is recorded. Silence about taurine is not a
     # statement that there is none, and section 16.5a keeps `taurinePresent`
@@ -213,7 +259,7 @@ def main(argv):
         # it.
         entry['ingredientsLang'] = 'en'
 
-    fmt = product_format(title, url)
+    fmt = product_format(title, url, entry.get('moisturePct'))
     if fmt:
         entry['format'] = fmt
 

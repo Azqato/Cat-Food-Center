@@ -44,6 +44,63 @@ Notes
   is the first unplanned test of it.
 * No site code changed, so no gate behaviour changed.
 
+## [0.41.0] - 2026-09-11
+
+**Coverage is 11%. It was zero, and getting there meant fixing the transcriber, the capture, the
+cross-check and the measurement, each of which was wrong in a way that did not announce itself.**
+
+Added
+* **Six entries, the first batch of M27b**, all Purina brands read from the manufacturer's own label
+  decks: Friskies Gravy Swirlers, Fancy Feast Classic Pate Chicken Feast, Fancy Feast dry Ocean Fish
+  & Salmon, Cat Chow Gentle Sensitive Stomach and Skin, Kitten Chow Year One Essentials, and Fancy
+  Feast dry Savory Farm-Raised Chicken & Turkey. Each carries a raw panel capture and each was read
+  against its source. All six are filed under provisional keys (12.12): no barcode has been chosen
+  for any of them, because choosing one is a person's job and the candidates for the only resolved
+  row spanned two pack sizes and an Indoor variant.
+* **`tools/data/batch-m27b-1.json`**, the batch file, kept so the transcription is reproducible.
+
+Fixed
+* **`product_format` called Friskies Gravy Swirlers a wet food.** It tested texture words before
+  format words, so "gravy" beat "dry" in a title and a file name that both say dry. Format words now
+  decide, texture words only imply, and the moisture figure settles a disagreement: no wet food is
+  12% water. A wrong format puts a product in the wrong comparison and changes how its moisture
+  reads.
+* **A whole label layout was invisible to the guarantee reader.** Purina's newer decks print a grid
+  headed "Nutrients / Guaranteed / per cup" with rows reading "Protein (Min) 40.0%", where the older
+  decks say "Crude Protein". Kitten Chow Year One Essentials parsed with moisture and no protein,
+  fat or fibre, and **a product that states no protein and a product whose protein cannot be read
+  look identical in the output.** The fallback patterns require the printed "(Min)" or "(Max)",
+  without which a search for "fat" finds "animal fat preserved with mixed tocopherols" in the
+  ingredient list.
+* **The panel capture read that layout as zero figures, twice over.** The figure parser wanted a
+  label and its number in one segment, and the grid puts them on separate lines; and the capture
+  window, which starts 300 characters before the first recognised heading, began in the middle of
+  the grid because it did not know the heading. Both fixed, and the other five entries gained
+  figures too: the Friskies capture went from 5 to 15.
+* **The cross-check had been silently switched off for that layout.** It maps each entry field to
+  its printed label and knew only "crude protein"; against a panel printing "Protein (Min)" it found
+  nothing to compare and said nothing, which reads exactly like agreement. It now knows both
+  spellings. **A field whose label it cannot recognise is not checked and does not warn**, which is
+  worth stating plainly, because this is the only check in the project that catches a wrong number
+  that looks right.
+* **`measure-coverage.py` asked only the upstream database.** Its own definition of coverage is
+  whether a visitor searching by name gets a scored product back, and the site's search reads the
+  curated catalogue too, which was verified in a browser rather than assumed. Every product
+  transcribed under 12.10 was being reported as uncovered, so the transcription programme would have
+  looked like it changed nothing while it was working.
+
+Changed
+* **The coverage denominator is 47, not 100**, per section 12.15. A figure measured this way is not
+  comparable to the 0 of 100 recorded on 2026-09-09, and `coverage.json` says so in its own header.
+* PRD section 12.9 now carries the new table and the reason the two numbers cannot be compared.
+
+Notes
+* Gates after the batch: 29 entries agreeing with 25 captured panels, 257 tests passing.
+* Step 6 of section 12.10 was done for four of the six: the product page renders the score, the
+  format, the life stage and the "no published barcode, so this product cannot be scanned yet"
+  provenance line.
+* No site code changed, so no gate behaviour changed.
+
 ## [0.40.0] - 2026-09-11
 
 **More than half the top 100 is a box of assorted recipes with no panel to transcribe. The matcher

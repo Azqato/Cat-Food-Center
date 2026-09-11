@@ -1,0 +1,50 @@
+[
+ {
+  "url": "https://www.purina.com/sites/default/files/product-label-deck-file/2025-10/6007_e600725_friskies_gravy_swirlers_dry_cat_food_fs1.pdf",
+  "barcode": "CFC-purina-friskies-gravy-swirlers",
+  "name": "Friskies Gravy Swirlers Dry Cat Food with Flavors of Chicken, Salmon & Gravy",
+  "brand": "Friskies",
+  "quantity": "3.15 lb (1.43 kg)",
+  "note": "Top-100 rank 4. Panel from the manufacturer's own label deck. No barcode is published on that deck and the aggregator's candidates spanned several pack sizes and an Indoor variant, so none was chosen and this entry is filed under a provisional key until a barcode is read against the product."
+ },
+ {
+  "url": "https://www.purina.com/sites/default/files/product-label-deck-file/2023-05/6672-e667222-fancy-feast-classic-chicken-feast-cat-food.pdf",
+  "barcode": "CFC-purina-fancy-feast-classic-pate-chicken-feast",
+  "name": "Fancy Feast Classic Pate Chicken Feast Gourmet Wet Cat Food",
+  "brand": "Fancy Feast",
+  "quantity": "3 oz (85 g) can",
+  "note": "Top-100 rank 69. Panel from the manufacturer's own label deck. No barcode has been resolved for it yet, so this entry is filed under a provisional key until one is read against the product."
+ },
+ {
+  "url": "https://www.purina.com/sites/default/files/product-label-deck-file/2024-10/6502-g650224_ff_oceanfish_salmon_accents_gard_greens_gour_cat_dk8.pdf",
+  "barcode": "CFC-purina-fancy-feast-dry-ocean-fish-salmon",
+  "name": "Fancy Feast Dry Cat Food with Ocean Fish & Salmon",
+  "brand": "Fancy Feast",
+  "quantity": "3 lb (1.36 kg)",
+  "note": "Top-100 rank 79. Panel from the manufacturer's own label deck. No barcode has been resolved for it yet, so this entry is filed under a provisional key until one is read against the product."
+ },
+ {
+  "url": "https://www.purina.com/sites/default/files/product-label-deck-file/2025-10/4504_g450423_cat_chow_gentle_sensitive_stomach_skin_cat_food_cb8.pdf",
+  "barcode": "CFC-purina-cat-chow-gentle-sensitive-stomach-skin",
+  "name": "Purina Cat Chow Gentle Sensitive Stomach and Skin Dry Cat Food with Turkey",
+  "brand": "Cat Chow",
+  "quantity": "13 lb (5.9 kg)",
+  "note": "Top-100 rank 84. Panel from the manufacturer's own label deck. No barcode has been resolved for it yet, so this entry is filed under a provisional key until one is read against the product."
+ },
+ {
+  "url": "https://www.purina.com/sites/default/files/product-label-deck-file/2026-06/4530_m453025_kitten_chow_year_one_essentials_w_real_chicken_dry_kitten_food_cb5_1.pdf",
+  "barcode": "CFC-purina-kitten-chow-year-one-essentials",
+  "name": "Purina Kitten Chow Year One Essentials with Real Chicken",
+  "brand": "Kitten Chow",
+  "quantity": "14 lb (6.35 kg)",
+  "note": "Top-100 rank 91. Panel from the manufacturer's own label deck. No barcode has been resolved for it yet, so this entry is filed under a provisional key until one is read against the product."
+ },
+ {
+  "url": "https://www.purina.com/sites/default/files/product-label-deck-file/2024-10/6500-g650024_ff_savory_farm-raised_chicken_turkey_gour_cat_dk7.pdf",
+  "barcode": "CFC-purina-fancy-feast-dry-savory-chicken-turkey",
+  "name": "Fancy Feast Dry Cat Food with Savory Farm-Raised Chicken & Turkey",
+  "brand": "Fancy Feast",
+  "quantity": "3 lb (1.36 kg)",
+  "note": "Top-100 rank 97. Panel from the manufacturer's own label deck. No barcode has been resolved for it yet, so this entry is filed under a provisional key until one is read against the product."
+ }
+]

@@ -1,0 +1,21 @@
+{
+ "barcode": "CFC-purina-fancy-feast-classic-pate-chicken-feast",
+ "source": "https://www.purina.com/sites/default/files/product-label-deck-file/2023-05/6672-e667222-fancy-feast-classic-chicken-feast-cat-food.pdf",
+ "sourceKind": "manufacturer",
+ "checked": "2026-09-11",
+ "capturedFrom": "pdf",
+ "text": "FANCY FEAST CLASSIC CHICKEN FEAST GOURMET CAT FOOD \nGUARANTEED ANALYSIS: \nCrude Protein (Min) \n10.0% \nCrude Fat (Min) \n5.0% \nCrude Fiber (Max) \n1.5% \nMoisture (Max) \n78.0% \nAsh (Max) \n3.25% \nTaurine (Min) \n0.05% \nINGREDIENTS: Chicken, chicken broth, meat by-products, liver, fish, artificial and natural flavors, \ntricalcium phosphate, guar gum, MINERALS [potassium chloride, magnesium proteinate, zinc sulfate, \nferrous sulfate, manganese sulfate, copper sulfate, potassium iodide], choline chloride, taurine, \nVITAMINS [thiamine mononitrate (Vitamin B-1), Vitamin E supplement, niacin (Vitamin B-3), calcium \npantothenate (Vitamin B-5), Vitamin A supplement, menadione sodium bisulfite complex (Vitamin K), \npyridoxine hydrochloride (Vitamin B-6), riboflavin supplement (Vitamin B-2), Vitamin B-12 supplement, \nbiotin (Vitamin B-7), folic acid (Vitamin B-9), Vitamin D-3 supplement], salt. \nE667222 \nManufactured by: Nestlé Purina PetCare Company, St. Louis, MO 63164 USA \nFancy Feast Classic Chicken Feast is formulated to meet the nutritional levels established by the AAFCO \nCat Food Nutrient Profiles for all life stages. \nFeed an average size adult cat 1 can per 3-1/2 pounds of body weight daily. Feed up to twice this amount \nto kittens. Pregnant or nursing cats may require 2-4 times their normal feeding. \nCalorie Content (calculated)(ME): \n1080 kcal/kg \n91 kcal/can",
+ "analysis": {
+  "Crude Protein": "10.0% min",
+  "Crude Fat": "5.0% min",
+  "Crude Fiber": "1.5% max",
+  "Moisture": "78.0% max",
+  "Ash": "3.25% max",
+  "Taurine": "0.05% min",
+  "(calculated)(ME)": "1080kcal/kg",
+  "kcal/can": "91kcal/can"
+ },
+ "statements": [
+  "Fancy Feast Classic Chicken Feast is formulated to meet the nutritional levels established by the AAFCO Cat Food Nutrient Profiles for all life stages."
+ ]
+}

@@ -202,6 +202,52 @@ def scorable(product):
                 or (product.get('ingredients_text_en') or '').strip())
 
 
+# Assorted recipes in one box. PRD section 12.15: a variety pack has no
+# guaranteed analysis of its own, so no entry can be written for it and no
+# search can return a score for it. Counting it in the denominator measures
+# this site against something it has decided not to hold, which makes the
+# coverage figure permanently and misleadingly low. Mirrors VARIETY in
+# tools/purina-index.py.
+VARIETY = re.compile(
+    r'\bvariet(?:y|ies)\b|\bmultipack\b|\bsampler\b|\bassort\w*\b|'
+    r'\bcollection\b|\bmixed\s+(?:flavou?rs?|recipes?|pack)\b',
+    re.I)
+
+
+def is_variety(title):
+    return bool(VARIETY.search(title or ''))
+
+
+def as_products(catalogue):
+    """The local catalogue, shaped like the records `assess` compares against.
+
+    **The measurement asked only the upstream database, and that was wrong.**
+    This file's own definition of coverage is whether a visitor who searches
+    for a best-seller by name gets a scored product back, and the site's search
+    reads the curated catalogue alongside the upstream records: a curated entry
+    is returned, named, and scored, verified in a browser against the running
+    site. Asking only upstream measured a database rather than this site, and
+    it would have reported every product transcribed under section 12.10 as
+    uncovered, which makes the whole transcription programme look like it
+    changes nothing.
+
+    A provisional key (section 12.12) counts here. It cannot be scanned, and
+    scanning is not what this measures: a visitor types a name.
+    """
+    shaped = []
+    for key, entry in catalogue.items():
+        name = entry.get('name')
+        if not name:
+            continue
+        shaped.append({
+            'code': key,
+            'product_name': name,
+            'brands': entry.get('brand') or '',
+            'ingredients_text': entry.get('ingredientsText') or '',
+        })
+    return shaped
+
+
 def assess(item, products):
     """The best candidate for one SKU, and what it is worth.
 
@@ -284,17 +330,46 @@ def main(argv):
 
     capture, items = load_top(limit)
     catalogue = json.load(io.open(CATALOGUE, encoding='utf-8'))['products']
+    local = as_products(catalogue)
 
     print('Top %d of the %s list captured %s, measured against Open Pet Food '
           'Facts.\n' % (len(items), capture['source'], capture['captured']))
     rows = []
     for item in items:
+        if is_variety(item['title']):
+            # Out of the denominator entirely, not counted as a failure.
+            rows.append({
+                'position': item['position'],
+                'title': item['title'],
+                'brand': item.get('brand'),
+                'query': None,
+                'verdict': 'assortment',
+                'match': None,
+            })
+            print('%3d %-14s %-46s %s'
+                  % (item['position'], 'assortment', item['title'][:46], ''))
+            continue
         query = query_for(item)
-        data = shelf(query)
-        if 'error' in data:
-            print('  ! %s: %s' % (query[:40], data['error']))
-        candidate = assess(item, data.get('products') or [])
+        # The catalogue first, because a curated entry is the stronger answer:
+        # its panel came from the manufacturer and its figures were checked
+        # against a capture of that panel.
+        candidate = assess(item, local)
         call = verdict(candidate)
+        served = 'catalogue'
+        if call != 'scorable':
+            # The catalogue cannot serve this row, so the row is an upstream
+            # question and upstream's answer is the one to report. Keeping the
+            # catalogue's near-miss here instead would put a curated product's
+            # name against a best-seller it is not, in the review list and in
+            # coverage.json, which is the same wrong-product-attached-to-the
+            # -right-name error section 12.10 exists to prevent, arriving in a
+            # report rather than an entry.
+            data = shelf(query)
+            if 'error' in data:
+                print('  ! %s: %s' % (query[:40], data['error']))
+            candidate = assess(item, data.get('products') or [])
+            call = verdict(candidate)
+            served = 'upstream'
         if candidate and candidate['barcode'] in catalogue:
             candidate['inCatalogue'] = True
         row = {
@@ -303,6 +378,7 @@ def main(argv):
             'brand': item.get('brand'),
             'query': query,
             'verdict': call,
+            'servedBy': served if call == 'scorable' else None,
             'match': candidate,
         }
         # Only for the SKUs the site cannot serve: is the product in the
@@ -320,12 +396,23 @@ def main(argv):
     for row in rows:
         counts[row['verdict']] = counts.get(row['verdict'], 0) + 1
     scored = counts.get('scorable', 0)
-    coverage = 100.0 * scored / len(rows)
+    # Section 12.15: assortments are not products this catalogue can hold, so
+    # they leave the denominator rather than counting as misses.
+    denominator = len(rows) - counts.get('assortment', 0)
+    coverage = 100.0 * scored / denominator if denominator else 0.0
+    from_catalogue = sum(1 for row in rows if row.get('servedBy') == 'catalogue')
     untagged = sum(1 for row in rows
                    if row.get('outsideCategory', {}).get('verdict') == 'scorable')
 
     print('\n%d of %d can be scored: %.0f%% coverage. Target is 80%%.'
-          % (scored, len(rows), coverage))
+          % (scored, denominator, coverage))
+    print('  %d of those come from the curated catalogue, %d from upstream.'
+          % (from_catalogue, scored - from_catalogue))
+    if counts.get('assortment'):
+        print('  %d assorted-recipe listings are outside the denominator (12.15),'
+              % counts['assortment'])
+        print('  so this is measured against %d of the %d ranked rows.'
+              % (denominator, len(rows)))
     for name in ('no-ingredients', 'review', 'unmatched'):
         if counts.get(name):
             print('  %-15s %d' % (name, counts[name]))
@@ -347,12 +434,21 @@ def main(argv):
             '',
             '"review" rows are counted as not covered until a person confirms '
             'them, so the headline figure is the pessimistic reading.',
+            '',
+            'The denominator is NOT the hundred ranked rows. PRD section 12.15 '
+            'took assorted-recipe listings out of it: a variety pack has no '
+            'guaranteed analysis, so no entry can exist for it and no score can '
+            'be returned. A figure measured this way is not comparable to the '
+            '0 of 100 recorded on 2026-09-09, which counted them.',
         ],
         'measured': time.strftime('%Y-%m-%d'),
         'capture': {'source': capture['source'], 'list': capture['list'],
                     'captured': capture['captured']},
         'target': 80,
         'coverage': round(coverage, 1),
+        'denominator': denominator,
+        'rankedRows': len(rows),
+        'fromCatalogue': from_catalogue,
         'reachableIfTagged': untagged,
         'counts': counts,
         'skus': rows,
