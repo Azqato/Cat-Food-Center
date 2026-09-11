@@ -48,6 +48,7 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKUS = os.path.join(ROOT, 'tools', 'data', 'top-skus.json')
+CATALOGUE = os.path.join(ROOT, 'assets', 'data', 'catalogue.json')
 OUT = os.path.join(ROOT, 'tools', 'data', 'purina-index.json')
 
 BASE = 'https://www.purina.com'
@@ -154,6 +155,58 @@ def is_variety(title):
     return bool(VARIETY.search(title or ''))
 
 
+# Who the food is for, and what form it takes. Both are identity: a cat that
+# needs kitten food is not served by the adult recipe, and the two formats are
+# not the same product in different packaging. Neither survives the word
+# overlap below, because that measure asks how much of the manufacturer title
+# the listing accounts for and never notices a word the listing has that the
+# manufacturer's does not.
+#
+# **Marked and unmarked are not symmetrical.** A food for kittens says
+# "kitten" and a food for seniors says "senior"; a food for adult cats says
+# "cat food" and often nothing more, because adult is the default. So "kitten"
+# on one side and silence on the other is a disagreement, while "adult" on one
+# side and silence on the other is not.
+#
+# Format uses only the stated words, never the texture words. "Gravy" is in
+# the name of a dry food, which is a mistake already made once here and
+# recorded in tools/label-deck.py: texture implies, statement decides.
+STAGES = [
+    ('kitten', r'\bkittens?\b', True),
+    ('senior', r'\bsenior\b|\bmature\b|\b(?:7|11)\s*\+', True),
+    ('adult', r'\badults?\b', False),
+]
+FORMATS = [('dry', r'\b(?:dry|kibble)\b'), ('wet', r'\b(?:wet|canned)\b')]
+
+
+def stages(title):
+    """The life stages a title states, and whether any of them is a marked one."""
+    hay = title or ''
+    found = set(name for name, pattern, _ in STAGES if re.search(pattern, hay, re.I))
+    marked = set(name for name, pattern, mark in STAGES
+                 if mark and re.search(pattern, hay, re.I))
+    return found, marked
+
+
+def formats(title):
+    return set(name for name, pattern in FORMATS if re.search(pattern, title or '', re.I))
+
+
+def contradicts(listing_title, purina_title):
+    """Do these two titles state incompatible things about the same product?"""
+    a_all, a_marked = stages(listing_title)
+    b_all, b_marked = stages(purina_title)
+    if a_all and b_all and not (a_all & b_all):
+        return True
+    # Marked on one side only. Silence on the other means adult, not unknown.
+    if bool(a_marked) != bool(b_marked):
+        return True
+    a_form, b_form = formats(listing_title), formats(purina_title)
+    if a_form and b_form and not (a_form & b_form):
+        return True
+    return False
+
+
 def score(listing_title, purina_title):
     """How much of the manufacturer's name the retail listing accounts for.
 
@@ -173,13 +226,30 @@ def score(listing_title, purina_title):
     wrong product: the failure section 12.10 exists to prevent, arriving with a
     high score attached. A mismatch of kind is capped below the threshold that
     reads as strong, so it can still be looked at and cannot be trusted.
+
+    **Life stage and format are mismatches of kind too, and finding that out
+    took reading the proposals a second time.** A dry Tender Selects listing
+    drew the Grain Free Chicken *wet* recipe at 1.00, a LiveClear cat food drew
+    the LiveClear *kitten* formula at 0.83, and an Indoor Advantage listing
+    drew the *Senior 7+* formula at 0.83. All three are the same shape as the
+    assortment defect: the measure asks how much of the manufacturer title the
+    listing accounts for, so a word the manufacturer added and the listing
+    never had costs nothing at all. See contradicts() for what counts as a
+    disagreement and why silence about adulthood is not one.
     """
     a, b = words(listing_title), words(purina_title)
     if not b:
         return 0.0
     value = len(a & b) / float(len(b))
     if is_variety(listing_title) != is_variety(purina_title):
+        # Nothing for a person to decide: an assortment can never become an
+        # entry, so this drops out of the report entirely.
         return min(value, 0.39)
+    if contradicts(listing_title, purina_title):
+        # A near miss rather than a dead end. The right product may well be in
+        # the index, and this is still its closest neighbour, so it is capped
+        # into the band a person reads by hand rather than hidden.
+        return min(value, 0.5)
     return value
 
 
@@ -359,7 +429,31 @@ def find(query, top=6):
     return 0
 
 
-def report():
+def transcribed():
+    """Names already in the catalogue, so a proposal can say "done" and be right.
+
+    Matched on the same word overlap the rest of this tool uses, at the same
+    0.75 threshold, and reported rather than acted on. A false positive here
+    would hide a product that still needs an entry, and a false negative would
+    offer one twice; both are visible to a person reading the list, which is
+    why this prints the catalogue name it matched rather than a bare flag.
+    """
+    try:
+        raw = io.open(CATALOGUE, encoding='utf-8').read()
+    except IOError:
+        return []
+    return [(entry.get('name') or '', key)
+            for key, entry in (json.loads(raw).get('products') or {}).items()]
+
+
+def already(title, entries):
+    for name, key in entries:
+        if name and score(title, name) >= 0.75:
+            return name, key
+    return None
+
+
+def report(detail=False):
     """How much of the top 100 this index can reach, and how much it cannot."""
     data = load()
     products = data.get('products') or {}
@@ -396,6 +490,28 @@ def report():
     print('  %3d match strongly with no deck found yet' % len(matched))
     print('  %3d are worth reading by hand (>=0.4)' % len(weak))
     print('  %3d have nothing resembling a match' % len(none))
+    if detail:
+        entries = transcribed()
+        for heading, rows in (
+                ('Strong match, deck in hand, ready to transcribe', ready),
+                ('Strong match, no deck found yet', matched),
+                ('Worth reading by hand', weak)):
+            if not rows:
+                continue
+            print('')
+            print('%s' % heading)
+            print('-' * len(heading))
+            for value, item, slug in sorted(rows, key=lambda r: r[1]['position']):
+                row = products.get(slug) or {}
+                done = already(item['title'], entries)
+                print('%3d  %.2f  %s' % (item['position'], value,
+                                         item['title'].split('|')[0].strip()[:76]))
+                print('            proposes: %s' % (row.get('title') or slug)[:76])
+                if done:
+                    print('            IN THE CATALOGUE ALREADY as %s (%s)'
+                          % (done[0][:52], done[1]))
+                if row.get('deck'):
+                    print('            %s' % row['deck'])
     print('')
     print('A strong score is still a proposal. Nothing here has been chosen.')
     return 0
@@ -407,6 +523,7 @@ def main(argv):
     parser.add_argument('--decks', action='store_true')
     parser.add_argument('--find')
     parser.add_argument('--report', action='store_true')
+    parser.add_argument('--detail', action='store_true')
     parser.add_argument('--limit', type=int, default=0)
     args = parser.parse_args(argv)
 
@@ -417,7 +534,7 @@ def main(argv):
     if args.decks:
         return decks(args.limit)
     if args.report:
-        return report()
+        return report(args.detail)
     parser.print_help()
     return 1
 

@@ -44,6 +44,66 @@ Notes
   is the first unplanned test of it.
 * No site code changed, so no gate behaviour changed.
 
+## [0.43.0] - 2026-09-11
+
+**A count of proposals is not a proposal, and printing the rows found three more wrong ones.**
+
+Added
+* **`python tools/purina-index.py --report --detail`** lists the rows behind the counts: each top-100
+  listing, the purina.com product the scorer proposes for it, the deck URL, and whether the
+  catalogue already holds an entry for it. The summary counts alone satisfied nothing that section
+  12.10 asks for, because **the rule is that a person decides, and a person cannot decide against a
+  number.** Every matcher defect in this project so far was found by reading pairings by eye and none
+  by reading scores.
+
+Fixed
+* **The scorer did not know that a kitten food is not an adult food, or that a wet food is never a
+  dry one.** Three proposals in the ready list were wrong products at strong scores: a dry Tender
+  Selects listing drew the Grain Free Chicken *wet* recipe at 1.00, a LiveClear cat food drew the
+  LiveClear *kitten* formula at 0.83, and an Indoor Advantage listing drew the *Senior 7+* formula at
+  0.83. The cause is the same one the assortment cap was written for: the measure asks how much of
+  the manufacturer's title the listing accounts for, so **a word the manufacturer added and the
+  listing never had costs nothing at all.** Life stage and format now cap a contradicted pairing at
+  0.5, which moves it into the band a person reads by hand rather than hiding it, because the right
+  product is often in the index and this is still its nearest neighbour.
+* **Marked and unmarked life stages are not symmetrical**, and treating them as such would have been
+  the "a count is not a variety" over-correction again. A kitten food says "kitten" and a senior food
+  says "senior"; an adult food says "cat food" and usually nothing more. So "kitten" against silence
+  is a disagreement and "adult" against silence is not.
+* Format compares only the stated words, never the texture words, for the reason already recorded in
+  `tools/label-deck.py`: "Gravy" appears in the name of a dry food.
+
+Notes
+* **Every one of the six changed rows was checked by hand before and after**, which is the only way
+  to tell a fix from a new defect. All six improved: rank 23 now proposes the real Tender Selects
+  Chicken dry food, rank 62 the Adult LiveClear rather than the kitten one, rank 17 the Indoor
+  Advantage turkey rather than the Senior 7+, and ranks 21 and 46 stop offering Kitten Chow for Cat
+  Chow listings. Rank 26 is a kitten listing whose only close proposal is a wet food, correctly
+  demoted to hand-reading. Forty-one rows were untouched.
+* No site code changed. This is a maintenance tool that nothing a visitor loads runs, so no gate
+  behaviour changed and the catalogue is byte-identical.
+
+### Where development stops, 2026-09-11
+
+Picking up from here:
+
+* **Coverage is 5 of 47 (11%)**, all five served by the curated catalogue. `python
+  tools/measure-coverage.py` re-measures it.
+* **M27b batch 2 is the next unit of work.** `python tools/purina-index.py --report --detail` now
+  prints the candidates. After the scorer fix the ready list holds four rows not yet in the
+  catalogue: ranks 9 (Purina ONE Tender Selects Salmon), 23 (Tender Selects Chicken), 42 and 55 (both
+  proposing the same +Plus Sensitive Skin & Stomach deck, which **a person must confirm are one
+  product before either is transcribed**), and 62 (LiveClear Adult). Section 12.10's steps, then
+  `tools/transcribe.py` with a batch file like `tools/data/batch-m27b-1.json`.
+* **`tools/resolve-barcodes.py --list cat-food` was still running when this stopped**, paced at twenty
+  queries an hour. Thirty-six rows are resolved, twenty-one of them non-assorted and each with
+  candidates. `tools/data/barcode-candidates.json` and `tools/data/purina-index.json` are
+  deliberately uncommitted while the run is in flight; commit them once it finishes.
+* **Twenty entries hold provisional keys** (section 12.12) and each needs a barcode chosen by a
+  person, which is what the candidates file is for. `check-catalogue.py` prints the list every run.
+* Still open in section 24.1: parenthesised premix groups defeat `expandGroups`, and fatty acids and
+  vitamin E have no `DATA_FIELDS` home.
+
 ## [0.42.0] - 2026-09-11
 
 **The first provisional key becomes a real barcode, chosen by the owner rather than by the tool.**
