@@ -744,6 +744,22 @@ Both earlier readings were wrong in opposite directions. On 2026-09-09, queries 
 
 **One thing this route cannot fix, and it is worth naming now.** Several top-100 rows are variety packs: "Gravy Lovers, 3 oz Cans, 30-Pack, Variety Pack with poultry and beef recipes" is a case of several different recipes, and it has no single guaranteed analysis. A variety pack is not one product and cannot become one entry. How the catalogue should treat them is undecided and is not decided here.
 
+### 12.15 A variety pack is not a product
+
+**Decided 2026-09-11 by the project owner.** Section 12.14 made the manufacturer's panels reachable and then ran straight into what the top 100 actually is.
+
+**Fifty-three of the hundred ranked listings are assorted recipes in one box.** A thirty-can Gravy Lovers variety pack contains several different recipes with several different guaranteed analyses, and Purina publishes a label deck per recipe rather than per case, so there is no panel to transcribe and no single set of figures that would be true of the box. This is not a gap in the crawl. It is a fact about how cat food is sold, and it was invisible until there was a list to measure.
+
+**The decision: score the recipes, not the case.** A variety pack does not become an entry. The recipes inside it do, each backed by its own published panel, and a visitor scanning any one of those cans finds the product they are holding. The catalogue keeps its rule that every entry carries one real analysis from one real label.
+
+**What this changes about the coverage number in 12.9, stated plainly because it is the number M12 launches on.** The denominator stops being "ranked retail listings" and becomes "products a visitor can scan and get an answer for". Those are different questions and the second is the one this site exists to answer: nobody scans a cardboard case, they scan a can. **A coverage number measured the new way is not comparable to the 0 of 100 recorded on 2026-09-09**, and any figure published across that change has to say which it is. The old measurement is not wrong, it answers a question about retail listings that this catalogue has now decided is not its question.
+
+**What it costs.** The ranked list is evidence about what people buy and more than half of it can no longer be scored directly, so the ranking's authority over the roadmap weakens. A variety pack that sells enormously tells us its constituent recipes matter, but not in what proportion, and the list does not name them. Reconstituting a case into its recipes is manual and is not automated here.
+
+**How the tools enforce it.** `tools/purina-index.py` refuses to strongly match an assortment to a single recipe, capping such a pairing below the threshold that reads as confident. That guard exists because the first run without it put a thirty-can variety pack against one Turkey Feast recipe at 0.83, a seafood variety pack against one Seafood Feast, and a case of broths against a salmon pate. Every one of those would have attached a correctly transcribed panel to the wrong product, which is the precise failure section 12.10 exists to prevent, arriving with a high score attached to make it look safe.
+
+*A count is not a variety, and the first version of that guard got this wrong.* "24-Pack" of one recipe is an ordinary product with one guaranteed analysis and it belongs in the catalogue; disqualifying on the word "pack" threw out five single-recipe listings along with the assortments. Only assortment disqualifies.
+
 ---
 
 ---

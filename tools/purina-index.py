@@ -109,12 +109,20 @@ LISTING_JS = """() => {
 # retail listing title against a manufacturer product name fails on these
 # almost every time: the retailer says "30-Pack, 3 oz Cans" and the
 # manufacturer says nothing at all about the case.
+#
+# **What is not in this list matters as much as what is.** "kitten" and
+# "adult" were here and should never have been: life stage is a catalogue
+# field, and stripping it matched an adult Fancy Feast dry food to the kitten
+# food of the same flavour at 1.00. "classic" was here too, and stripping it
+# matched a Classic Pate listing to a Chunky recipe. A word that could change
+# which product a shopper is holding is identity, however much it looks like
+# marketing.
 NOISE = re.compile(
-    r'\b(?:wet|dry|cat|cats|food|kitten|adult|can|cans|pouch|pouches|bag|bags|'
+    r'\b(?:wet|dry|cat|cats|food|can|cans|pouch|pouches|bag|bags|'
     r'tub|tubs|tray|trays|count|ct|pk|pack|packs|variety|multipack|oz|ounce|lb|'
     r'lbs|pound|pounds|with|and|for|the|in|of|made|no|artificial|color|colors|'
     r'colour|colours|preservative|preservatives|natural|premium|recipe|formula|'
-    r'flavor|flavors|flavour|flavours|value|size|each|entree|entrees|classic|'
+    r'flavor|flavors|flavour|flavours|value|size|each|entree|entrees|'
     r'gourmet|savory|real|grain|free)\b',
     re.I)
 
@@ -126,6 +134,26 @@ def words(text):
     return set(w for w in re.findall(r"[a-z0-9']+", text.lower()) if len(w) > 2)
 
 
+# Assorted recipes in one box. The words that say so are the same words NOISE
+# throws away as packaging, which is the problem this exists to fix.
+#
+# **A count is not a variety, and conflating them was a mistake made here.**
+# "24-Pack" of one recipe is a case of a product with exactly one guaranteed
+# analysis, and it belongs in the catalogue like any other. The first version
+# of this test disqualified 58 listings on the word "pack" alone and 5 of them
+# were ordinary single-recipe products. Only assortment disqualifies, because
+# only assortment means there is no single panel to transcribe.
+VARIETY = re.compile(
+    r'\bvariet(?:y|ies)\b|\bmultipack\b|\bsampler\b|\bassort\w*\b|'
+    r'\bcollection\b|\bmixed\s+(?:flavou?rs?|recipes?|pack)\b',
+    re.I)
+
+
+def is_variety(title):
+    """Assorted recipes in one box, rather than one recipe in any quantity?"""
+    return bool(VARIETY.search(title or ''))
+
+
 def score(listing_title, purina_title):
     """How much of the manufacturer's name the retail listing accounts for.
 
@@ -133,11 +161,26 @@ def score(listing_title, purina_title):
     words, the manufacturer title is short, and what matters is whether the
     short one is contained in the long one. A symmetric measure punishes the
     right answer for the retailer's verbosity.
+
+    **An assortment never strongly matches a single recipe, and that rule
+    is the reason this function is not just the ratio above.** NOISE strips "variety"
+    and "pack" as packaging, so "Gravy Lovers Wet Cat Food, 3 oz Cans,
+    30-Pack, Variety Pack with poultry and beef" reduced to the same words as
+    the single Gravy Lovers Turkey Feast and scored 0.83 against it. Three of
+    the ten highest-scoring matches in the first run were a case pointed at one
+    recipe inside it, and one was a case of broths pointed at a pate. Acting on
+    any of them would have put a real panel, correctly transcribed, on the
+    wrong product: the failure section 12.10 exists to prevent, arriving with a
+    high score attached. A mismatch of kind is capped below the threshold that
+    reads as strong, so it can still be looked at and cannot be trusted.
     """
     a, b = words(listing_title), words(purina_title)
     if not b:
         return 0.0
-    return len(a & b) / float(len(b))
+    value = len(a & b) / float(len(b))
+    if is_variety(listing_title) != is_variety(purina_title):
+        return min(value, 0.39)
+    return value
 
 
 def load():
@@ -322,18 +365,37 @@ def report():
     products = data.get('products') or {}
     skus = json.loads(io.open(SKUS, encoding='utf-8').read())
     items = skus['captures'][0]['items']
-    strong, weak, none = [], [], []
+    cases, ready, matched, weak, none = [], [], [], [], []
     for item in items:
-        best = max(
+        if is_variety(item['title']):
+            # Not a product this catalogue can hold an entry for. Section
+            # 12.15: assorted recipes have no guaranteed analysis between
+            # them, and the recipes inside are what gets scored.
+            cases.append(item)
+            continue
+        value, slug = max(
             ((score(item['title'], row.get('title') or ''), slug)
              for slug, row in products.items()),
             default=(0.0, None))
-        (strong if best[0] >= 0.75 else weak if best[0] >= 0.4 else none).append(
-            (best[0], item, best[1]))
-    print('%d products indexed, %d with a deck URL.'
-          % (len(products), sum(1 for r in products.values() if r.get('deck'))))
-    print('Against the top 100: %d strong (>=0.75), %d worth reading (>=0.4), %d nothing.'
-          % (len(strong), len(weak), len(none)))
+        row = products.get(slug) or {}
+        if value >= 0.75 and row.get('deck'):
+            ready.append((value, item, slug))
+        elif value >= 0.75:
+            matched.append((value, item, slug))
+        elif value >= 0.4:
+            weak.append((value, item, slug))
+        else:
+            none.append((value, item, slug))
+    read = sum(1 for r in products.values() if r.get('deckCount') is not None)
+    print('%d products indexed, %d pages read, %d with a deck URL.'
+          % (len(products), read, sum(1 for r in products.values() if r.get('deck'))))
+    print('')
+    print('Against the top 100:')
+    print('  %3d are assorted recipes, which is not an entry (12.15)' % len(cases))
+    print('  %3d match strongly and have a deck to transcribe' % len(ready))
+    print('  %3d match strongly with no deck found yet' % len(matched))
+    print('  %3d are worth reading by hand (>=0.4)' % len(weak))
+    print('  %3d have nothing resembling a match' % len(none))
     print('')
     print('A strong score is still a proposal. Nothing here has been chosen.')
     return 0

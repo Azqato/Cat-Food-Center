@@ -44,6 +44,46 @@ Notes
   is the first unplanned test of it.
 * No site code changed, so no gate behaviour changed.
 
+## [0.40.0] - 2026-09-11
+
+**More than half the top 100 is a box of assorted recipes with no panel to transcribe. The matcher
+did not know that, and was pairing those boxes with single recipes at scores up to 0.83.**
+
+Added
+* **PRD section 12.15**, recording the project owner's decision: a variety pack does not become an
+  entry, the recipes inside it do. The coverage denominator in 12.9 changes meaning with it, from
+  ranked retail listings to products a visitor can actually scan, and a number measured the new way
+  is not comparable to the 0 of 100 recorded on 2026-09-09.
+* **An assortment guard in `tools/purina-index.py`.** A listing that names assorted recipes can no
+  longer strongly match a single-recipe page; such a pairing is capped below the confident
+  threshold so it stays visible and stops being trusted.
+* **`--report` now separates "matched with a deck" from "matched with no deck yet"**, because a
+  strong match to a page carrying no panel is not something that can be transcribed, and counting
+  the two together overstated what was reachable by roughly a factor of two.
+
+Fixed
+* **Three defects in the matcher, each of which would have put a correctly transcribed panel on the
+  wrong product.** All three were found by reading the proposals rather than the scores.
+  * A thirty-can variety pack matched one Turkey Feast recipe at 0.83, a seafood variety pack
+    matched one Seafood Feast, and a case of broths matched a salmon pate. The packaging-word
+    filter was stripping "variety" and "pack" as noise, which is exactly what made the box look
+    like the can.
+  * **"kitten" and "adult" were being stripped as packaging.** An adult Fancy Feast dry food
+    matched the kitten food of the same flavour at 1.00. Life stage is a catalogue field.
+  * **"classic" was being stripped too**, which matched a Fancy Feast Classic Pate listing to a
+    Chunky recipe at 0.80. It names a product line.
+* **The first assortment guard disqualified on the word "pack" and threw out five ordinary
+  products.** A count is not a variety: 24 cans of one recipe has one guaranteed analysis and
+  belongs in the catalogue. Only assortment disqualifies.
+
+Notes
+* Measured after all of it: of the top 100, 53 are assortments, 6 match strongly and have a deck to
+  transcribe, 8 match strongly with no deck found yet, 14 are worth reading by hand, 19 have no
+  match. All six of the ready ones were checked by eye against their listing titles.
+* The zero-deck pages were verified rather than assumed: ten were re-read and all ten genuinely
+  carry no deck. They are overwhelmingly variety packs, which is what led to 12.15.
+* No site code changed, so no gate behaviour changed.
+
 ## [0.39.0] - 2026-09-10
 
 **The crawler runs headless after all. `[0.38.0]`, published an hour ago, said it could not, and
